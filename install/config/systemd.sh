@@ -47,14 +47,14 @@ enable_service avahi-daemon.service
 enable_service ufw.service
 enable_service plocate-updatedb.timer
 
-# GSConnect (KDE Connect) talks to phones on 1714-1764, TCP and UDP. ufw ships
-# inactive, so nothing blocks it today; the rules are there for when the
-# firewall is turned on, which would otherwise cut GSConnect off silently.
+# KDE Connect talks to phones on 1714-1764, TCP and UDP. ufw ships inactive, so
+# nothing blocks it today; the rules are there for when the firewall is turned
+# on, which would otherwise cut KDE Connect off silently.
 if command -v ufw >/dev/null 2>&1; then
   if sudo ufw allow 1714:1764/tcp >/dev/null && sudo ufw allow 1714:1764/udp >/dev/null; then
-    cosmarchy_substep "ufw: GSConnect ports 1714-1764 allowed"
+    cosmarchy_substep "ufw: KDE Connect ports 1714-1764 allowed"
   else
-    cosmarchy_warn "Could not add the GSConnect ufw rules; run: sudo ufw allow 1714:1764/tcp && sudo ufw allow 1714:1764/udp"
+    cosmarchy_warn "Could not add the KDE Connect ufw rules; run: sudo ufw allow 1714:1764/tcp && sudo ufw allow 1714:1764/udp"
   fi
 fi
 

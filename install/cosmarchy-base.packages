@@ -1,43 +1,55 @@
 # Cosmarchy Core Packages List
-# Base System & Desktop Layer: GNOME 51 on Arch Linux
+# Base System & Desktop Layer: COSMIC 1.11 on Arch Linux
 
-# Display Manager & Desktop Environment
-gdm
-gnome-shell
-gnome-control-center
-gnome-tweaks
-gnome-keyring
-gnome-browser-connector
-gnome-shell-extension-appindicator
-extension-manager
-xdg-desktop-portal-gnome
+# Display Manager & Desktop Environment (COSMIC)
+greetd
+cosmic-session
+cosmic-comp
+cosmic-greeter
+cosmic-settings
+cosmic-settings-daemon
+cosmic-panel
+cosmic-launcher
+cosmic-app-library
+cosmic-applets
+cosmic-notifications
+cosmic-osd
+cosmic-bg
+cosmic-idle
+cosmic-workspaces
+cosmic-randr
+cosmic-screenshot
+xdg-desktop-portal-cosmic
+cosmic-icon-theme
+cosmic-wallpapers
+cosmic-initial-setup
+
+# COSMIC Native Applications
+cosmic-files
+cosmic-terminal
+cosmic-text-editor
+cosmic-player
+cosmic-store
+
+# Desktop Portals, Toolkits & Secret Store
 xdg-desktop-portal-gtk
 gtk3
-gjs
 gtk4
-libadwaita
+gnome-keyring
 nss
 libxss
 xdg-user-dirs
-polkit-gnome
-mutter
 
-# GNOME Applications & File Management
-nautilus
-nautilus-python
-sushi
+# Complementary GTK Applications (no COSMIC equivalent)
 gnome-calculator
 gnome-disk-utility
-gnome-system-monitor
-gnome-text-editor
 evince
 loupe
-gnome-themes-extra
-papirus-icon-theme
 
-# Communication
+# Communication & Phone Integration
 telegram-desktop
 discord
+kdeconnect
 
 # Desktop Applications
 # Brave is installed by packaging/brave-origin.sh; Chromium is the fallback
@@ -80,7 +92,6 @@ exfatprogs
 flatpak
 
 # Developer CLI & Terminal Environment
-gnome-terminal
 code
 nano
 neovim
@@ -111,11 +122,10 @@ docker
 docker-compose
 docker-buildx
 
-# Python & Extension Tools
+# Python Tooling
 python
 python-pip
 python-pipx
-python-gobject
 libyaml
 
 # JavaScript & Node.js Runtime
