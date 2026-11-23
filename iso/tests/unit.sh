@@ -7,7 +7,7 @@ set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 1
 
 if [[ "${1:-}" == --deps ]]; then
-  pacman -Sy --noconfirm --needed kbd xkeyboard-config tzdata shellcheck diffutils >/dev/null || exit 1
+  pacman -Sy --noconfirm --needed kbd xkeyboard-config tzdata shellcheck diffutils python >/dev/null || exit 1
 fi
 
 rc=0
@@ -15,6 +15,9 @@ for t in iso/tests/test-*.sh; do
   echo "=== $t"
   bash "$t" || rc=1
 done
+
+echo "=== python3 -m py_compile"
+python3 -m py_compile launcher/cosmarchy/cosmarchy-launcher || rc=1
 
 echo "=== shellcheck"
 # Entry points only: -x follows their `source` lines and checks each library
@@ -25,8 +28,11 @@ mapfile -t scripts < <(
     default/boot/cosmarchy-boot default/boot/50-cosmarchy-boot default/boot/deploy.sh \
     default/boot/initcpio-post \
     iso/installer/cosmarchy-install iso/installer/lib/run-stage.sh \
+    bin/cosmarchy-menu bin/cosmarchy-power bin/cosmarchy-settings \
+    bin/cosmarchy-snapshot-create bin/cosmarchy-snapshot-list \
     bin/cosmarchy-snapshot-restore bin/cosmarchy-snapshot-notify bin/cosmarchy-windows \
-    install/login/boot.sh install/desktop/set-keyboard-layout.sh \
+    install/config/launcher.sh install/login/boot.sh install/desktop/set-keyboard-layout.sh \
+    migrations/*.sh \
     iso/tests/test-*.sh |
     while read -r f; do [[ -f "$f" ]] && printf '%s\n' "$f"; done
 )

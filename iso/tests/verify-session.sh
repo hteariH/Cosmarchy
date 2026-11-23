@@ -213,6 +213,71 @@ else
   no "shortcut RON files unreadable" "defaults=$DEFAULTS_RON custom=$CUSTOM_RON"
 fi
 
+# --- pop-launcher discovers the Cosmarchy plugin ---------------------------
+if command -v pop-launcher >/dev/null 2>&1; then
+  if launcher_report="$(python3 - <<'PY'
+import select, subprocess, sys, time
+
+proc = subprocess.Popen(
+    ["pop-launcher"],
+    stdin=subprocess.PIPE,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    text=True,
+    encoding="utf-8",
+    bufsize=1,
+)
+
+# Keep stdin open until pop-launcher answers: its service loop runs
+# futures::future::select(request_handler, response_handler) and exits
+# immediately on stdin EOF before plugins can reply.
+proc.stdin.write('{"Search":"c snap"}\n')
+proc.stdin.flush()
+
+seen = []
+found = False
+deadline = time.monotonic() + 10.0
+while time.monotonic() < deadline:
+    remaining = max(0.0, deadline - time.monotonic())
+    ready, _, _ = select.select([proc.stdout], [], [], remaining)
+    if not ready:
+        break
+    line = proc.stdout.readline()
+    if not line:
+        break
+    seen.append(line.strip())
+    if "Create snapshot" in line:
+        found = True
+        break
+
+try:
+    proc.stdin.write('"Exit"\n')
+    proc.stdin.flush()
+    proc.stdin.close()
+except OSError:
+    pass
+try:
+    proc.wait(timeout=3)
+except subprocess.TimeoutExpired:
+    proc.terminate()
+    proc.wait(timeout=2)
+
+if found:
+    print("OK: pop-launcher returned Create snapshot for c snap")
+    sys.exit(0)
+stderr = proc.stderr.read().strip()
+print(f"MISSING: seen={seen!r} stderr={stderr!r}")
+sys.exit(1)
+PY
+)"; then
+    ok "$launcher_report"
+  else
+    no "pop-launcher did not return Create snapshot for 'c snap'" "$launcher_report"
+  fi
+else
+  no "pop-launcher binary not found in PATH"
+fi
+
 # --- Tiling & keyboard config ----------------------------------------------
 COMP_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/cosmic/com.system76.CosmicComp/v1"
 if [[ -r "$COMP_DIR/autotile" ]] && [[ "$(tr -d '[:space:]' < "$COMP_DIR/autotile")" == "true" ]]; then

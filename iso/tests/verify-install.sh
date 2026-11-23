@@ -186,10 +186,57 @@ else
   no "default/cosmic/ missing in installed checkout" "expected $COSMIC_SRC"
 fi
 
+# --- Cosmarchy launcher plugin (pop-launcher) ------------------------------
+if pkg_installed pop-launcher; then
+  ok "pop-launcher is installed"
+else
+  no "pop-launcher is not installed"
+fi
+
+PLUGIN_LINK="$HOME_DIR/.local/share/pop-launcher/plugins/cosmarchy"
+if [[ -L "$PLUGIN_LINK" ]]; then
+  plugin_target="$(readlink "$PLUGIN_LINK")"
+  case "$plugin_target" in
+    */launcher/cosmarchy) ok "pop-launcher plugin symlink points at $plugin_target" ;;
+    *) no "pop-launcher plugin symlink points at unexpected target" "$plugin_target" ;;
+  esac
+else
+  no "pop-launcher plugin symlink missing" "expected symlink at $PLUGIN_LINK"
+fi
+
+if [[ -f "$COSMARCHY_CHECKOUT/launcher/cosmarchy/plugin.ron" ]]; then
+  ok "launcher plugin.ron is present"
+else
+  no "launcher plugin.ron missing" "expected $COSMARCHY_CHECKOUT/launcher/cosmarchy/plugin.ron"
+fi
+
+if [[ -x "$COSMARCHY_CHECKOUT/launcher/cosmarchy/cosmarchy-launcher" ]]; then
+  ok "cosmarchy-launcher plugin executable is present and +x"
+else
+  no "cosmarchy-launcher plugin missing or not executable" "expected $COSMARCHY_CHECKOUT/launcher/cosmarchy/cosmarchy-launcher"
+fi
+
+if [[ -f "$COSMARCHY_CHECKOUT/launcher/actions.tsv" ]]; then
+  ok "launcher actions.tsv catalog is present"
+else
+  no "launcher actions.tsv missing" "expected $COSMARCHY_CHECKOUT/launcher/actions.tsv"
+fi
+
+CUSTOM_SHORTCUTS="$COSMIC_DEST/com.system76.CosmicSettings.Shortcuts/v1/custom"
+if [[ -f "$CUSTOM_SHORTCUTS" ]] &&
+  grep -qF 'Spawn("cosmic-launcher input \"c \"")' "$CUSTOM_SHORTCUTS" &&
+  grep -qF 'Spawn("cosmic-launcher input \"c key \"")' "$CUSTOM_SHORTCUTS" &&
+  grep -qF 'Spawn("cosmic-launcher input \"c man \"")' "$CUSTOM_SHORTCUTS"; then
+  ok "custom shortcuts spawn cosmic-launcher input for c , c key , and c man "
+else
+  no "custom shortcuts missing cosmic-launcher input spawns" "$(cat "$CUSTOM_SHORTCUTS" 2>/dev/null || echo missing)"
+fi
+
 # --- Session-critical symlinks and executable bits -------------------------
 missing_links=()
 for cmd in cosmarchy cosmarchy-first-run cosmarchy-menu cosmarchy-keybindings \
   cosmarchy-manual cosmarchy-tiling cosmarchy-capture cosmarchy-migrate \
+  cosmarchy-power cosmarchy-settings \
   cosmarchy-windows cosmarchy-snapshot-create cosmarchy-snapshot-list \
   cosmarchy-snapshot-restore cosmarchy-snapshot-notify; do
   link="$ROOT/usr/local/bin/$cmd"

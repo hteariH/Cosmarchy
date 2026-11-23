@@ -23,9 +23,9 @@ done
 echo "--- custom shortcuts sanity"
 CUSTOM="default/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom"
 t_eq "seven custom bindings shipped" "$(grep -c 'modifiers:' "$CUSTOM")" "7"
-t_true "keybindings on Super+Alt+slash" grep -q 'modifiers: \[Super, Alt\], key: "slash".*cosmic-term -e cosmarchy-keybindings' "$CUSTOM"
-t_true "manual on Super+Alt+m" grep -q 'modifiers: \[Super, Alt\], key: "m".*cosmic-term -e cosmarchy-manual' "$CUSTOM"
-t_true "menu on Super+Alt+space" grep -q 'modifiers: \[Super, Alt\], key: "space".*cosmic-term -e cosmarchy-menu' "$CUSTOM"
+t_true "keybindings on Super+Alt+slash" grep -qF '(modifiers: [Super, Alt], key: "slash", description: Some("Cosmarchy Keybindings")): Spawn("cosmic-launcher input \"c key \""),' "$CUSTOM"
+t_true "manual on Super+Alt+m" grep -qF '(modifiers: [Super, Alt], key: "m", description: Some("Cosmarchy Manual")): Spawn("cosmic-launcher input \"c man \""),' "$CUSTOM"
+t_true "menu on Super+Alt+space" grep -qF '(modifiers: [Super, Alt], key: "space", description: Some("Cosmarchy Menu")): Spawn("cosmic-launcher input \"c \""),' "$CUSTOM"
 t_false "no screensaver shortcut" grep -qi 'screensaver' "$CUSTOM"
 
 echo "--- set-keyboard-layout.sh -> xkb_config"
