@@ -77,7 +77,7 @@ if git -C "$COSMARCHY_PATH" init -q &&
   # above the index is empty, and `git clean -fd` against an empty index
   # deletes the entire installation.
   if [[ -n "$ALIGN_TO" ]]; then
-    git -C "$COSMARCHY_PATH" clean -qfd -e themes -e default 2>/dev/null || true
+    git -C "$COSMARCHY_PATH" clean -qfd -e default 2>/dev/null || true
     git -C "$COSMARCHY_PATH" checkout -q -- . 2>/dev/null || true
   fi
 

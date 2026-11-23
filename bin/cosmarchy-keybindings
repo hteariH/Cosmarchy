@@ -158,9 +158,6 @@ case "${1:-search}" in
     ;;
 
   search | "")
-    source "${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}/install/helpers/gui.sh"
-    # Non-zero means no display or no gjs; fall through to the text list.
-    cosmarchy_launch_gui keybindings || true
     output="$(collect)"
     echo "$output"
     ;;

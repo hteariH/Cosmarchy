@@ -10,11 +10,6 @@ set -eEo pipefail
 COSMARCHY_PATH="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
 export PATH="$COSMARCHY_PATH/bin:$PATH"
 
-# The GUI is the face of this command; the gum menu below is the fallback for
-# a TTY or a machine without gjs.
-source "$COSMARCHY_PATH/install/helpers/gui.sh"
-cosmarchy_launch_gui menu || true
-
 if ! command -v gum >/dev/null 2>&1; then
   echo "gum is required for the Cosmarchy menu (pacman -S gum)." >&2
   read -rp "Press Enter to close..." _

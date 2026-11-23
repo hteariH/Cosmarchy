@@ -138,9 +138,6 @@ case "${1:-browse}" in
     ;;
 
   browse | "")
-    source "$COSMARCHY_PATH/install/helpers/gui.sh"
-    # Non-zero means no display or no gjs; fall through to the text browser.
-    cosmarchy_launch_gui manual || true
     browse
     ;;
 

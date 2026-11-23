@@ -19,11 +19,10 @@ require("lazy").setup({
   spec = {
     -- LazyVim core and its default plugin set
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
-    -- Cosmarchy theme files land here (lua/plugins/theme.lua)
+    -- User plugins land here (lua/plugins/*.lua)
     { import = "plugins" },
   },
   defaults = { lazy = false, version = false },
-  install = { colorscheme = { "tokyonight", "habamax" } },
   checker = { enabled = true, notify = false },
   performance = {
     rtp = {

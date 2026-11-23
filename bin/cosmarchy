@@ -22,10 +22,9 @@ Usage: cosmarchy <command> [subcommand] [arguments...]
 
 Commands:
   menu                         Open the Cosmarchy command center (Super+Alt+Space)
-  first-run                    Re-apply desktop settings, shortcuts and favorites
-  theme <set|list|current>     Manage system and desktop color themes
+  first-run                    Apply session hardware setup
   tiling <enable|disable|status>
-                               Zone tiling with Tiling Shell, on or off
+                               Auto-tiling, on or off
   keymap <omarchy|gnome|status>
                                Switch between Omarchy and Cosmarchy key layouts
   keybindings [--list]         Search the keybindings that are actually active
@@ -34,10 +33,6 @@ Commands:
                                Steam, Proton-GE, Wine and launchers in one go
   asus <status|charge|profile|keyboard|graphics>
                                Asus ROG/TUF laptop controls
-  backgrounds [--list|--verify]
-                               Fetch/verify theme wallpapers for this machine
-  gnome <extensions|hotkeys|scaling|restart>
-                               Manage GNOME desktop settings & workflow
   snapshot <create|list|restore>
                                Btrfs snapshots; restore makes one the system
   boot update                  Regenerate the boot menu, e.g. after editing
@@ -70,10 +65,6 @@ case "$command_group" in
   first-run)
     exec cosmarchy-first-run
     ;;
-  backgrounds)
-    shift
-    exec cosmarchy-backgrounds "$@"
-    ;;
   tiling)
     shift
     exec cosmarchy-tiling "$@"
@@ -97,46 +88,6 @@ case "$command_group" in
   asus | rog)
     shift
     exec cosmarchy-asus "$@"
-    ;;
-  theme)
-    case "$subcommand" in
-      set)
-        shift 2
-        exec cosmarchy-theme-set "$@"
-        ;;
-      list)
-        exec cosmarchy-theme-list
-        ;;
-      current)
-        exec cosmarchy-theme-current
-        ;;
-      *)
-        echo "Usage: cosmarchy theme <set|list|current>"
-        exit 1
-        ;;
-    esac
-    ;;
-  gnome)
-    case "$subcommand" in
-      extensions)
-        shift 2
-        exec cosmarchy-gnome-extensions "$@"
-        ;;
-      hotkeys)
-        exec cosmarchy-gnome-hotkeys
-        ;;
-      scaling)
-        shift 2
-        exec cosmarchy-gnome-scaling "$@"
-        ;;
-      restart)
-        exec cosmarchy-gnome-restart
-        ;;
-      *)
-        echo "Usage: cosmarchy gnome <extensions|hotkeys|scaling|restart>"
-        exit 1
-        ;;
-    esac
     ;;
   snapshot)
     case "$subcommand" in

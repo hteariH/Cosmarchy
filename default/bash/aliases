@@ -34,6 +34,5 @@ alias ..='cd ..'
 alias ...='cd ../..'
 
 alias update='cosmarchy update'
-alias theme='cosmarchy theme'
 alias snapshot='cosmarchy snapshot'
 alias menu='cosmarchy menu'

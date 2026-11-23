@@ -1,15 +1,9 @@
 #!/bin/bash
 
-cosmarchy_header "Setting Up Extension & Developer Tooling"
+cosmarchy_header "Setting Up Developer Tooling"
 
 # Ensure pipx path is configured
 pipx ensurepath >/dev/null 2>&1 || true
-
-# Install gnome-extensions-cli for automated extension management
-if ! command -v gext >/dev/null 2>&1; then
-  echo "Installing gnome-extensions-cli via pipx..."
-  pipx install gnome-extensions-cli --system-site-packages >/dev/null 2>&1 || true
-fi
 
 # mise comes from the official repositories (cosmarchy-base.packages).
 
@@ -39,4 +33,4 @@ if ! command -v paru >/dev/null 2>&1; then
   rm -rf /tmp/paru-install
 fi
 
-cosmarchy_step "Developer and extension tooling configured"
+cosmarchy_step "Developer tooling configured"
