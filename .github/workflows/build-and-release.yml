@@ -94,7 +94,8 @@ jobs:
           ### Highlights
           - **Stock COSMIC 1.11 + greetd**: authentic COSMIC desktop with \`cosmic-initial-setup\` on first login and native COSMIC apps (\`cosmic-terminal\`, \`cosmic-files\`, \`cosmic-text-editor\`, \`cosmic-player\`, \`cosmic-store\`).
           - **Auto-Tiling enabled per workspace**: \`Super + Y\` toggles tiling per workspace, \`Super + G\` floats a window, or \`cosmarchy tiling <enable|disable|toggle|status>\`.
-          - **Non-conflicting shortcuts**: COSMIC defaults stay intact; Cosmarchy adds \`Super + Return\` (terminal), \`Super + E\` (files), \`Super + D\` (Voxtype dictation), \`Ctrl + Print\` (Satty screenshot annotator), \`Super + Alt + Space\` (Cosmarchy menu), \`Super + Alt + /\` (keybindings), and \`Super + Alt + M\` (manual).
+          - **Non-conflicting shortcuts**: COSMIC defaults stay intact; Cosmarchy adds \`Super + Return\` (terminal), \`Super + E\` (files), \`Super + D\` (Voxtype dictation), \`Ctrl + Print\` (Satty screenshot annotator), and \`Super + Alt + Space\` / \`Super + Alt + /\` / \`Super + Alt + M\`, which open the Cosmarchy launcher plugin.
+          - **Cosmarchy in the COSMIC launcher**: type \`c \` after \`Super\` for every Cosmarchy action, \`c key\` to search keybindings, \`c man\` for manual pages - a pop-launcher plugin, no extra window.
           - **Bootable Btrfs snapshots**: every snapshot is in the Limine menu and can be restored with \`cosmarchy snapshot restore\`.
           - **Desktop apps, KDE Connect, and opt-in WinBoat**: Brave Origin, Chromium, VS Code, Obsidian, LibreOffice, OBS Studio, Telegram, Discord, Spotify, KDE Connect (ports 1714-1764 allowed in ufw), and \`cosmarchy windows\` for WinBoat.
           - **Migrations**: \`cosmarchy update\` applies configuration changes to machines that are already installed.
