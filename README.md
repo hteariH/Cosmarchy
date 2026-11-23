@@ -1,72 +1,85 @@
-# Cosmarchy Linux 🐧
+# Cosmarchy Linux
 
 <p align="center">
   <img src="assets/logo.svg" alt="Cosmarchy" width="120">
 </p>
 
 <p align="center">
-  <a href="https://gnomarchy.pages.dev"><img src="https://img.shields.io/badge/Website-gnomarchy.pages.dev-7aa2f7?style=for-the-badge&logo=cloudflarepages&logoColor=white" alt="Website"></a>
-  <a href="https://github.com/hteariH/Gnomarchy/releases"><img src="https://img.shields.io/github/v/release/hteariH/Gnomarchy?style=for-the-badge&color=89b4fa&logo=github" alt="Release"></a>
+  <a href="https://gnomarchy.pages.dev"><img src="https://img.shields.io/badge/Website-gnomarchy.pages.dev-49bac8?style=for-the-badge&logo=cloudflarepages&logoColor=white" alt="Website"></a>
+  <a href="https://github.com/hteariH/Gnomarchy/releases"><img src="https://img.shields.io/github/v/release/hteariH/Gnomarchy?style=for-the-badge&color=49bac8&logo=github" alt="Release"></a>
   <img src="https://img.shields.io/badge/Arch%20Linux-Rolling-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white" alt="Arch Linux">
-  <img src="https://img.shields.io/badge/GNOME-51-4a86cf?style=for-the-badge&logo=gnome&logoColor=white" alt="GNOME 51">
-  <img src="https://img.shields.io/badge/Wayland-Native-f38ba8?style=for-the-badge&logo=wayland&logoColor=white" alt="Wayland">
-  <img src="https://img.shields.io/badge/Btrfs-Snapper%20Rollbacks-a6e3a1?style=for-the-badge&logo=linux&logoColor=white" alt="Btrfs">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-fab387?style=for-the-badge" alt="License"></a>
+  <img src="https://img.shields.io/badge/COSMIC-1.11-49bac8?style=for-the-badge&logo=linux&logoColor=white" alt="COSMIC 1.11">
+  <img src="https://img.shields.io/badge/Wayland-Native-7cb987?style=for-the-badge&logo=wayland&logoColor=white" alt="Wayland">
+  <img src="https://img.shields.io/badge/Btrfs-Snapper%20Rollbacks-6296be?style=for-the-badge&logo=linux&logoColor=white" alt="Btrfs">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-ddc74c?style=for-the-badge" alt="License"></a>
 </p>
 
-> **The Power of Arch Linux and Omarchy's Developer Tooling Meets the Polish of GNOME.**
+> **The Power of Arch Linux and Omarchy's Developer Tooling Meets the COSMIC Desktop.**
 
-Cosmarchy is an opinionated, developer-first Linux distribution built on **Arch Linux**. It takes the modern rolling base, Btrfs + Snapper atomic rollback snapshots, hardware quirk mitigations, unified theme engine, and agentic CLI developer stack from **Omarchy**—and replaces the Hyprland tiling compositor stack with a finely tuned, keyboard-friendly **GNOME 51** desktop environment and **GDM**.
+Cosmarchy is an opinionated, developer-first Linux distribution built on **Arch Linux**. It pairs the rolling base, bootable Btrfs + Snapper rollbacks, hardware profiles, and CLI developer stack derived from **Omarchy** with the authentic stock **COSMIC 1.11** desktop environment and **greetd** (`cosmic-greeter`) on Wayland.
 
 ---
 
 ## Highlights & Features
 
-- **⌨️ Command Center (`Super + Alt + Space`)**: A GTK application with three pages—Menu, Keybindings and Manual—covering themes, web apps, screen capture, snapshots, updates and power actions, rebindable shortcuts, and the full manual. Also opens on `Super + K` (Keybindings) and `Super + Shift + K` (Manual).
-- **🎨 Unified Cross-Desktop Theme Engine**: Change your entire system theme—GNOME dark/light mode, Libadwaita accent color, GTK3/GTK4 window colors, wallpaper, GNOME Terminal, Neovim (LazyVim), and btop—with a single command (`cosmarchy theme set <name>`).
-- **🧩 Zone Tiling**: Tiling Shell, configured so nothing moves unless you move it — hold Ctrl while dragging to pick a zone, drag to the top for snap assist, `Super+Shift+arrows` to throw a window into the next tile.
-- **🎙️ Voxtype (System-Wide AI Dictation)**: Speech-to-text dictation on `<Super>D` powered by local, offline Whisper AI models with zero cloud fees and zero telemetry.
-- **🌐 Web App Generator (`cosmarchy webapp`)**: Turn web tools (Claude, ChatGPT, Linear, Notion, Basecamp) into standalone desktop apps with isolated profiles, auto-fetched favicons, and Dash to Dock pinning.
-- **📁 Nautilus Context Superpowers**: Native right-click file actions — H.264 video compression (CRF 28, no fixed size target), animated GIF conversion, MP3 extraction, WebP conversion, EXIF stripping, resize to 1080p, open in VS Code, and LocalSend sharing.
-- **🪟 Windows Apps, Opt-In (`cosmarchy windows install`)**: [WinBoat](https://www.winboat.app) runs Windows in a Docker container and opens its applications as ordinary desktop windows. Installed only when you ask: from the AUR, or the checksum-pinned release AppImage.
-- **⏰ Desktop Reminders & Alarms (`cosmarchy reminder`)**: Instant notification alarms with chime audio cues for pomodoro breaks, standups, or deploy checks.
-- **🤖 AI Agent OS Control Layer & Lifecycle Hooks**: Pre-installed agent skill (`AGENTS.md`) and hooks directory (`~/.config/cosmarchy/hooks/`) allowing Claude Code, Antigravity, OpenCode, or user scripts to orchestrate and react to system events.
-- **🛡️ Bootable Btrfs Snapshots**: Snapper takes a snapshot before and after every pacman transaction, and each one appears in the Limine boot menu. Boot one to try it — changes stay in memory — and `cosmarchy snapshot restore` makes it the system.
-- **⚡ Fast Shutdown Tuning**: Systemd timeout stop limits tuned from 90s down to 10s for instantaneous power-offs and reboots.
-- **🛡️ Default Privacy Browser (Brave Origin)**: **Brave Origin** pre-configured as the default system browser—completely debloated of crypto, AI (Leo), rewards, and telemetry, delivering uncompromising speed and ad-blocking out of the box.
-- **🖥️ Ubuntu-Style Left Dock (Dash to Dock)**: Full-height, clean left panel with pinned favorites (GNOME Terminal, Brave Origin, Files, VS Code, Bazaar App Store).
-- **📝 VS Code as the Default Editor**: Preinstalled from the official Arch repository and wired up as the graphical default for source and text files. `$EDITOR` resolves to `code --wait` under a graphical session and `nano` in a TTY or over SSH. Neovim stays installed and themed for those who prefer it.
-- **🎮 One-Command Gaming Stack**: `cosmarchy gaming install` sets up Steam, Proton-GE, Wine, Lutris, Faugus Launcher, gamescope, GameMode and MangoHud, with the 32-bit Vulkan driver matched to your GPU.
-- **💬 Apps Preinstalled**: Telegram, Discord, Chromium, OBS Studio, LibreOffice, Obsidian, Spotify (through Spotify's own launcher), mise and Claude Code.
-- **📱 GSConnect**: KDE Connect for GNOME — notifications, files, clipboard and media control with your phone. Enabled out of the box, with its ports open in ufw for when you turn the firewall on.
-- **🛍️ Flatpak & Bazaar App Store**: Out-of-the-box Flatpak and Flathub integration with **Bazaar**, the modern, native GNOME software store for Flatpaks.
-- **💻 Hardware Profiles**: Detected and applied at install time — **Asus ROG and TUF** laptops (asusctl and ROG Control Center: fan curves, platform profiles, keyboard backlight, battery charge limit, plus supergfxctl for GPU switching on hybrid models), **Framework 13/16** (keyboard RGB access and the AMD microphone profile), **Apple T2** Macs, **Nvidia** (DRM modesetting and suspend/resume services), and **Intel** graphics (media drivers and Vulkan).
+- **Authentic Stock COSMIC 1.11 + `greetd`**: Full COSMIC Wayland desktop with `cosmic-initial-setup` on first login (language, keyboard, timezone, Wi-Fi, accessibility, appearance, panel layout) and native COSMIC apps (`cosmic-terminal`, `cosmic-files`, `cosmic-text-editor`, `cosmic-player`, `cosmic-store`).
+- **Built-in Auto-Tiling (Per Workspace)**: COSMIC's native auto-tiling is enabled out of the box with per-workspace behavior (`Super + Y` to toggle, `Super + G` to float a window, `Super + O` for orientation, `Super + S` for stacking, or `cosmarchy tiling <enable|disable|toggle|status>`).
+- **Non-Conflicting Shortcuts**: All COSMIC default shortcuts remain intact. Cosmarchy adds its own bindings strictly on free keys (`Super + Return`, `Super + E`, `Super + D`, `Ctrl + Print`, `Super + Alt + Space`, `Super + Alt + /`, `Super + Alt + M`).
+- **Command Center (`Super + Alt + Space`)**: Fast terminal UI (`gum` inside `cosmic-term`) covering keybindings, the local manual, tiling, gaming, web apps, screen capture, snapshots, updates, COSMIC Settings, and power actions.
+- **Voxtype (System-Wide Local AI Dictation)**: Offline speech-to-text dictation on `Super + D` powered by local `whisper-cpp` (`whisper-cli`) and `ydotool` — zero cloud fees and zero telemetry.
+- **Web App Generator (`cosmarchy webapp`)**: Turn web tools (Claude, ChatGPT, Linear, Notion) into isolated desktop apps with separate profiles, auto-fetched favicons, and desktop entries visible in COSMIC Launcher and App Library.
+- **Windows Apps, Opt-In (`cosmarchy windows install`)**: [WinBoat](https://www.winboat.app) runs Windows in a Docker container and opens its applications as ordinary desktop windows over FreeRDP. Installed only when you ask (AUR `winboat-bin` or checksum-pinned release AppImage).
+- **Desktop Reminders & Alarms (`cosmarchy reminder`)**: Instant notification alarms with chime audio cues for pomodoro breaks, standups, or deploy checks.
+- **AI Agent OS Control Layer & Lifecycle Hooks**: Pre-installed agent skill (`~/.claude/skills/cosmarchy/SKILL.md` & friends) and lifecycle hooks (`~/.config/cosmarchy/hooks/`).
+- **Bootable Btrfs Snapshots + Limine**: `snap-pac` takes pre/post snapshots around every pacman transaction. Every snapshot appears in the COSMIC Dark-styled Limine boot menu with its matching kernel; boot one read-only in a tmpfs overlay and promote it with `cosmarchy snapshot restore`.
+- **Fast Shutdown Tuning**: Systemd stop timeouts reduced from 90s to 10s.
+- **Default Privacy Browser (Brave Origin)**: Pre-configured as the default browser (debloated of crypto, AI, rewards, and telemetry), with Chromium installed as fallback.
+- **VS Code as the Default Editor**: Preinstalled from Arch's `extra` repo as the graphical default (`$EDITOR` is `code --wait` in a graphical session, `nano` in a TTY or over SSH). Neovim (stock LazyVim starter) is also installed.
+- **One-Command Gaming Stack**: `cosmarchy gaming install` sets up Steam, Proton-GE, Wine, Lutris, Faugus Launcher, gamescope, GameMode, and MangoHud, matching the 32-bit Vulkan driver to your GPU.
+- **Desktop Apps Preinstalled**: Telegram, Discord, Chromium, OBS Studio, LibreOffice, Obsidian, Spotify (via `spotify-launcher`), `mise`, and Claude Code.
+- **KDE Connect (`kdeconnect`)**: Phone notifications, file sharing, clipboard, and media control out of the box, with ports `1714-1764` TCP/UDP pre-allowed in `ufw`.
+- **Flatpak & Bazaar**: Flathub configured with Bazaar and LocalSend preinstalled alongside `cosmic-store`.
+- **Hardware Profiles**: Auto-detected at install time — **Asus ROG/TUF** (`asusctl`, `rog-control-center`, `supergfxctl` on hybrid NVIDIA), **Framework 13/16** (RGB udev rules and AMD microphone profile), **Apple T2**, **NVIDIA** (DRM modesetting & suspend services), and **Intel** media/Vulkan drivers.
 
 ---
 
 ## Desktop Workflow & Keyboard Shortcuts
 
+Cosmarchy keeps COSMIC's defaults untouched and adds seven shortcuts on keys COSMIC leaves free:
+
+### Cosmarchy Shortcuts
+
 | Shortcut | Action |
 | :--- | :--- |
-| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd> | **Command Center**: Themes, web apps, capture, snapshots, updates, power |
-| <kbd>Super</kbd> + <kbd>K</kbd> | **Command Center**: Keybindings page (view and rebind shortcuts) |
-| <kbd>Super</kbd> + <kbd>Shift</kbd> + <kbd>K</kbd> | **Command Center**: Manual page (search and read) |
-| <kbd>Super</kbd> + <kbd>T</kbd> | **Tiling Shell**: Cycle the active zone layout |
-| <kbd>Super</kbd> + <kbd>Shift</kbd> + arrows | Throw the window into the next tile |
-| <kbd>Ctrl</kbd> + drag | Drop the window into a zone |
-| <kbd>Super</kbd> + <kbd>Return</kbd> | Launch **GNOME Terminal** (themed Cosmarchy profile) |
-| <kbd>Super</kbd> + <kbd>B</kbd> | Launch default web browser (**Brave Origin**) |
-| <kbd>Super</kbd> + <kbd>E</kbd> | Open **Nautilus** file manager |
-| <kbd>Super</kbd> | Open **GNOME Overview** & Instant App Search |
-| <kbd>Super</kbd> + <kbd>W</kbd> | Close focused window |
-| <kbd>Super</kbd> + <kbd>Up</kbd> | Maximize focused window |
-| <kbd>Super</kbd> + <kbd>Backspace</kbd> | Interactive window resize mode |
-| <kbd>Super</kbd> + <kbd>1</kbd> – <kbd>6</kbd> | Switch directly to workspace 1 through 6 |
-| <kbd>Super</kbd> + <kbd>7</kbd> – <kbd>9</kbd> | GNOME's app switcher: focus or launch the Nth pinned app |
-| <kbd>Super</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd> – <kbd>6</kbd> | Move focused window to workspace 1 through 6 |
-| <kbd>Super</kbd> + <kbd>D</kbd> | **Voxtype**: Toggle AI Speech-to-Text Dictation |
-| <kbd>Print</kbd> | Native GNOME interactive screenshot & recording grabber |
-| <kbd>Ctrl</kbd> + <kbd>Print</kbd> | Region capture (grim + slurp) straight into the **Satty** annotation editor |
+| <kbd>Super</kbd> + <kbd>Return</kbd> | Launch **COSMIC Terminal** (`cosmic-term`) |
+| <kbd>Super</kbd> + <kbd>E</kbd> | Open **COSMIC Files** (`cosmic-files`) |
+| <kbd>Super</kbd> + <kbd>D</kbd> | **Voxtype**: Toggle local AI speech-to-text dictation |
+| <kbd>Ctrl</kbd> + <kbd>Print</kbd> | Region screenshot (`grim` + `slurp`) into **Satty** annotator |
+| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd> | **Command Center** (`cosmarchy-menu` in `cosmic-term`) |
+| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>/</kbd> | **Keybindings browser** (`cosmarchy-keybindings` in `cosmic-term`) |
+| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>M</kbd> | **Local manual** (`cosmarchy-manual` in `cosmic-term`) |
+
+### Key COSMIC Defaults
+
+| Shortcut | Action |
+| :--- | :--- |
+| <kbd>Super</kbd> | **COSMIC Launcher** |
+| <kbd>Super</kbd> + <kbd>A</kbd> | **COSMIC App Library** |
+| <kbd>Super</kbd> + <kbd>W</kbd> | Workspace overview |
+| <kbd>Super</kbd> + <kbd>B</kbd> | Default web browser (**Brave Origin** via `system_actions`) |
+| <kbd>Super</kbd> + <kbd>T</kbd> | Default terminal (**COSMIC Terminal**) |
+| <kbd>Super</kbd> + <kbd>F</kbd> | Home folder |
+| <kbd>Super</kbd> + <kbd>Q</kbd> | Close focused window |
+| <kbd>Super</kbd> + <kbd>Y</kbd> | Toggle auto-tiling for the active workspace |
+| <kbd>Super</kbd> + <kbd>G</kbd> | Float / tile the focused window |
+| <kbd>Super</kbd> + <kbd>O</kbd> / <kbd>S</kbd> | Toggle tiling orientation / window stacking |
+| <kbd>Super</kbd> + <kbd>H/J/K/L</kbd> or arrows | Focus window directionally |
+| <kbd>Super</kbd> + <kbd>Shift</kbd> + <kbd>H/J/K/L</kbd> or arrows | Move window directionally |
+| <kbd>Super</kbd> + <kbd>1</kbd> – <kbd>9</kbd> | Switch workspace 1–9 |
+| <kbd>Super</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd> – <kbd>9</kbd> | Move window to workspace 1–9 |
+| <kbd>Super</kbd> + <kbd>Space</kbd> | Switch keyboard input source |
+| <kbd>Super</kbd> + <kbd>Escape</kbd> | Lock screen |
+| <kbd>Print</kbd> | **COSMIC Screenshot** |
 
 ---
 
@@ -77,14 +90,15 @@ Cosmarchy is an opinionated, developer-first Linux distribution built on **Arch 
 1. Download the latest `cosmarchy-linux-*.iso` from [Releases](https://github.com/hteariH/Gnomarchy/releases).
 2. Flash to a USB drive using `dd`, `balenaEtcher`, or `caligula`:
    ```bash
-   sudo dd if=cosmarchy-linux.iso of=/dev/sdX bs=4M status=progress oflag=sync
+   sudo dd if=cosmarchy-linux-*.iso of=/dev/sdX bs=4M status=progress oflag=sync
    ```
-3. Boot your system in **UEFI or BIOS mode** with Secure Boot temporarily disabled.
-4. The installer starts on TTY1: pick a disk, fill in a short form (keyboard layout, user, password, computer name, timezone, optional LUKS2 encryption), check the summary and watch seven stages run. It lays out Btrfs subvolumes (`@`, `@home`, `@snapshots`, `@var_log`, `@var_cache`), installs Limine for both UEFI and BIOS, and takes a first snapshot.
+3. Boot your system in **UEFI or BIOS mode** with Secure Boot disabled.
+4. The gum installer starts on TTY1: pick a disk, fill in the form (keyboard layout, user, password, computer name, timezone, optional LUKS2 encryption), confirm the summary, and watch seven stages run. It creates Btrfs subvolumes (`@`, `@home`, `@snapshots`, `@var_log`, `@var_cache`), installs Limine for UEFI and BIOS, deploys COSMIC + `cosmic-greeter` (with your chosen keyboard layout in `xkb_config`), and records snapshot 1.
+5. On first login, `cosmic-initial-setup` walks you through appearance, panel layout, Wi-Fi, and accessibility.
 
 ### Method 2: Quick Install Over Clean Arch Linux
 
-If you have already installed a minimal base Arch Linux system:
+If you already have a minimal Arch Linux installation:
 
 ```bash
 curl -fsSL https://gnomarchy.pages.dev/install | bash
@@ -94,61 +108,42 @@ curl -fsSL https://gnomarchy.pages.dev/install | bash
 
 ## Master CLI Dispatcher (`cosmarchy`)
 
-Control the desktop and OS layer using the `cosmarchy` CLI:
+Control the desktop and OS layer with the `cosmarchy` CLI:
 
-### Unified Theme Engine (22 Built-in Themes)
+### Window Tiling
 
-Cosmarchy includes **22 built-in themes** (18 Dark, 4 Light) matching the complete Omarchy palette suite. Every theme carries a Libadwaita accent color, generated GTK3/GTK4 window colors, a 16-color ANSI palette applied to GNOME Terminal, a Neovim colorscheme, a btop system monitor theme, and the matching Papirus icon variant.
-
-Wallpapers are **downloaded at install time** from the upstream Omarchy repository (pinned commit, every file checksum-verified) into `/usr/share/backgrounds/cosmarchy/<theme>/`. Cosmarchy does not redistribute them — see [BACKGROUNDS.md](BACKGROUNDS.md) for the provenance and licensing reasoning. Each theme also ships a small generated SVG wallpaper as an offline fallback, and you can override either with your own images in `~/.config/cosmarchy/backgrounds/<theme>/`.
-
-| Theme | Type | Accent | Aesthetic / Palette Style |
-| :--- | :--- | :--- | :--- |
-| **Tokyo Night** | Dark | `blue` | Deep indigo Tokyo city lights |
-| **Catppuccin** | Dark | `purple` | Soothing pastel Mocha dark |
-| **Catppuccin Latte** | Light | `blue` | Warm soft pastel daylight paper |
-| **Ethereal** | Dark | `purple` | Mystical cosmic violet & nebula glow |
-| **Everforest** | Dark | `green` | Natural soothing moss & pine green |
-| **Flexoki Light** | Light | `orange` | Kepano's warm inky paper for deep reading |
-| **Gruvbox** | Dark | `orange` | Classic warm retro groove & amber |
-| **Hackerman** | Dark | `green` | Phosphor cyber green Matrix CRT void |
-| **Kanagawa** | Dark | `teal` | Hokusai Great Wave wave-blue & sumi ink |
-| **Last Horizon** | Dark | `orange` | Dusky twilight violet & sunset orange |
-| **Lumon** | Dark | `teal` | Severance Kier Eagan corporate CRT teal |
-| **Lupine** | Light | `purple` | Wildflower lavender & gentle daylight |
-| **Matte Black** | Dark | `slate` | Industrial stealth dark & minimal zinc |
-| **Miasma** | Dark | `green` | Deep decaying forest lichen & moss |
-| **Nord** | Dark | `teal` | Arctic ice blue & Nordic slate |
-| **Osaka Jade** | Dark | `green` | Imperial Japanese bamboo & deep jade |
-| **Retro 82** | Dark | `pink` | 1982 arcade synthwave magenta & neon cyan |
-| **Ristretto** | Dark | `orange` | Roasted espresso crema & cinnamon dark |
-| **Rosé Pine** | Dark | `pink` | Warm rose petal, pine, and gold |
-| **Solitude** | Dark | `slate` | Calm introspective midnight slate blue |
-| **Vantablack** | Dark | `slate` | Ultra-minimal pure OLED true black |
-| **White** | Light | `blue` | Pristine minimalist high-key paper light |
+COSMIC's compositor (`cosmic-comp`) includes built-in auto-tiling configured per workspace (`autotile = true`, `autotile_behavior = PerWorkspace`).
 
 ```bash
-# List all 22 available themes with mode and accent details
-cosmarchy theme list
-
-# Switch to any theme instantly
-cosmarchy theme set "kanagawa"
-cosmarchy theme set "hackerman"
-cosmarchy theme set "flexoki-light"
-
-# Check active theme
-cosmarchy theme current
-
-# Wallpapers: fetch, inspect or re-verify
-cosmarchy backgrounds
-cosmarchy backgrounds --list
-cosmarchy backgrounds --verify
+cosmarchy tiling status    # show current autotile state and behavior
+cosmarchy tiling enable    # turn automatic tiling on
+cosmarchy tiling disable   # turn automatic tiling off
+cosmarchy tiling toggle    # flip automatic tiling on/off
 ```
 
-### Asus Laptops (ROG and TUF)
+### The Manual
 
-Detected automatically at install time; both lines share the same `asus_wmi`
-interface, so one profile covers them.
+```bash
+cosmarchy manual                    # interactive gum browser (Super + Alt + M)
+cosmarchy manual 04                 # open a page by number
+cosmarchy manual tiling             # open a page by name
+cosmarchy manual --list             # list all 15 pages
+cosmarchy manual --grep whisper     # search every page
+```
+
+Fifteen local pages covering getting started, keybindings, tiling, the menu, terminal, Neovim, web apps, dictation, screenshots, updates and migrations, snapshots, Windows apps, troubleshooting, and gaming. Works in a TTY, over SSH, and with no network.
+
+### Keybindings Browser
+
+```bash
+cosmarchy keybindings          # interactive filter (Super + Alt + /)
+cosmarchy keybindings --list   # plain text, for piping or grepping
+cosmarchy keybindings reset    # re-deploy Cosmarchy's default COSMIC shortcuts
+```
+
+Reads directly from `/usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults` and `~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom`, so it always reflects active COSMIC bindings. To customize shortcuts, use **COSMIC Settings → Input Devices → Keyboard → Shortcuts**.
+
+### Asus Laptops (ROG and TUF)
 
 ```bash
 cosmarchy asus status            # model, asusd, graphics mode, charge limit
@@ -159,10 +154,6 @@ cosmarchy asus keyboard med      # backlight
 cosmarchy asus graphics          # switch integrated / hybrid GPU
 ```
 
-`asusctl` and **ROG Control Center**, its official GUI, both come from the
-official `extra` repository and coexist with power-profiles-daemon. `supergfxctl` is AUR-only and is installed only on
-machines with a discrete NVIDIA GPU to switch to.
-
 ### Gaming
 
 ```bash
@@ -171,209 +162,72 @@ cosmarchy gaming status
 cosmarchy gaming proton    # manage Proton versions
 ```
 
-One command for a working gaming setup: Steam with its 32-bit dependencies,
-Proton-GE and ProtonUp-Qt to keep it current, Wine, Lutris, Faugus Launcher,
-gamescope, GameMode and MangoHud. multilib is enabled if it is not already, and
-the 32-bit Vulkan driver is matched to the GPU rather than installing all of
-them. See `cosmarchy manual gaming`.
-
-### Window Tiling
-
-Tiling is Tiling Shell with its auto-placement off: zones you pick, applied
-when you say so. Hold Ctrl while dragging to choose a zone, drag to the top
-for snap assist, `Super+Shift+arrows` to throw a window into the next tile,
-`Super+T` to cycle the zone layout.
-
-```bash
-cosmarchy tiling status    # is it on, and did the shell load it?
-cosmarchy tiling disable   # stock GNOME window behaviour
-cosmarchy tiling enable    # back on, with Cosmarchy's settings re-applied
-```
-
-Tiling Shell's `Super+Shift+arrows` is GNOME's default for `move-to-monitor`,
-so that moves to `Super+Ctrl+Shift+arrows`.
-
-### The Manual
-
-```bash
-cosmarchy manual                    # opens the command center's Manual page
-cosmarchy manual 04                 # open a page by number, as plain text
-cosmarchy manual tiling             # or by name, as plain text
-cosmarchy manual --grep whisper     # search every page, as plain text
-```
-
-Seventeen pages covering keybindings, tiling, themes, backgrounds, the menu,
-terminal, Neovim, web apps, dictation, screenshots, updates and migrations,
-snapshots, Windows apps, gaming, and troubleshooting. With no arguments the
-command opens the control center's Manual page, which full-text searches all
-seventeen and renders the one you pick; `--list`, `--grep` and opening a page
-by number or name stay plain text so the manual keeps working over SSH and in
-scripts. Also on `Super + Shift + K`.
-
-Unlike Omarchy's, which is a website, this manual is local: it works in a TTY,
-with no network, and on the half-installed system where the troubleshooting
-page is most needed—the GUI falls back to the same text output whenever there
-is no display or no `gjs`.
-
-### Keybindings Search
-
-```bash
-cosmarchy keybindings          # opens the command center's Keybindings page
-cosmarchy keybindings --list   # plain text, for grepping
-```
-
-Bindings can be changed from that page: press Enter on a row to capture a new
-combination, Backspace to unbind, or Esc to cancel. A conflict names the
-action that currently holds the key and offers to replace it. Also on
-`Super + K`.
-
-The list is **derived from dconf**, not hand-maintained, so it always shows the
-bindings that are actually in effect - including whichever keymap profile is active
-and whether tiling is on. Descriptions come from each GSettings schema's own
-summary. Unbound actions are omitted rather than listed as available.
-
-### Omarchy Keyboard Layout
-
-The Hyprland bindings from upstream Omarchy, transcribed to GNOME:
-
-```bash
-cosmarchy keymap omarchy   # Omarchy's layout: 10 workspaces, Super+Q/W
-cosmarchy keymap gnome     # Cosmarchy defaults (the default)
-cosmarchy keymap status    # show the active layout and its bindings
-```
-
-The Omarchy layout expands to ten workspaces on `Super+1..0`, closes windows
-with `Super+W` or `Super+Q`, and moves the browser and file manager to
-`Super+Shift+B` and `Super+Shift+F`. Window movement stays on
-`Super+Shift`+arrows. GNOME has no directional window focus, so Omarchy's
-`Super`+arrows focus is not mapped.
-
-Because it claims all ten digits, that profile also takes `Super+7..9` from
-GNOME's application switcher; the default profile, with six workspaces, leaves
-those three alone. Either way each digit has exactly one handler - they used to
-have two, and did whichever the shell registered last.
-
-One deliberate departure from upstream: Omarchy puts its menu on `Super+Space`,
-which in GNOME switches the keyboard layout. Layout switching is used far more
-often than a launcher, so it keeps `Super+Space` and the menu stays on
-`Super+Alt+Space` in both profiles.
-
-Bindings were transcribed from Omarchy's `default/hypr/bindings/*.lua`, not
-from memory. What Hyprland does and GNOME cannot - directional focus,
-window groups, the scratchpad, pseudo-tiling, pixel-step resize - is listed by
-`cosmarchy keymap status` rather than silently dropped.
-
 ### Web Applications
+
 ```bash
-# Convert web apps into isolated desktop applications
 cosmarchy webapp add "Claude" "https://claude.ai"
 cosmarchy webapp add "Linear" "https://linear.app"
-
-# List and remove web apps
 cosmarchy webapp list
 cosmarchy webapp remove "Claude"
 ```
 
 ### Desktop Reminders
+
 ```bash
-# Set relative countdowns or exact time reminders with sound cues
 cosmarchy reminder 25m "Pomodoro break"
 cosmarchy reminder 1h30m "Review PR"
 cosmarchy reminder 17:30 "Team Standup"
-
-# List and cancel active reminders
 cosmarchy reminder list
 cosmarchy reminder cancel <id>
 ```
 
 ### Voxtype AI Speech-to-Text
+
 ```bash
-# Toggle audio capture and transcription (or press Super+D)
-cosmarchy voxtype toggle
+cosmarchy voxtype toggle   # also bound to Super + D
 cosmarchy voxtype status
 ```
 
 ### Windows Apps (WinBoat)
+
 ```bash
-# Install WinBoat (opt-in), check what it needs, start it
 cosmarchy windows install
 cosmarchy windows status
 cosmarchy windows
 ```
 
-### GNOME Management
+### Rollback Snapshots & Boot Menu
+
 ```bash
-# List active GNOME extensions
-cosmarchy gnome extensions list
-
-# Reset extensions to default Cosmarchy configuration
-cosmarchy gnome extensions reset
-
-# Show keyboard shortcuts guide or reset to defaults
-cosmarchy gnome hotkeys
-cosmarchy gnome hotkeys reset
-
-# Enable experimental fractional scaling support
-cosmarchy gnome scaling enable
-```
-
-### Rollback Snapshots
-```bash
-# Create an atomic snapshot before doing risky work
 cosmarchy snapshot create "Before system refactor"
-
-# List snapshots
 cosmarchy snapshot list
-
-# Make a snapshot the system from the next boot on (asks which, without a number)
 cosmarchy snapshot restore 12
-
-# Regenerate the Limine boot menu after editing /etc/kernel/cmdline
-cosmarchy boot update
+cosmarchy boot update      # regenerate Limine after editing /etc/kernel/cmdline
 ```
 
-The menu also regenerates itself after every kernel update, snapshot, theme
-change and initramfs rebuild. While a snapshot is booted, pacman and
-`cosmarchy update` refuse to change packages: the snapshot's changes are lost
-at reboot, the kernel they would install is not.
+The Limine menu uses a fixed COSMIC Dark palette (`/etc/cosmarchy/boot-theme.conf`) and regenerates automatically on kernel updates, snapshots, and `mkinitcpio -P`. While booted into a snapshot, pacman and `cosmarchy update` refuse transactions so the ESP never drifts from root modules.
 
-### Command Center
-```bash
-# Open the menu (or press Super+Alt+Space)
-cosmarchy menu
-```
+### Command Center & Screen Capture
 
-### Screen Capture
 ```bash
-cosmarchy capture annotate   # region -> Satty annotation editor (Ctrl+Print)
+cosmarchy menu               # open the gum menu (Super + Alt + Space)
+cosmarchy capture annotate   # region -> Satty annotation editor (Ctrl + Print)
 cosmarchy capture region     # region -> ~/Pictures/Screenshots + clipboard
 cosmarchy capture screen     # full screen
 ```
 
 ### System Updates, Migrations & Lifecycle Hooks
+
 ```bash
-# Synchronize Arch packages, AUR packages, Cosmarchy config, and run any
-# pending migrations against this machine
-cosmarchy update
-
-# Inspect or apply migrations on their own
-cosmarchy migrate --list
-cosmarchy migrate
-
-# Trigger or inspect lifecycle event hooks (~/.config/cosmarchy/hooks/)
-cosmarchy hook on-theme-change "tokyo-night"
+cosmarchy update             # Arch, AUR, Cosmarchy git pull, boot tooling, migrations
+cosmarchy migrate --list     # inspect applied/pending migrations
+cosmarchy migrate            # run pending migrations
+cosmarchy hook list          # inspect lifecycle hooks (~/.config/cosmarchy/hooks/)
 ```
-
-Cosmarchy config changes reach **already-installed** machines through
-`migrations/` — timestamped, idempotent scripts applied exactly once per
-machine and recorded in `~/.local/state/cosmarchy/migrations.log`. A `git pull`
-alone changes files; `cosmarchy update` is what applies them.
 
 ---
 
 ## Building the ISO Locally
-
-To build your own bootable Cosmarchy ISO:
 
 ```bash
 # Install archiso on an Arch host
@@ -383,7 +237,7 @@ sudo pacman -S archiso git
 sudo ./iso/builder/build-iso.sh
 ```
 
-The resulting ISO will be generated in `./out/`. You can test it immediately in QEMU:
+Test the resulting ISO in `./out/` with QEMU:
 
 ```bash
 ./run-vm.sh

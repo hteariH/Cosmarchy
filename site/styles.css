@@ -1,6 +1,6 @@
 /* ==========================================================================
    Cosmarchy — Official Website Stylesheet
-   Distinctive Modern Workstation Aesthetic: The Polish of GNOME + Power of Arch
+   Distinctive Modern Workstation Aesthetic: COSMIC Desktop + Power of Arch
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
@@ -694,7 +694,7 @@ kbd {
    Header & Pill Navigation
    ========================================================================== */
 
-.gnome-header {
+.site-header {
   position: sticky;
   top: 16px;
   z-index: 100;
@@ -1305,7 +1305,7 @@ section {
   gap: 24px;
 }
 
-.gnome-card {
+.feature-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
@@ -1316,7 +1316,7 @@ section {
   transition: all var(--transition-normal);
 }
 
-.gnome-card:hover {
+.feature-card:hover {
   border-color: var(--border-focus);
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
@@ -1430,7 +1430,7 @@ section {
    Footer
    ========================================================================== */
 
-footer.gnome-footer {
+footer.site-footer {
   border-top: 1px solid var(--border-subtle);
   background: var(--bg-surface);
   padding: 72px 0 36px;

@@ -4,11 +4,12 @@
 cosmarchy update
 ```
 
-This does four things: updates Arch packages, updates AUR packages, pulls the
-Cosmarchy configuration, and applies any migrations that came with it.
+This does five things: updates Arch packages, updates AUR packages, pulls the
+Cosmarchy configuration, refreshes the root-owned boot tooling, and applies any
+migrations that came with it.
 
 It reports which stages failed and exits non-zero if any did. A green tick
-means all four actually succeeded.
+means every stage actually succeeded.
 
 ## Migrations
 
@@ -42,4 +43,4 @@ git -C ~/.local/share/cosmarchy stash pop
 
 ## Rolling back an update
 
-See `cosmarchy manual 14`.
+See `cosmarchy manual 12`.

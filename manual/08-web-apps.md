@@ -9,13 +9,15 @@ cosmarchy webapp list
 cosmarchy webapp remove "Linear"
 ```
 
-Also under Web App in the command center.
+Also under **Web App** in the command center.
 
 ## What you get
 
-An isolated browser profile, a fetched favicon, and a desktop entry, so the app
-shows up in the app grid and can be pinned to the dock like anything else. It
-does not share cookies with your normal browsing.
+An isolated browser profile under `~/.local/share/cosmarchy/webapps/`, a
+fetched favicon, and a `.desktop` entry under `~/.local/share/applications/`,
+so the app shows up in COSMIC Launcher and COSMIC App Library and can be pinned
+to the COSMIC dock like any native app. It does not share cookies with your
+normal browsing.
 
 ## Good candidates
 

@@ -1,19 +1,42 @@
-## The control center GUI
+# AGENTS.md
 
-`gui/` is a GTK4/libadwaita application written in GJS, run directly with
-`gjs -m gui/src/main.js --page=<menu|keybindings|manual>` — there is no build
-step and no transpilation. `bin/cosmarchy-menu`, `bin/cosmarchy-keybindings`
-and `bin/cosmarchy-manual` launch it and fall back to their old text paths
-when there is no display or no `gjs`.
+Agent guidelines for working in the Cosmarchy repository. See `CLAUDE.md` for
+the full architecture, bootloader/snapshot layout, and verification details.
 
-`gui/src/lib/` splits into two kinds of module. The ones with a unit test in
-`gui/tests/` — `accel.js`, `conflicts.js`, `markdown.js`, `themes.js`,
-`manual.js` — are pure functions with **no `gi://` import**, so they also run
-under plain Node (`node --test gui/tests/*.test.js`). Keep it that way: an
-import from GObject introspection in one of those files makes the test suite
-unrunnable outside a GJS session. `actions.js`, `keysources.js` and `paths.js`
-talk to Gio.Settings directly and are GJS-only by necessity.
+## Desktop & configuration
 
-`gui/` must never move under `bin/` — `install/config/symlinks.sh` publishes
-everything directly under `bin/` into `/usr/local/bin` as a command, and
-`gui/` is a source tree, not a subcommand.
+- Cosmarchy runs the stock **COSMIC 1.11** desktop on Wayland with
+  `cosmic-greeter` on `greetd`. There is no GNOME, no dconf, no theme engine,
+  and no `gui/` control center (phase 1 text-only CLI tools: `cosmarchy-menu`,
+  `cosmarchy-keybindings`, `cosmarchy-manual`).
+- COSMIC configuration lives as plain RON files under `default/cosmic/`,
+  deployed atomically into `~/.config/cosmic/` inside `arch-chroot` by
+  `install/helpers/cosmic.sh` (`cosmarchy_cosmic_deploy` /
+  `cosmarchy_cosmic_write`).
+- Installer keyboard layout selection writes
+  `com.system76.CosmicComp/v1/xkb_config` via
+  `install/desktop/set-keyboard-layout.sh`.
+- COSMIC default shortcuts win: any custom binding in
+  `default/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom` must use a
+  key absent from `/usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults`.
+
+## Commands & scripts
+
+- `install/config/symlinks.sh` publishes everything matching `bin/cosmarchy*`
+  into `/usr/local/bin` so COSMIC shortcuts can execute them without reading a
+  shell profile. Never place non-command source trees under `bin/`.
+- Set the executable bit in git (`git update-index --chmod=+x`) on any new
+  script created on a non-Unix host.
+- Never add `X-GNOME-Autostart-Phase` to any XDG autostart `.desktop` file.
+- Verify any official Arch package name against
+  `https://archlinux.org/packages/search/json/?name=<pkg>` before adding it to
+  `install/cosmarchy-base.packages`.
+
+## Fast tests
+
+Run the fast test suite and shellcheck in an Arch container before cutting a
+change:
+
+```bash
+docker run --rm -v "$PWD:/w" -w /w archlinux:latest bash iso/tests/unit.sh --deps
+```

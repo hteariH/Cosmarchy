@@ -1,29 +1,33 @@
 # Welcome to Cosmarchy
 
-Cosmarchy is Omarchy's tooling and Arch base with a tuned GNOME desktop instead
-of Hyprland. Same rolling release, same Btrfs snapshots, same opinionated
-developer stack - a different window manager underneath.
+Cosmarchy is Omarchy's tooling and Arch base paired with the **COSMIC 1.11**
+desktop on Wayland (`greetd` + `cosmic-greeter`). Same rolling release, same
+bootable Btrfs snapshots, same opinionated developer stack — with COSMIC's
+native compositor and applications underneath.
 
 ## What that means in practice
 
-You get GNOME's polish and hardware handling: Wayland that works, fractional
-scaling, a settings app, portals that behave. On top of that sits the Omarchy
-layer - a unified theme engine, a command center, web apps, dictation, atomic
-rollbacks.
+You get stock COSMIC's Wayland polish, built-in per-workspace auto-tiling,
+native Rust applications (`cosmic-terminal`, `cosmic-files`,
+`cosmic-text-editor`, `cosmic-player`, `cosmic-store`), fractional scaling, and
+first-login configuration via `cosmic-initial-setup`. On top of that sits the
+Cosmarchy layer: bootable Btrfs rollbacks in Limine, a CLI command center, web
+apps, local AI dictation, WinBoat opt-in Windows support, gaming and laptop
+profiles, and KDE Connect.
 
-## What is different from Omarchy
+## Design principles
 
-GNOME is not Hyprland, and some things do not translate:
-
-- Window groups, the scratchpad and pseudo-tiling have no GNOME equivalent.
-- Tiling is zones you pick, from an extension; nothing re-tiles itself.
-- Configuration lives in dconf, not a text file you edit.
-
-Where a feature could not be carried across, it is named rather than quietly
-dropped. See `cosmarchy keymap status`.
+- **Stock COSMIC appearance**: Cosmarchy deploys behaviour-only RON config
+  under `~/.config/cosmic/` and leaves appearance, themes, and wallpapers to
+  COSMIC Settings and `cosmic-initial-setup`.
+- **COSMIC defaults win**: Cosmarchy never shadows a built-in COSMIC shortcut.
+  Every Cosmarchy keybinding lives on a key COSMIC leaves free.
+- **Plain files, no hidden state**: COSMIC configuration is plain RON files
+  written directly during installation.
 
 ## Where to go next
 
 - `cosmarchy manual 02` - getting started
 - `cosmarchy manual 03` - keybindings
+- `cosmarchy manual 04` - auto-tiling
 - `cosmarchy keybindings` - what is bound right now

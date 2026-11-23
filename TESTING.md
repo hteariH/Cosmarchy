@@ -1,25 +1,14 @@
 # Cosmarchy Verification & Testing Guide
 
-This guide details the procedure for testing Cosmarchy scripts, the live ISO build, and the installed GNOME environment.
+This guide details the procedure for testing Cosmarchy scripts, the fast unit suite, the live ISO build, and the installed COSMIC environment.
 
 ---
 
 ## 0. Automated Install Smoke Test (CI)
 
-`.github/workflows/install-smoke-test.yml` builds the ISO, **installs from it in
-QEMU**, and verifies the result. It runs on pushes to `main`, on pull requests
-touching `iso/`, `install/`, `bin/` or `default/`, and on demand via
-`workflow_dispatch`.
+`.github/workflows/install-smoke-test.yml` builds the ISO, **installs from it in QEMU**, and verifies the result. It runs on pushes to `main`, on pull requests touching `iso/`, `install/`, `bin/` or `default/`, and on demand via `workflow_dispatch`.
 
-This exists because the release workflow only proves the ISO *builds*. Every
-installation defect so far shipped through a green build: a package name that
-aborted pacman, keyboard shortcuts silently discarded in a chroot, duplicate
-dock entries, a deployed tree with no `.git`, helper commands missing from the
-session PATH, and a wallpaper path pointing at a layout that no longer existed.
-
-The installer is driven by an answers file on a separate disk labeled
-`COSMARCHY`, so **the ISO under test is byte for byte the ISO that ships**.
-To reproduce locally:
+The installer is driven by an answers file on a separate disk labeled `COSMARCHY`, so **the ISO under test is byte for byte the ISO that ships**. To reproduce locally:
 
 ```bash
 printf '%s\n' 'COSMARCHY_DISK=/dev/vda' 'COSMARCHY_FULLNAME="Test User"' \
@@ -35,42 +24,24 @@ mkfs.vfat -n COSMARCHY answers.img
 mcopy -i answers.img cosmarchy-unattended.conf ::/
 ```
 
-Attach `answers.img` as a second drive and the installer runs without prompts.
+Attach `answers.img` as a second drive and the installer runs without prompts. Unattended installs also create `~/.config/cosmic-initial-setup-done` (owned by the user) so the live session boots straight to the desktop without blocking on the first-run wizard.
 
 The workflow has these layers:
 
-- **`unit` job** (`iso/tests/unit.sh`, in an `archlinux` container): the boot
-  menu generator, the snapper plugin, the deploy script, the installer's
-  validation and stage rules, and shellcheck. The install job needs it.
-- **Encrypted variant**: the install job runs a `plain` and an `encrypted`
-  variant. The encrypted one is installed and checked offline only.
-- **Snapshot checks in the session boot**: the plain variant's session test
-  also covers the snapshot machinery and hands a snapshot number on.
-- **Third boot, from a snapshot**: the image boots that snapshot, then
-  restores it; the job checks the `@restore-backup-*` subvolume, that `@` is
-  a copy of the snapshot and that writes during the snapshot boot did not
-  reach it.
+- **`unit` job** (`iso/tests/unit.sh`, in `archlinux:latest`): boot menu generation, fixed COSMIC Dark palette validation, COSMIC RON config deployment & `xkb_config` mapping, `deploy.sh`, installer validation and stage rules, and `shellcheck`. Run locally with:
+  ```bash
+  docker run --rm -v "$PWD:/w" -w /w archlinux:latest bash iso/tests/unit.sh --deps
+  ```
+- **Encrypted variant**: the install job runs `plain` and `encrypted`. The encrypted image is verified offline (including LUKS kernel command line and greetd `[initial_session]` autologin).
+- **Offline verification** (`iso/tests/verify-install.sh`): `cosmic-greeter.service` enabled, no GDM unit, PAM keyring integration on the service named in `/etc/greetd/cosmic-greeter.toml`, all 26 COSMIC + greetd packages installed, no `gnome-shell`/`gdm`/`mutter`/`alacritty`, `kdeconnect` + ufw ports 1714-1764, every `default/cosmic/` file deployed byte-identical into `~/.config/cosmic/`, `xkb_config` matching the installer keymap, session symlinks and exec bits, no `gnomarchy` strings in `/usr/local/bin` or `$HOME`, `.git` checkout, `~/.config/cosmic-initial-setup-done`, Brave Origin, WinBoat, LazyVim, Limine + blake2b hashes + fixed palette + Snapper + snapshot 1.
+- **Session verification** (`iso/tests/verify-session.sh`, inside a real greetd autologin COSMIC session): `cosmic-comp`, `cosmic-panel`, and `cosmic-settings-daemon` running; no shortcut/system_actions RON parse errors in the journal; every Cosmarchy custom shortcut absent from COSMIC `defaults`; `autotile = true` and `autotile_behavior = PerWorkspace`; `xkb_config` layout matching the installer; `xdg-desktop-portal-cosmic` answering on the session D-Bus; timezone; snapper + `snap-pac` + Limine hashes + COSMIC Dark palette; WinBoat prerequisites; and handover to the snapshot boot.
+- **Third boot, from a snapshot**: boots the snapshot in a tmpfs overlay, confirms `cosmic-comp` and the snapshot notification ran, confirms `cosmarchy-boot guard` and pacman refuse transactions, runs `cosmarchy snapshot restore`, and checks `@restore-backup-*`, `@`'s parent UUID, and that overlay writes never touched the snapshot.
 
 Not covered by CI:
 
-- Booting in BIOS mode (offline checks only: `limine-bios.sys` on the ESP and
-  the MBR boot code).
+- Booting in BIOS mode (offline checks only: `limine-bios.sys` on the ESP and MBR boot code).
 - An encrypted boot (no passphrase entry).
-- The gum screens (the CI install is unattended).
-
-The offline and session layers:
-
-- **Offline** (`iso/tests/verify-install.sh`, run against the mounted image):
-  GDM enabled, whisper backend installed, every `cosmarchy-*` command in
-  `/usr/local/bin`, a real git checkout, per-theme wallpaper layout with the
-  upstream images downloaded, exactly one visible Brave entry, an autostart
-  entry with an absolute `Exec`, the btop/LazyVim configs, and no Alacritty
-  or screensaver left behind.
-- **In session** (`iso/tests/verify-session.sh`, run inside a real autologin
-  session): `cosmarchy-first-run` completed, the custom keybindings are in
-  dconf, `Super+W` and `Super+1` work, the dock is on the left, exactly one
-  Brave in favorites, the wallpaper is not the SVG placeholder, and GNOME
-  Terminal carries a full 16-colour palette.
+- The interactive gum screens and `cosmic-initial-setup` wizard.
 
 Cut a release only from a commit where this job is green.
 
@@ -78,15 +49,13 @@ Cut a release only from a commit where this job is green.
 
 ## 1. Syntax & Static Analysis Verification
 
-To ensure all bash scripts and package manifests are syntactically sound:
-
 ```bash
 # Verify syntax of all shell scripts
 find . -type f -name "*.sh" -exec bash -n {} +
 find bin/ -type f -exec bash -n {} +
 
-# Optional: Run shellcheck if installed
-shellcheck boot.sh install.sh bin/* install/**/*.sh
+# Run the full fast unit suite + shellcheck in Arch
+docker run --rm -v "$PWD:/w" -w /w archlinux:latest bash iso/tests/unit.sh --deps
 ```
 
 ---
@@ -94,7 +63,6 @@ shellcheck boot.sh install.sh bin/* install/**/*.sh
 ## 2. Virtual Machine Testing (QEMU / KVM)
 
 ### Prerequisites
-Install QEMU, KVM, and OVMF UEFI firmware:
 ```bash
 # Arch Linux host
 sudo pacman -S qemu-desktop edk2-ovmf virt-manager
@@ -103,7 +71,7 @@ sudo pacman -S qemu-desktop edk2-ovmf virt-manager
 sudo apt install qemu-system-x86 ovmf
 ```
 
-### Steps:
+### Steps
 1. **Build the Live ISO**:
    ```bash
    sudo ./iso/builder/build-iso.sh
@@ -113,105 +81,58 @@ sudo apt install qemu-system-x86 ovmf
    ./run-vm.sh out/cosmarchy-linux-*.iso
    ```
 3. **Verify Installer Workflow**:
-   - Confirm Tokyo Night colors display on TTY1.
-   - Choose `/dev/vda` in the disk list, fill the form, check the summary, watch the seven stages.
-   - Test both unencrypted and encrypted (LUKS) installation paths.
-   - Observe Btrfs subvolume creation (`@`, `@home`, `@snapshots`, `@var_log`, `@var_cache`).
-   - Observe package installation and chroot execution of `install.sh`.
+   - Choose `/dev/vda`, fill the form (keyboard layout, user, password, hostname, timezone, optional LUKS2), review the summary, and watch all seven stages complete.
+   - Verify Btrfs subvolumes (`@`, `@home`, `@snapshots`, `@var_log`, `@var_cache`) and Limine installation.
 4. **Reboot into Installed System**:
-   - Reboot the VM without the `-cdrom` flag:
-     ```bash
-     ./run-vm.sh
-     ```
-   - Verify GDM starts and logs into the GNOME Wayland session.
+   ```bash
+   ./run-vm.sh
+   ```
+   - Verify `cosmic-greeter` (via `greetd`) starts and logs into the COSMIC Wayland session.
+   - On an interactive install, complete `cosmic-initial-setup` on first login.
 
 ---
 
 ## 3. Desktop Environment & Functional Verification
 
-Once logged into the Cosmarchy desktop:
+Once logged into the COSMIC desktop:
 
-1. **Test Tiling (Tiling Shell)**:
-   - `cosmarchy tiling status` reports `shell state: ACTIVE`.
-   - Hold <kbd>Ctrl</kbd> while dragging a window; the zones appear and the window drops into one with 8px gaps.
-   - <kbd>Super</kbd> + <kbd>Shift</kbd> + arrows throws the focused window into the next tile.
+1. **Test Auto-Tiling**:
+   - `cosmarchy tiling status` reports `Tiling: on (COSMIC autotile)` and `autotile_behavior: PerWorkspace`.
+   - Open two terminals with <kbd>Super</kbd> + <kbd>Return</kbd>; confirm they tile automatically.
+   - Press <kbd>Super</kbd> + <kbd>Y</kbd> to toggle tiling for the active workspace, and <kbd>Super</kbd> + <kbd>G</kbd> to float a window.
 2. **Test Keybindings**:
-   - <kbd>Super</kbd> + <kbd>Return</kbd>: Launches GNOME Terminal in the Cosmarchy
-     profile (JetBrains Mono 10, no scrollbar, 110x30).
-   - <kbd>Super</kbd> + <kbd>1</kbd>–<kbd>6</kbd>: Switches workspaces.
-   - <kbd>Super</kbd> + <kbd>W</kbd>: Closes active window.
-3. **Test the Command Center**:
-   - Press <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd>.
-   - Confirm the control center window opens on its Menu page.
-   - Walk into Theme, pick a theme with the filter, and confirm it applies.
-   - Confirm `Exit` and <kbd>Esc</kbd> both close the menu cleanly.
-4. **Test Screen Capture**:
-   - <kbd>Ctrl</kbd> + <kbd>Print</kbd>: confirm a slurp region selector appears,
-     then that Satty opens with the grab.
-   - Cancel a selection with <kbd>Esc</kbd> and confirm no error notification.
+   - <kbd>Super</kbd> + <kbd>Return</kbd>: opens COSMIC Terminal (`cosmic-term`).
+   - <kbd>Super</kbd> + <kbd>E</kbd>: opens COSMIC Files (`cosmic-files`).
+   - <kbd>Super</kbd> + <kbd>B</kbd>: opens Brave Origin.
+   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd>: opens `cosmarchy-menu` in `cosmic-term`.
+   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>/</kbd>: opens `cosmarchy-keybindings` in `cosmic-term`.
+   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>M</kbd>: opens `cosmarchy-manual` in `cosmic-term`.
+   - Confirm no `shortcuts custom config error` appears in `journalctl --user -b`.
+3. **Test Screen Capture**:
+   - <kbd>Print</kbd>: launches COSMIC Screenshot.
+   - <kbd>Ctrl</kbd> + <kbd>Print</kbd>: launches `slurp` region selector into Satty; cancelling with <kbd>Esc</kbd> exits quietly.
    - `cosmarchy capture screen` writes into `~/Pictures/Screenshots/`.
-5. **Test Theme Engine**:
-   - Open a terminal and run:
-     ```bash
-     cosmarchy theme list
-     cosmarchy theme set catppuccin
-     cosmarchy theme set gruvbox
-     cosmarchy theme set tokyo-night
-     ```
-   - Verify that:
-     - GNOME wallpaper changes immediately.
-     - GNOME accent color updates (e.g. Purple for Catppuccin, Orange for Gruvbox, Blue for Tokyo Night).
-     - A running GNOME Terminal repaints: background, foreground and all 16 ANSI
-       colors (check with `gsettings get        "org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9/" palette`).
-     - `btop` opens in the new palette (verify `color_theme = "current"` in
-       `~/.config/btop/btop.conf`).
-     - Neovim theme updates on launch, and
-       `~/.config/nvim/lua/plugins/cosmarchy-colorscheme.lua` names the new scheme.
-     - GTK apps follow: `~/.config/gtk-4.0/cosmarchy-theme.css` is regenerated and
-       `gtk.css` imports it exactly once (re-run the theme set twice and confirm
-       the import is not duplicated).
-6. **Test Voxtype**:
-   - `which whisper-cli` resolves, and `systemctl is-enabled ydotoold` reports enabled.
-   - Press <kbd>Super</kbd> + <kbd>D</kbd>, speak, press again; confirm the text is
-     typed into the focused window (a re-login may be needed for the `input` group).
-7. **Test Backgrounds**:
-   ```bash
-   cosmarchy backgrounds --list     # 92/92 installed after a networked install
-   cosmarchy backgrounds --verify   # every file matches the pinned manifest
-   ```
-   - Confirm `/usr/share/backgrounds/cosmarchy/<theme>/` holds per-theme folders.
-   - Corrupt a file (`sudo truncate -s -1 <file>`), re-run `--verify` (must report
-     CORRUPT and exit non-zero), then `cosmarchy backgrounds` and confirm it repairs.
-   - Offline check: install with networking disabled and confirm the install still
-     completes and every theme falls back to its bundled SVG wallpaper.
-   - Drop an image into `~/.config/cosmarchy/backgrounds/nord/`, run
-     `cosmarchy theme set nord`, and confirm your file wins over the downloaded one.
-8. **Test Btrfs Snapshots**:
+4. **Test Voxtype**:
+   - `which whisper-cli` resolves and `systemctl is-enabled ydotoold` reports enabled.
+   - Press <kbd>Super</kbd> + <kbd>D</kbd>, speak, press again; confirm text is typed into the focused window.
+5. **Test KDE Connect & WinBoat**:
+   - Confirm `kdeconnect` is installed and `sudo ufw status` (or `/etc/ufw/user.rules`) includes ports `1714:1764` TCP/UDP.
+   - Run `cosmarchy windows status` and confirm Docker is running and your user is in the `docker` group.
+6. **Test Btrfs Snapshots & Limine**:
    ```bash
    cosmarchy snapshot create "Test Snapshot"
    cosmarchy snapshot list
    ```
-   - Reboot: the snapshot is under Cosmarchy → Snapshots in the Limine menu. Boot it, confirm the 'Booted snapshot' notification, then run `cosmarchy snapshot restore <n>` and reboot.
+   - Reboot: verify the COSMIC Dark Limine menu shows the snapshot under **Cosmarchy → Snapshots**.
+   - Boot it, confirm the snapshot notification appears (clicking restore opens `cosmic-term -e cosmarchy snapshot restore`), then run `cosmarchy snapshot restore <n>` and reboot.
 
 ---
 
 ## 4. Migration Verification
 
-Migrations are what carry config changes onto machines that are **already**
-installed, so they need testing separately from a fresh install:
-
 ```bash
-# On a machine installed from an older commit:
-cosmarchy migrate --list      # should list pending migrations
-cosmarchy update              # pulls, then applies them
-cosmarchy migrate --list      # should now report none pending
+cosmarchy migrate --list      # inspect applied / pending migrations
+cosmarchy update              # pulls, refreshes boot tooling, applies pending migrations
 ```
 
-Confirm each migration is idempotent by running `cosmarchy migrate` a second
-time after clearing a single line from `~/.local/state/cosmarchy/migrations.log`:
-re-running must not error or duplicate configuration (check that `gtk.css` still
-has exactly one `cosmarchy-theme.css` import).
-
-On a **fresh** install the ledger is baselined by
-`install/post-install/migrations-baseline.sh`, so `cosmarchy migrate --list`
-should report zero pending immediately after installation.
+On a fresh install the ledger is baselined by `install/post-install/migrations-baseline.sh`, so `cosmarchy migrate --list` reports zero pending immediately after installation.

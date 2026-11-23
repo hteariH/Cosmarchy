@@ -3,99 +3,58 @@
 ## Seeing what is bound
 
 ```bash
-cosmarchy keybindings
-cosmarchy keybindings --list
+cosmarchy keybindings          # interactive filter (Super + Alt + /)
+cosmarchy keybindings --list   # plain text, for piping or grepping
+cosmarchy keybindings reset    # restore Cosmarchy's default COSMIC shortcuts
 ```
 
-With no arguments this opens the command center's Keybindings page; `--list`
-stays plain text, for grepping and for SSH. Either way it reads every binding
-through typed `Gio.Settings`, so it always shows what is actually in effect -
-including your keymap profile and whether tiling is on. It cannot go
-stale.
+`cosmarchy keybindings` reads directly from COSMIC's RON shortcut files:
 
-## Rebinding a shortcut
+    /usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults
+    ~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom
 
-`Enter` on a row in the Keybindings page opens a capture dialog: press the
-combination you want, or type it, and it is saved. `Backspace` unbinds the
-row instead, and `Esc` cancels without changing anything.
+So it always reflects the bindings actually in effect.
 
-If the combination you pressed is already used elsewhere, a conflict dialog
-names the action that currently holds it and offers **Replace** or **Cancel**
-rather than silently taking it over.
+## Customizing shortcuts
 
-**Reset to layout defaults**, at the bottom of the page, re-applies the
-machine's recorded keymap profile by running `cosmarchy-keybindings reset`
-underneath - so `bin/cosmarchy-keymap` stays the one place the defaults for
-`gnome` and `omarchy` below are defined, rather than a copy living in the GUI
-too.
+COSMIC defaults win — Cosmarchy only binds keys that COSMIC leaves free.
+To add or change shortcuts, open **COSMIC Settings → Input Devices → Keyboard
+→ Shortcuts**, or edit `~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom`.
 
-Rebinding only changes an existing shortcut; it cannot create a new custom
-slot. GNOME Settings already does that.
+## Cosmarchy shortcuts
 
-## Two profiles
+    Super + Return           COSMIC Terminal (cosmic-term)
+    Super + E                COSMIC Files (cosmic-files)
+    Super + D                Voxtype AI dictation toggle
+    Ctrl + Print             Region screenshot into Satty annotator
+    Super + Alt + Space      Cosmarchy Command Center (cosmarchy-menu)
+    Super + Alt + /          Cosmarchy Keybindings browser
+    Super + Alt + M          Cosmarchy Manual
 
-```bash
-cosmarchy keymap gnome
-cosmarchy keymap omarchy
-cosmarchy keymap status
-```
+`system_actions` also maps COSMIC's built-in `WebBrowser` (`Super + B`) to
+Brave Origin (with Chromium / `xdg-open` fallback) and `Terminal` (`Super + T`)
+to `cosmic-term`.
 
-### Cosmarchy defaults
+## Key COSMIC defaults
 
-    Super + Return            terminal
-    Super + B                 browser
-    Super + E                 files
-    Super + Alt + Space       command center
-    Super + K                 keybindings
-    Super + W                 close window
-    Super + Up                maximize
-    Super + 1..6              workspaces
-    Super + T                 cycle the zone layout (Tiling Shell)
-
-### Omarchy profile
-
-    Super + Return            terminal
-    Super + Shift + B         browser
-    Super + Shift + F         files
-    Super + Shift + N         editor
-    Super + W / Super + Q     close window
-    Super + F                 fullscreen
-    Super + Alt + F           maximize
-    Super + Up / Down         maximize / unmaximize
-    Super + Shift + arrows    throw window into the next tile
-    Super + 1..0              ten workspaces
-    Super + Tab               next workspace
-    Super + drag              move window
-    Super + right-drag        resize window
-
-## Super + digits belong to the workspaces
-
-GNOME binds `switch-to-application-1` to `Super + 1` and so on up to
-`Super + 9`: press one and it focuses, or launches, the Nth pinned app in the
-dock. Cosmarchy puts the workspaces on those same keys, so each of them used to
-have two handlers and did whichever the shell registered last.
-
-The workspaces win, because that is what both profiles advertise:
-
-| profile | workspaces | still switches applications |
-|---|---|---|
-| Cosmarchy defaults | `Super + 1..6` | `Super + 7`, `8`, `9` |
-| Omarchy | `Super + 1..0` (ten) | nothing — all nine are workspaces |
-
-Switching back from the Omarchy profile hands `Super + 7..9` to the
-application switcher again. `cosmarchy keybindings` reads dconf, so it always
-lists what is really bound.
-
-## One deliberate difference from Omarchy
-
-Omarchy puts its menu on `Super + Space`. In GNOME that switches the keyboard
-layout, which most people use far more often than a launcher. So `Super + Space`
-stays with the layout switcher and the menu keeps `Super + Alt + Space` in both
-profiles.
-
-## What could not be carried over
-
-Hyprland features with no GNOME equivalent: directional window focus
-(Omarchy's `Super + arrows`), window groups, the scratchpad, pseudo-tiling,
-pixel-step window resize, moving a workspace between monitors.
-`cosmarchy keymap status` lists them rather than pretending they exist.
+    Super                    COSMIC Launcher
+    Super + A                COSMIC App Library
+    Super + W                Workspace overview
+    Super + B                Web browser (Brave Origin)
+    Super + T                Terminal (COSMIC Terminal)
+    Super + F                Home folder
+    Super + Q                Close focused window
+    Super + M                Maximize window
+    Super + F11              Fullscreen window
+    Super + Y                Toggle auto-tiling on this workspace
+    Super + G                Float / tile focused window
+    Super + O                Toggle tiling orientation
+    Super + S                Toggle window stacking
+    Super + H / J / K / L    Focus window (or arrow keys)
+    Super + Shift + H/J/K/L  Move window (or arrow keys)
+    Super + R                Resize window outwards (Super + Shift + R inwards)
+    Super + 1..9             Switch to workspace 1..9
+    Super + Shift + 1..9     Move window to workspace 1..9
+    Super + Space            Switch keyboard input source
+    Super + Escape           Lock screen
+    Print                    COSMIC Screenshot

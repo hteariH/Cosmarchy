@@ -3,30 +3,14 @@
 A grid of hard blocks with one cell replaced by a circle that is too big for it.
 
 The grid is Omarchy: a terminal aesthetic of axis-aligned blocks, the same
-language as its own blocky wordmark. The circle is GNOME: soft geometry in a
-place the grid did not leave room for. Cosmarchy is the point where those two
-meet, so the mark is a grid that something round has grown through.
+language as its own blocky wordmark. The circle is the desktop layer: soft
+geometry in a place the grid did not leave room for. Cosmarchy is the point
+where those two meet, so the mark is a grid that something round has grown
+through.
 
 The circle is 58% wider than the cell it occupies. That is the whole idea: a
 circle neatly inscribed in its cell reads as an accident, while one that breaks
 the grid's outline reads as a decision.
-
-## Why not the old one
-
-The previous mark was, in the words of its own source comment, a "Stylized
-GNOME Footprint fused with Arch Chevron". Both halves belong to other projects:
-the foot is a GNOME Foundation trademark, the chevron is Arch Linux's.
-Recombining two marks you do not own is not an identity, and shipping it in a
-distribution invites a problem nobody needs.
-
-Rejected on the way here, for the record:
-
-- **An arch with a keystone.** Meaningful — an arch needs its keystone the way
-  this needs both halves — but it looked like a broken croquet hoop.
-- **A pixel-grid letter G.** Correct instinct, wrong letter: a blue and purple
-  blocky G is a pixelated Google logo and nothing else.
-- **Tiling panes in a frame.** Legible, and exactly what the distribution does,
-  but any tiling window manager could use it.
 
 ## Files
 
@@ -34,7 +18,7 @@ Rejected on the way here, for the record:
 | :-- | :-- |
 | `assets/logo.svg` | the mark, on transparency |
 | `assets/logo-mono.svg` | single colour via `currentColor`; print, stencils, terminals |
-| `site/assets/cosmarchy-icon.svg` | app icon, inset on the rounded square GNOME expects |
+| `site/assets/cosmarchy-icon.svg` | app icon, inset on a rounded square |
 | `site/favicon.svg` | the same, smaller radius |
 | `site/assets/banner.png` | 1200x630 brand card; the site's Open Graph image |
 
@@ -60,8 +44,6 @@ pixel grid at icon sizes.
 
 ## Colour
 
-Tokyo Night, the default theme:
-
 - blocks `#7aa2f7`, with the top-right one a step darker at `#5a7fd4` so the
   grid has depth rather than reading as a flat launcher icon
 - circle `#bb9af7`
@@ -77,13 +59,3 @@ by hand: the same geometry as `logo.svg`, rasterised at 3x and downsampled, with
 the name and two lines of plain description set beside it. Edit the script and
 rerun it rather than retouching the PNG. It needs Pillow and picks up DejaVu or
 Segoe UI, whichever the machine has.
-
-It replaced an AI-rendered picture of a desk that the site presented as
-"Cosmarchy GNOME 50 Desktop Interface". It was not a screenshot of anything --
-the terminal text in it was nonsense and the logo on the wall was invented --
-so it was making a claim the project could not keep. A brand card claims
-nothing. A real screenshot would be better still, and should replace it once
-there is one worth showing.
-
-`site/assets/cosmarchy-wordmark.svg` was a rect-traced bitmap rather than
-outlined type, referenced by nothing. It has been deleted.

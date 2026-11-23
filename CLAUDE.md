@@ -5,17 +5,17 @@ Guidance for Claude Code working in this repository.
 ## What this is
 
 Cosmarchy is an Arch Linux distribution: Omarchy's tooling and rolling base
-with a tuned GNOME 51 desktop instead of Hyprland. It ships as an installable
-ISO and as a config repository that lives at `~/.local/share/cosmarchy` on
-installed machines.
+with the stock **COSMIC 1.11** desktop (Wayland + `greetd`/`cosmic-greeter`)
+instead of Hyprland. It ships as an installable ISO and as a config repository
+that lives at `~/.local/share/cosmarchy` on installed machines.
 
 Two things follow from that and shape everything else:
 
 1. **Editing a file here only affects new installs.** Machines already running
    need a migration. See *Migrations*.
-2. **The installer runs inside `arch-chroot`**, where there is no D-Bus session
-   bus. Anything that writes to dconf is discarded there. See *The chroot
-   boundary*.
+2. **COSMIC config is plain RON files**, deployed directly inside `arch-chroot`
+   without needing a live D-Bus session bus. Only live-session hardware work
+   (PipeWire / seat) belongs in `cosmarchy-first-run`. See *The chroot boundary*.
 
 ## Layout
 
@@ -23,24 +23,27 @@ Two things follow from that and shape everything else:
 bin/                     the cosmarchy CLI; one file per subcommand
 install/
   preflight/             guards, pacman setup (enables multilib)
-  packaging/             package installation
+  packaging/             package installation (official repos, Flatpak, Brave Origin)
   config/                system and user configuration
     hardware/            per-vendor profiles, sourced by all.sh
-  desktop/               GNOME configuration (dconf; needs a session)
-  login/                 GDM, Plymouth, the Limine menu (boot.sh)
+  desktop/               COSMIC RON deployment (cosmic.sh, set-keyboard-layout.sh)
+                         and live-session hardware tweaks (set-hardware-session.sh)
+  helpers/               presentation, logging, errors, chroot, cosmic RON helpers
+  login/                 cosmic-greeter/greetd (greeter.sh), Plymouth, Limine (boot.sh)
   post-install/          cleanup, migration baseline
   cosmarchy-base.packages   pacman list, official repos only
-migrations/              timestamped, once-per-machine repair scripts
-themes/                  22 themes; alacritty.toml is the canonical palette
-manual/                  numbered pages read by `cosmarchy manual`
-gui/                     the control center: GTK4/libadwaita in GJS, no build step
+migrations/              timestamped, once-per-machine repair scripts (starts empty)
+manual/                  15 numbered pages read by `cosmarchy manual`
 iso/
   builder/build-iso.sh   archiso profile assembly
-  installer/             the installer (cosmarchy-install + lib/)
+  installer/             the gum installer (cosmarchy-install + lib/)
   configs/airootfs/root/.automated_script.sh   starts iso/installer/cosmarchy-install on tty1
-  tests/                 smoke-test verification scripts
+  tests/                 unit tests (unit.sh) and smoke-test verification scripts
 default/                 files deployed onto the installed system
-  boot/                  cosmarchy-boot, snapper plugin, pacman hooks, initcpio install and post hooks (deployed root-owned)
+  cosmic/                behaviour-only COSMIC RON config tree (autotile, shortcuts)
+  boot/                  cosmarchy-boot, fixed COSMIC Dark boot-theme.conf, snapper plugin,
+                         pacman hooks, initcpio install and post hooks (deployed root-owned)
+  cosmarchy-skill/       AI agent skill (SKILL.md)
 ```
 
 `install.sh` sources the stages in order and wraps each in `run_stage`, which
@@ -48,34 +51,60 @@ prints `STAGE START` / `STAGE OK` markers into the install log.
 
 ## The chroot boundary
 
-This is the single most important thing to understand here.
-
 The ISO installer runs `install.sh` under `arch-chroot -u $USERNAME`. In that
 context:
 
-- `gsettings` writes go nowhere. dconf needs a session bus.
-- **Custom keybindings cannot be expressed as gschema overrides** — they live at
-  relocatable dconf paths — so they have no fallback at all.
+- Plain COSMIC RON files under `~/.config/cosmic/<component-id>/v1/<key>` work
+  directly — `install/desktop/cosmic.sh` deploys `default/cosmic/` and
+  `install/desktop/set-keyboard-layout.sh` writes `xkb_config` inside the chroot
+  with no session bus needed.
 - `systemctl enable` works (it is offline symlink manipulation).
 - Package installation, file deployment and udev rules work.
+- Live-session hardware tweaks talking to PipeWire (`pactl`) or the seat cannot
+  run inside chroot.
 
 So the rule is:
 
 | Work | Where it goes |
 |---|---|
-| packages, files, udev, systemd enablement | `install/` stages |
-| anything touching dconf, PipeWire or the seat | `cosmarchy-first-run` |
+| packages, files, COSMIC RON config, udev, systemd enablement | `install/` stages |
+| live-session PipeWire / seat hardware tweaks (e.g. Framework 13 mic profile) | `cosmarchy-first-run` |
 
-`install/desktop/all.sh` checks `cosmarchy_can_write_dconf` and, when there is
-no session, writes an autostart entry instead of configuring anything.
+### Any autostart entry must not declare a phase
 
-### The autostart entry must not declare a phase
+`systemd-xdg-autostart-generator` skips any XDG autostart `.desktop` entry
+containing `X-GNOME-Autostart-Phase` because phases cannot be expressed as
+units. Never add `X-GNOME-Autostart-Phase` to any autostart entry (such as
+`cosmarchy-first-run.desktop`, `cosmarchy-snapshot-notify.desktop`, or
+`cosmarchy-firstboot.desktop`).
 
-GNOME 50 and later run XDG autostart through `systemd-xdg-autostart-generator`, which
-**skips any entry containing `X-GNOME-Autostart-Phase`** because phases cannot
-be expressed as units. Setting it silently stopped first-run from ever
-executing — the cause of fresh installs having no keyboard shortcuts, a dock in
-the default position and an unthemed terminal. Do not add it back.
+## COSMIC configuration
+
+`default/cosmic/` mirrors `~/.config/cosmic/` one file per key and holds
+**behaviour only** — Cosmarchy keeps authentic stock COSMIC appearance and lets
+`cosmic-initial-setup` handle first-login appearance, panel layout, timezone,
+Wi-Fi and accessibility:
+
+```
+default/cosmic/com.system76.CosmicComp/v1/autotile
+default/cosmic/com.system76.CosmicComp/v1/autotile_behavior
+default/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom
+default/cosmic/com.system76.CosmicSettings.Shortcuts/v1/system_actions
+```
+
+`install/helpers/cosmic.sh` provides `cosmarchy_cosmic_write` and
+`cosmarchy_cosmic_deploy` (atomic temp-file + `mv`, no error suppression).
+`install/desktop/set-keyboard-layout.sh` reads `/etc/cosmarchy/keyboard.conf`
+and writes `com.system76.CosmicComp/v1/xkb_config` (keeping `us` first when
+`LATIN=no`).
+
+**Shortcut rule:** COSMIC defaults win. Every binding in `custom` uses a key
+absent from `/usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults`.
+Text tools spawn as `cosmic-term -e <cmd>`.
+
+**First login:** `cosmic-initial-setup` autostarts in the session and exits
+immediately when `~/.config/cosmic-initial-setup-done` exists. Unattended (CI)
+installs create that marker owned by the user; interactive installs do not.
 
 ## Migrations
 
@@ -98,7 +127,7 @@ package to `cosmarchy-base.packages` alone reaches new installs only.
   `cosmarchy_error` only prints — add an explicit `exit` if you mean to stop.
 - New `bin/cosmarchy-*` commands need a case in `bin/cosmarchy` **and** they are
   symlinked into `/usr/local/bin` by `install/config/symlinks.sh`. Without that
-  symlink the GNOME session cannot find them; it does not read your shell
+  symlink the COSMIC session cannot find them; it does not read your shell
   profile.
 - Files created on a non-Unix host land in git as mode 100644. Run
   `git update-index --chmod=+x` on new scripts, or the installer's `chmod +x`
@@ -107,9 +136,9 @@ package to `cosmarchy-base.packages` alone reaches new installs only.
 ### Do not suppress errors by default
 
 Five separate defects shipped because a failure was hidden behind `2>/dev/null`
-or `|| true`: extension schemas never compiled, Brave binaries left
-non-executable, the git checkout never created, the install log never written,
-`cosmarchy update` reporting success after a failed pull.
+or `|| true`: schemas never compiled, Brave binaries left non-executable, the
+git checkout never created, the install log never written, `cosmarchy update`
+reporting success after a failed pull.
 
 Suppress output only where failure genuinely does not matter, and say so in a
 comment. Prefer reporting and continuing over silence.
@@ -117,8 +146,8 @@ comment. Prefer reporting and continuing over silence.
 ## Verifying package names
 
 `pacman -S` is all-or-nothing: one unknown name aborts the transaction and,
-under `set -e`, the installer. A release once shipped unable to install because
-of `whisper.cpp` — the package is `whisper-cpp`.
+under `set -e`, the installer. Note COSMIC package traps: the terminal is
+`cosmic-terminal` (binary `cosmic-term`) and the editor is `cosmic-text-editor`.
 
 Check names against the real databases before adding them:
 
@@ -128,10 +157,9 @@ curl -sSL "https://aur.archlinux.org/rpc/v5/info?arg[]=<pkg>"
 ```
 
 `cosmarchy-base.packages` must contain only official-repo packages; AUR belongs
-in an opt-in command with an AUR helper and a fallback.
-
-`install/packaging/base.sh` now partitions the list against the sync databases
-and skips unresolvable names with a warning rather than failing.
+in an opt-in command with an AUR helper and a fallback. COSMIC packages are
+listed individually by name (not the `cosmic` group) so
+`install/packaging/base.sh` can partition them against the sync DBs.
 
 ## Verification
 
@@ -139,15 +167,16 @@ and skips unresolvable names with a warning rather than failing.
 QEMU** and checks the result in two layers:
 
 - `iso/tests/verify-install.sh` — offline, against the mounted image
-- `iso/tests/verify-session.sh` — inside a real autologin GNOME session
+- `iso/tests/verify-session.sh` — inside a real autologin COSMIC session
+  (greetd `[initial_session]` + `~/.config/cosmic-initial-setup-done`)
 
-Every check corresponds to a defect that once shipped. Add one when you fix
-something the test would not have caught.
+Every check corresponds to a defect that once shipped or a COSMIC pivot
+contract. Add one when you fix something the test would not have caught.
 
-A `unit` job runs first (`iso/tests/unit.sh`: the fast tests plus shellcheck)
-and the install job needs it. The install job runs twice, a `plain` and an
-`encrypted` variant; the encrypted one is checked offline only. The plain
-variant then boots a session, takes a snapshot, boots that snapshot and
+A `unit` job runs first (`iso/tests/unit.sh`: all `iso/tests/test-*.sh` plus
+shellcheck) and the install job needs it. The install job runs twice, a `plain`
+and an `encrypted` variant; the encrypted one is checked offline only. The plain
+variant then boots a COSMIC session, takes a snapshot, boots that snapshot and
 restores it. Session reports are under `~/.local/state/cosmarchy/verify/`
 (`session.txt`, `snapshot.txt`) because a snapshot boot's `/var/tmp` is
 volatile.
@@ -159,8 +188,7 @@ defects through green builds.
 ### Mounting the installed image
 
 The filesystem is split. Mounting less than this silently empties directories
-and turns every check against them into a false failure — it happened three
-times:
+and turns every check against them into a false failure:
 
 ```
 /dev/nbd0p3  subvol=@         /
@@ -192,51 +220,29 @@ mcopy -i answers.img cosmarchy-unattended.conf ::/
 ## Diagnosing a failure
 
 ```bash
-/var/log/cosmarchy-installer.log            the installer's own log; the [n/7] lines show the stage
-/var/log/cosmarchy-install.log              installation; STAGE markers show where it stopped
-/var/log/pacman.log                         cosmarchy-boot output from the pacman hooks
-journalctl --user -t cosmarchy-first-run    desktop configuration
-journalctl --user -t cosmarchy-verify       the CI session check
-cosmarchy version --verbose                 version, theme, migrations applied
+/var/log/cosmarchy-installer.log              the installer's own log; the [n/7] lines show the stage
+/var/log/cosmarchy-install.log                installation; STAGE markers show where it stopped
+/var/log/pacman.log                           cosmarchy-boot output from the pacman hooks
+journalctl --user -b -u cosmic-comp           compositor logs
+journalctl --user -b | grep -i cosmic-settings-daemon   shortcut / config daemon errors
+journalctl --user -t cosmarchy-first-run      session hardware setup (Framework 13)
+journalctl --user -t cosmarchy-verify         the CI session check
+cosmarchy version --verbose                   version, autotile state, migrations applied
 ```
-
-The install log is written by `install.sh` teeing into it. Before that existed,
-the installer told users to read a file that was always empty.
-
-## The theme engine
-
-`cosmarchy-theme-set` is the only thing that should write these:
-
-```
-~/.config/btop/themes/current.theme
-~/.config/nvim/lua/plugins/theme.lua
-~/.config/nvim/lua/plugins/cosmarchy-colorscheme.lua
-~/.config/gtk-{3,4}.0/cosmarchy-theme.css
-/etc/cosmarchy/boot-theme.conf
-```
-
-Each theme's `alacritty.toml` is the canonical palette: GNOME Terminal's dconf
-colours and the GTK CSS are both generated from it.
-
-The LazyVim colorscheme pin matters — without it LazyVim applies its own
-default after the theme spec runs and silently undoes the switch.
-
-GNOME Terminal keeps colours in dconf, not a file, which is why a fixed profile
-UUID (`b1dcc9dd-…`) is created at install time.
 
 ## The bootloader and snapshots
 
 `cosmarchy-boot` is the only thing that writes `/boot/limine.conf`. It
 regenerates the whole file from `/etc/kernel/cmdline`, the kernels on the ESP,
-per-snapshot records in `/boot/cosmarchy/entries/` and the theme in
-`/etc/cosmarchy/boot-theme.conf`. Change the command line in
-`/etc/kernel/cmdline`, never in `limine.conf`, then `cosmarchy boot update`.
+per-snapshot records in `/boot/cosmarchy/entries/` and the fixed COSMIC Dark
+palette in `/etc/cosmarchy/boot-theme.conf` (deployed from
+`default/boot/boot-theme.conf`). Change the command line in
+`/etc/kernel/cmdline`, never in `limine.conf`, then run `cosmarchy boot update`.
 
-What regenerates it: the `Target = *` pacman hook, the snapper plugin, the
-theme path unit, and the mkinitcpio post hook `/etc/initcpio/post/cosmarchy-boot`,
-which catches a hand-run `mkinitcpio -P`. Kernel entries carry a `#b2sum`, so
-a stale menu would otherwise panic; `hash_mismatch_panic: no` turns that into
-a warning.
+What regenerates it: the `Target = *` pacman hook, the snapper plugin, and the
+mkinitcpio post hook `/etc/initcpio/post/cosmarchy-boot`, which catches a
+hand-run `mkinitcpio -P`. Kernel entries carry a `#b2sum`, so a stale menu would
+otherwise panic; `hash_mismatch_panic: no` turns that into a warning.
 
 `00-cosmarchy-guard.hook` runs `cosmarchy-boot guard` before every pacman
 transaction and aborts it on a snapshot boot (`cosmarchy.snapshot=` on the
@@ -255,39 +261,18 @@ snapshot boots read-only under `systemd.volatile=overlay`, which needs the
 `cosmarchy-boot`'s fast tests run its real code against a fake tree through
 `COSMARCHY_BOOT_ROOT`: `iso/tests/unit.sh`, in an archlinux container.
 
-## The control center GUI
-
-`gui/` is a GTK4/libadwaita application written in GJS, run directly with
-`gjs -m gui/src/main.js --page=<menu|keybindings|manual>` — there is no build
-step and no transpilation. `bin/cosmarchy-menu`, `bin/cosmarchy-keybindings`
-and `bin/cosmarchy-manual` launch it and fall back to their old text paths
-when there is no display or no `gjs`.
-
-`gui/src/lib/` splits into two kinds of module. The ones with a unit test in
-`gui/tests/` — `accel.js`, `conflicts.js`, `markdown.js`, `themes.js`,
-`manual.js` — are pure functions with **no `gi://` import**, so they also run
-under plain Node (`node --test gui/tests/*.test.js`). Keep it that way: an
-import from GObject introspection in one of those files makes the test suite
-unrunnable outside a GJS session. `actions.js`, `keysources.js` and `paths.js`
-talk to Gio.Settings directly and are GJS-only by necessity.
-
-`gui/` must never move under `bin/` — `install/config/symlinks.sh` publishes
-everything directly under `bin/` into `/usr/local/bin` as a command, and
-`gui/` is a source tree, not a subcommand.
-
 ## Documentation is a claim about the code
 
-The README described VS Code theming, Framework and ROG support, a 25 MB video
-compression target and 4K bundled wallpapers. None of it existed. If you change
-behaviour, change the README, `AGENTS.md` and the relevant `manual/` page in the
-same commit — and if you find a claim nothing backs, either implement it or
-remove it rather than leaving it.
+If you change behaviour, change `README.md`, `CLAUDE.md`, `AGENTS.md`,
+`TESTING.md`, `default/cosmarchy-skill/SKILL.md`, `site/`, and the relevant
+`manual/` page in the same commit — and if you find a claim nothing backs,
+either implement it or remove it rather than leaving it.
 
 ## Things deliberately not done
 
-- Wallpapers are downloaded at install time, not committed. Omarchy ships no
-  attribution for them and the only source it names is unlicensed; see
-  `BACKGROUNDS.md`.
-- GDM is themed through its dconf profile, not by patching gresource bundles,
-  which breaks on every GNOME update.
+- No custom theme engine or downloaded wallpapers: Cosmarchy uses authentic
+  stock COSMIC appearance and `cosmic-wallpapers`.
+- No GNOME desktop support, dconf overrides, or GTK/GJS control center (the
+  menu, keybindings, and manual are text-only until a future libcosmic control
+  center).
 - `grep`, `find` and `cat` are not aliased to ripgrep, fd and bat.

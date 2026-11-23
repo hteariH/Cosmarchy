@@ -1,6 +1,6 @@
 ---
 name: cosmarchy
-description: Control and reconfigure the Cosmarchy Linux operating system, including GNOME settings, extensions, window tiling, Dash to Dock, themes, flatpaks, and Btrfs snapshots.
+description: Control and reconfigure the Cosmarchy Linux operating system, including COSMIC desktop RON configs, auto-tiling, shortcuts, packages, Flatpaks, WinBoat, and Btrfs snapshots.
 ---
 
 # Cosmarchy OS Agent Skill
@@ -8,15 +8,14 @@ description: Control and reconfigure the Cosmarchy Linux operating system, inclu
 Use this skill whenever the user asks you to customize, reconfigure, automate, or troubleshoot their Cosmarchy Linux operating system.
 
 Cosmarchy is an opinionated, developer-first Arch Linux distribution built with:
-- **Desktop**: GNOME 51 (Wayland) + GDM
-- **Dock**: Dash to Dock (Ubuntu-style left edge panel)
-- **Tiling**: Tiling Shell zones, auto-placement off; `cosmarchy tiling <enable|disable|status>`
-- **Theme Engine**: Unified themes (22 palettes with bundled 4K wallpapers: Tokyo Night, Catppuccin, Catppuccin Latte, Ethereal, Everforest, Flexoki Light, Gruvbox, Hackerman, Kanagawa, Last Horizon, Lumon, Lupine, Matte Black, Miasma, Nord, Osaka Jade, Retro 82, Ristretto, Rose Pine, Solitude, Vantablack, White)
-- **Filesystem & Rollbacks**: Btrfs subvolumes (`@`, `@home`, `@snapshots`) + Snapper + Limine bootloader integration
-- **Default Editor**: VS Code (`code`, text/plain and friends); `$EDITOR` is
-  `code --wait` in a graphical session, `nano` in a TTY
+- **Desktop**: Stock COSMIC 1.11 (Wayland) + `greetd` (`cosmic-greeter`)
+- **Native Apps**: `cosmic-terminal` (`cosmic-term`), `cosmic-files`, `cosmic-text-editor`, `cosmic-player`, `cosmic-store`
+- **Tiling**: COSMIC built-in auto-tiling (`autotile = true`, `autotile_behavior = PerWorkspace`); `cosmarchy tiling <enable|disable|toggle|status>`
+- **Filesystem & Rollbacks**: Btrfs subvolumes (`@`, `@home`, `@snapshots`, `@var_log`, `@var_cache`) + Snapper + Limine bootloader integration (fixed COSMIC Dark palette)
+- **Default Editor**: VS Code (`code`, graphical default); `$EDITOR` is `code --wait` in a graphical session, `nano` in a TTY; Neovim ships with stock LazyVim
 - **Default Browser**: Brave Origin (`brave-origin` / `brave`, debloated, privacy-first)
-- **App Store & Packages**: Pacman, Flatpak (Flathub), and Bazaar
+- **Phone Sync**: KDE Connect (`kdeconnect`, ufw ports 1714-1764 allowed)
+- **App Store & Packages**: Pacman, Flatpak (Flathub), COSMIC Store, and Bazaar
 
 ---
 
@@ -32,151 +31,57 @@ Cosmarchy is an opinionated, developer-first Arch Linux distribution built with:
 
 ---
 
-## 1. Theme Management
+## 1. COSMIC Configuration (`~/.config/cosmic/`)
 
-Cosmarchy syncs desktop themes across GNOME (accent color, dark/light mode, wallpaper), GNOME Terminal, Neovim, and btop.
+COSMIC stores settings as plain RON files, one key per file under `~/.config/cosmic/<component-id>/v1/<key>`, falling back to `/usr/share/cosmic/<component-id>/v1/<key>` (never write under `/usr/share/cosmic/`).
 
-```bash
-# List all 22 available themes
-cosmarchy theme list
+Key files managed by Cosmarchy:
+- `~/.config/cosmic/com.system76.CosmicComp/v1/autotile` (`true` / `false`)
+- `~/.config/cosmic/com.system76.CosmicComp/v1/autotile_behavior` (`PerWorkspace` / `Global`)
+- `~/.config/cosmic/com.system76.CosmicComp/v1/xkb_config` (XKB layout/variant struct)
+- `~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom` (map of custom bindings)
+- `~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/system_actions` (`Terminal`, `WebBrowser`)
 
-# Check active theme
-cosmarchy theme current
-
-# Apply any theme (18 Dark, 4 Light)
-cosmarchy theme set "tokyo-night"
-cosmarchy theme set "kanagawa"
-cosmarchy theme set "hackerman"
-cosmarchy theme set "flexoki-light"
-cosmarchy theme set "catppuccin-latte"
-```
-
-To create a custom user theme:
-1. Create directory: `~/.config/cosmarchy/themes/<my-theme>/`
-2. Add `accent.txt` containing one of: `blue`, `teal`, `green`, `yellow`, `orange`, `red`, `pink`, `purple`, `slate`.
-3. Add `backgrounds/<image.jpg|png|svg>`.
-4. Add `alacritty.toml`, `neovim.lua`, and `btop.theme`.
-5. Run: `cosmarchy theme set "<my-theme>"`
+Write changes atomically (write to temp file in the same directory, then `mv`), or use `cosmarchy_cosmic_write` from `~/.local/share/cosmarchy/install/helpers/cosmic.sh`.
 
 ---
 
-## 2. Desktop Environment (GNOME & Mutter)
+## 2. Tiling Management
 
-Use `gsettings` or the `cosmarchy gnome` CLI helpers.
+COSMIC has built-in compositor auto-tiling (`cosmic-comp` watches the config file live):
 
-### Display Scaling & Fractional Scaling
 ```bash
-# Enable Wayland fractional scaling in GNOME Settings -> Displays
-cosmarchy gnome scaling enable
-
-# Set font/text scaling factor directly
-cosmarchy gnome scaling text 1.25
+cosmarchy tiling status    # show autotile and autotile_behavior
+cosmarchy tiling enable    # autotile = true
+cosmarchy tiling disable   # autotile = false
+cosmarchy tiling toggle    # flip on/off
 ```
 
-### Night Light
-```bash
-# Turn night light on or off
-gsettings set org.gnome.settings-daemon.plugins.color night-light-enabled true
-gsettings set org.gnome.settings-daemon.plugins.color night-light-temperature 3500
-```
-
-### Power & Behavior
-```bash
-# Don't sleep while on AC power
-gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type 'nothing'
-
-# Center new windows
-gsettings set org.gnome.mutter center-new-windows true
-```
+Key COSMIC tiling shortcuts:
+- `Super + Y`: toggle auto-tiling for the active workspace
+- `Super + G`: float / tile the focused window
+- `Super + O`: toggle tiling orientation
+- `Super + S`: toggle window stacking
+- `Super + H/J/K/L` (or arrows): directional focus
+- `Super + Shift + H/J/K/L` (or arrows): move window
+- `Super + R`: resize mode
 
 ---
 
-## 3. Ubuntu-Style Dock (Dash to Dock)
+## 3. Keyboard Shortcuts
 
-Configuration schema: `org.gnome.shell.extensions.dash-to-dock`
-
+Inspect active shortcuts (reads COSMIC `defaults` and user `custom` RON files):
 ```bash
-# Adjust icon size
-gsettings set org.gnome.shell.extensions.dash-to-dock dash-max-icon-size 44
-
-# Enable/disable auto-hide (intellihide)
-gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true     # Persistent Ubuntu panel
-gsettings set org.gnome.shell.extensions.dash-to-dock intellihide false   # Do not auto-hide
-
-# Change dock position ('LEFT', 'BOTTOM', 'RIGHT', 'TOP')
-gsettings set org.gnome.shell.extensions.dash-to-dock dock-position 'LEFT'
-
-# Pin or reorder favorite applications in the dock
-gsettings get org.gnome.shell favorite-apps
-gsettings set org.gnome.shell favorite-apps "['brave-origin.desktop', 'org.gnome.Terminal.desktop', 'org.gnome.Nautilus.desktop', 'code-oss.desktop', 'io.github.kolunmi.Bazaar.desktop', 'org.gnome.Settings.desktop']"
+cosmarchy keybindings          # interactive filter (Super + Alt + /)
+cosmarchy keybindings --list   # plain list
+cosmarchy keybindings reset    # re-deploy Cosmarchy default custom + system_actions
 ```
+
+COSMIC defaults win; never override a key present in `/usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults` unless the user explicitly asks. Check `journalctl --user -b | grep -i "shortcuts custom config error"` after editing RON shortcut files.
 
 ---
 
-## 4. Tiling Management
-
-Tiling is Tiling Shell with `enable-autotiling` off: hold Ctrl while dragging
-to pick a zone, drag to the top for snap assist, `<Super><Shift>` + arrows to
-throw a window into the next tile, `<Super>T` to cycle the zone layout.
-`cosmarchy tiling disable` turns it off, `enable` turns it on and re-applies
-Cosmarchy's settings.
-
-Configuration schema: `org.gnome.shell.extensions.tilingshell`
-
-Do not turn `enable-autotiling` on -- it places windows into fixed tiles
-without resizing the ones already on screen. Cosmarchy has no tree tiling and
-no directional focus; do not suggest Forge or another tiler alongside Tiling
-Shell, two placers fight over every new window.
-
-```bash
-# Whether tiling is on, and whether the shell actually loaded the extension
-cosmarchy tiling status
-
-# Gaps, and the key that throws a window into the next tile
-gsettings set org.gnome.shell.extensions.tilingshell inner-gaps 8
-gsettings set org.gnome.shell.extensions.tilingshell outer-gaps 8
-gsettings set org.gnome.shell.extensions.tilingshell move-window-left "['<Super><Shift>Left']"
-```
-
----
-
-## 5. Extensions Management
-
-```bash
-# List active extensions
-cosmarchy gnome extensions list
-
-# Enable or disable an extension
-cosmarchy gnome extensions enable <uuid>
-cosmarchy gnome extensions disable <uuid>
-
-# Reset all extensions to Cosmarchy stock defaults
-cosmarchy gnome extensions reset
-```
-
----
-
-## 6. Keyboard Shortcuts
-
-Inspect active shortcuts:
-```bash
-cosmarchy gnome hotkeys
-```
-
-To add a new custom shortcut, register under `/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/`:
-```bash
-# Example: Bind Super+N to open the editor
-BINDING_PATH="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom4"
-gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings \
-  "$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings | sed "s/]/, '$BINDING_PATH\/']/ \")"
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/ name 'Editor'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/ command 'code'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/ binding '<Super>n'
-```
-
----
-
-## 7. Package & Flatpak Management
+## 4. Package & Flatpak Management
 
 ```bash
 # Install Arch package via pacman
@@ -186,103 +91,84 @@ sudo pacman -S --needed <package>
 flatpak search <app>
 flatpak install -y flathub <app-id>
 
-# Launch Bazaar Flatpak software center
+# Launch COSMIC Store or Bazaar
+cosmic-store
 flatpak run io.github.kolunmi.Bazaar
 ```
 
 ---
 
-## 8. Rollback Snapshots
+## 5. Rollback Snapshots & Boot Menu
 
 ```bash
-# List all current Btrfs snapshots
 cosmarchy snapshot list
-
-# Create a snapshot before making system modifications
 cosmarchy snapshot create "Pre-refactor snapshot"
-
-# Make snapshot 12 the system from the next boot on
 cosmarchy snapshot restore 12 --yes
+cosmarchy boot update          # regenerate /boot/limine.conf after editing /etc/kernel/cmdline
 ```
 
 ---
 
-## 9. Web Applications (`cosmarchy webapp`)
-
-Turn any web URL into an isolated desktop application launcher with its own profile and Dash to Dock support:
+## 6. Web Applications (`cosmarchy webapp`)
 
 ```bash
-# Add a web application
 cosmarchy webapp add "Claude" "https://claude.ai"
-cosmarchy webapp add "ChatGPT" "https://chatgpt.com"
-cosmarchy webapp add "Linear" "https://linear.app"
-
-# List web apps
 cosmarchy webapp list
-
-# Remove a web app
 cosmarchy webapp remove "Claude"
 ```
 
 ---
 
-## 10. Desktop Reminders (`cosmarchy reminder`)
-
-Schedule desktop notifications with chime alerts:
+## 7. Desktop Reminders (`cosmarchy reminder`)
 
 ```bash
-# Duration-based reminders
 cosmarchy reminder 25m "Pomodoro break"
-cosmarchy reminder 1h30m "Review deployment logs"
-
-# Clock-based reminders
 cosmarchy reminder 17:30 "Team Standup"
-
-# List or cancel active reminders
 cosmarchy reminder list
 cosmarchy reminder cancel <reminder-id>
 ```
 
 ---
 
-## 11. Voxtype AI Speech-to-Text (`cosmarchy voxtype`)
-
-System-wide speech-to-text powered by local offline Whisper models:
+## 8. Voxtype AI Speech-to-Text (`cosmarchy voxtype`)
 
 ```bash
-# Toggle recording (also bound to Super+D)
-cosmarchy voxtype toggle
-
-# Manual controls
-cosmarchy voxtype start
-cosmarchy voxtype stop
+cosmarchy voxtype toggle       # also bound to Super + D
 cosmarchy voxtype status
 ```
 
 ---
 
-## 12. Windows apps (`cosmarchy windows`)
+## 9. Windows Apps (`cosmarchy windows`)
 
-WinBoat runs Windows in a Docker container and opens its applications as
-desktop windows. It is opt-in; install it only when the user asks:
+WinBoat runs Windows in a Docker container and opens its applications as desktop windows. Opt-in only:
 
 ```bash
-cosmarchy windows install   # winboat-bin from the AUR, else the release AppImage
-cosmarchy windows status    # KVM, Docker, docker group, FreeRDP, and whether it is installed
-cosmarchy windows           # start WinBoat
+cosmarchy windows install      # winboat-bin from AUR, else release AppImage
+cosmarchy windows status       # KVM, Docker, docker group, FreeRDP
+cosmarchy windows              # start WinBoat
 ```
 
 ---
 
-## 13. Event Hooks (`~/.config/cosmarchy/hooks/`)
+## 10. Gaming & Asus Hardware
 
-Subscribe to Cosmarchy system events:
-- `on-theme-change <theme-name>`: Triggered when theme is switched.
+```bash
+cosmarchy gaming install       # Steam, Proton-GE, Wine, Lutris, gamescope, GameMode, MangoHud
+cosmarchy gaming status
+cosmarchy asus status          # ROG/TUF laptop controls (asusctl / supergfxctl)
+```
+
+---
+
+## 11. Event Hooks (`~/.config/cosmarchy/hooks/`)
+
+Available hooks:
 - `on-snapshot <description>`: Triggered after Btrfs snapshot creation.
 - `on-update <pre|post>`: Triggered before/after system updates.
-- `on-webapp-add <name> <url>`: Triggered when a new web app is added.
+- `on-webapp-add <name> <url>`: Triggered when a web app is added.
+- `on-webapp-remove <name>`: Triggered when a web app is removed.
 
-Trigger hooks manually:
 ```bash
-cosmarchy hook on-theme-change "tokyo-night"
+cosmarchy hook list
 ```

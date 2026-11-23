@@ -55,9 +55,10 @@ from your current Cosmarchy checkout back in place of the snapshot's copy.
 
 ## The boot menu
 
-The menu is generated, never edited: kernel updates, snapshots, theme changes
-and every initramfs rebuild (`mkinitcpio -P` included) regenerate it. The
-kernel command line lives in `/etc/kernel/cmdline`; after editing it, run
+The menu is generated, never edited: kernel updates, snapshots and every
+initramfs rebuild (`mkinitcpio -P` included) regenerate it. It uses a fixed
+COSMIC Dark palette in `/etc/cosmarchy/boot-theme.conf`. The kernel command
+line lives in `/etc/kernel/cmdline`; after editing it, run
 
 ```bash
 cosmarchy boot update

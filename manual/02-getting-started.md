@@ -7,49 +7,40 @@ Boot the ISO; the installer starts on its own on the first console.
 1. **Disk.** Choose the disk. All of it is used and erased; disks under
    20 GiB are refused.
 2. **Form.** Keyboard layout first — the console switches to it, so the
-   passwords that follow are typed the way you will type them later. Then
-   your name, user name, password, the computer's name and the timezone (type
-   to search). Encryption is optional; the disk password can be the same as
-   your own.
-3. **Summary.** Check it. *Edit* goes back to the form with your answers
-   kept for the keyboard layout, names, computer name and timezone; the
-   passwords and the encryption choice are asked again. Nothing is written
-   until you choose *Install*.
+   passwords that follow are typed the way you will type them later, and your
+   chosen layout is written straight into COSMIC's `xkb_config`. Then your
+   name, user name, password, the computer's name and the timezone (type to
+   search). Encryption is optional; the disk password can be the same as your
+   own.
+3. **Summary.** Check it. *Edit* goes back to the form with your answers kept
+   for the keyboard layout, names, computer name and timezone; the passwords
+   and the encryption choice are asked again. Nothing is written until you
+   choose *Install*.
 4. **Progress.** Seven stages. If one fails, the screen shows the end of the
    log and offers the full log, a shell, or power off. The log is
    `/var/log/cosmarchy-installer.log`, copied to the installed system.
 
+## First login
+
+On an interactive install, `cosmic-initial-setup` runs once at first login to
+configure language, keyboard, timezone, Wi-Fi, accessibility, appearance, and
+panel layout. Cosmarchy does not override what it asks.
+
 ## The first five minutes
 
-Press `Super + Alt + Space`. That is the command center: themes, web apps,
-screen capture, snapshots, updates and power, all in one searchable menu.
+- Press `Super + Alt + Space` for the **Command Center** (`cosmarchy-menu` in
+  COSMIC Terminal): keybindings, manual, tiling, gaming, web apps, screen
+  capture, snapshots, updates, COSMIC Settings, and power.
+- Press `Super + Alt + /` for the **Keybindings browser**, read directly from
+  your active COSMIC RON files.
+- Press `Super + Alt + M` for this **Manual**.
+- Press `Super + Return` (or COSMIC's `Super + T`) for **COSMIC Terminal**.
+- Press `Super` alone for **COSMIC Launcher**.
+- Press `Super + Y` to toggle auto-tiling on the current workspace.
 
-Press `Super + K` for the keybindings, read out of your live configuration
-rather than a list somebody wrote once.
+## Preinstalled apps & phone sync
 
-Press `Super + Return` for a terminal.
-
-## Making it yours
-
-```bash
-cosmarchy theme list
-cosmarchy theme set kanagawa
-```
-
-A theme changes the GNOME accent and dark/light mode, GTK window colours, the
-terminal palette, Neovim, btop and the wallpaper - in one command.
-
-## If you came from Omarchy
-
-Your muscle memory can come with you:
-
-```bash
-cosmarchy keymap omarchy
-```
-
-See `cosmarchy manual 03` for what it binds and `04` for tiling.
-
-## If you came from stock GNOME
-
-Everything you know still works. The additions are the command center, the
-theme engine and the `cosmarchy` CLI. Nothing removes GNOME behaviour.
+Cosmarchy ships Brave Origin (default browser), Chromium, VS Code, Neovim
+(LazyVim), OBS Studio, LibreOffice, Obsidian, Telegram, Discord, Spotify
+(`spotify-launcher`), `mise`, Claude Code, Flatpak (Bazaar + LocalSend), and
+**KDE Connect** (`kdeconnect`, with ufw ports `1714-1764` pre-allowed).

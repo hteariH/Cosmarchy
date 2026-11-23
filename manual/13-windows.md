@@ -14,8 +14,8 @@ your desktop, over FreeRDP. Nothing is installed until you ask for it.
 
 `cosmarchy windows install` installs `winboat-bin` from the AUR with paru. If
 that fails, it downloads the WinBoat release AppImage instead, checks it against
-the checksum published with the release, and adds a WinBoat entry to the app
-grid. Either way it starts Docker if it is not running.
+the checksum published with the release, and adds a WinBoat entry to the
+COSMIC App Library. Either way it starts Docker if it is not running.
 
 The first start of WinBoat downloads Windows and creates the container. That
 takes a while, and several GB of disk.
