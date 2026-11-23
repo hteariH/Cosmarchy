@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler pages dev site",
     "build": "node -e \"console.log('Site ready in site/')\"",
-    "deploy": "wrangler pages deploy site --project-name gnomarchy"
+    "deploy": "wrangler pages deploy site --project-name cosmarchy"
   },
   "devDependencies": {
     "wrangler": "^4.130.0"

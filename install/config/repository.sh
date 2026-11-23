@@ -10,7 +10,7 @@ cosmarchy_header "Initializing Cosmarchy Repository"
 # attempt ran as root against a directory already chowned to uid 1000, and git
 # refused it as dubious ownership. That failure was hidden behind 2>/dev/null,
 # so the repository silently never appeared.
-COSMARCHY_REPO_URL="${COSMARCHY_REPO_URL:-https://github.com/hteariH/Gnomarchy.git}"
+COSMARCHY_REPO_URL="${COSMARCHY_REPO_URL:-https://github.com/hteariH/Cosmarchy.git}"
 
 if [[ -d "$COSMARCHY_PATH/.git" ]]; then
   cosmarchy_step "Already a git repository"

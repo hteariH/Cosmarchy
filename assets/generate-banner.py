@@ -87,7 +87,7 @@ d.text((text_x + 6 * SS, (block_top + tag2_top) * SS),
 mark_y = block_top + (block_h - MARK) / 2
 draw_mark(d, LEFT * SS, mark_y * SS, MARK * SS)
 
-d.text((LEFT * SS, (H - 86) * SS), "gnomarchy.pages.dev", font=mono, fill=BLUE)
+d.text((LEFT * SS, (H - 86) * SS), "cosmarchy.pages.dev", font=mono, fill=BLUE)
 
 img.resize((W, H), Image.LANCZOS).save(os.path.normpath(OUT), optimize=True)
 print("wrote", os.path.normpath(OUT))

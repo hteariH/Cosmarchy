@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <a href="https://gnomarchy.pages.dev"><img src="https://img.shields.io/badge/Website-gnomarchy.pages.dev-49bac8?style=for-the-badge&logo=cloudflarepages&logoColor=white" alt="Website"></a>
-  <a href="https://github.com/hteariH/Gnomarchy/releases"><img src="https://img.shields.io/github/v/release/hteariH/Gnomarchy?style=for-the-badge&color=49bac8&logo=github" alt="Release"></a>
+  <a href="https://cosmarchy.pages.dev"><img src="https://img.shields.io/badge/Website-cosmarchy.pages.dev-49bac8?style=for-the-badge&logo=cloudflarepages&logoColor=white" alt="Website"></a>
+  <a href="https://github.com/hteariH/Cosmarchy/releases"><img src="https://img.shields.io/github/v/release/hteariH/Cosmarchy?style=for-the-badge&color=49bac8&logo=github" alt="Release"></a>
   <img src="https://img.shields.io/badge/Arch%20Linux-Rolling-1793D1?style=for-the-badge&logo=arch-linux&logoColor=white" alt="Arch Linux">
   <img src="https://img.shields.io/badge/COSMIC-1.11-49bac8?style=for-the-badge&logo=linux&logoColor=white" alt="COSMIC 1.11">
   <img src="https://img.shields.io/badge/Wayland-Native-7cb987?style=for-the-badge&logo=wayland&logoColor=white" alt="Wayland">
@@ -87,7 +87,7 @@ Cosmarchy keeps COSMIC's defaults untouched and adds seven shortcuts on keys COS
 
 ### Method 1: Bootable Installation ISO (Recommended)
 
-1. Download the latest `cosmarchy-linux-*.iso` from [Releases](https://github.com/hteariH/Gnomarchy/releases).
+1. Download the latest `cosmarchy-linux-*.iso` from [Releases](https://github.com/hteariH/Cosmarchy/releases).
 2. Flash to a USB drive using `dd`, `balenaEtcher`, or `caligula`:
    ```bash
    sudo dd if=cosmarchy-linux-*.iso of=/dev/sdX bs=4M status=progress oflag=sync
@@ -101,7 +101,7 @@ Cosmarchy keeps COSMIC's defaults untouched and adds seven shortcuts on keys COS
 If you already have a minimal Arch Linux installation:
 
 ```bash
-curl -fsSL https://gnomarchy.pages.dev/install | bash
+curl -fsSL https://cosmarchy.pages.dev/install | bash
 ```
 
 ---

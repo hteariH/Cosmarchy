@@ -8,7 +8,7 @@
 # regardless, which hid a broken `git pull` for as long as it kept failing.
 
 COSMARCHY_PATH="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
-COSMARCHY_REPO_URL="${COSMARCHY_REPO_URL:-https://github.com/hteariH/Gnomarchy.git}"
+COSMARCHY_REPO_URL="${COSMARCHY_REPO_URL:-https://github.com/hteariH/Cosmarchy.git}"
 
 failures=()
 note_failure() { failures+=("$1"); }

@@ -3,7 +3,7 @@
 
 iso_name="cosmarchy-linux"
 iso_label="COSMARCHY_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="Cosmarchy Linux Project <https://github.com/hteariH/Gnomarchy>"
+iso_publisher="Cosmarchy Linux Project <https://github.com/hteariH/Cosmarchy>"
 iso_application="Cosmarchy Linux Live/Installation Media"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
 install_dir="arch"
