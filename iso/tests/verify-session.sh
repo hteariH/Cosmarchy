@@ -58,12 +58,20 @@ finish() {
   exit 0
 }
 
+# session_proc NAME — is NAME running in this user's session? Not `pgrep -x`:
+# that matches /proc/PID/comm, which the kernel cuts to 15 characters, so
+# cosmic-settings-daemon (22) shows up as "cosmic-settings" and never matches.
+# Match the executable at the start of the full command line instead.
+session_proc() {
+  pgrep -u "$(id -u)" -f "^(/usr/bin/)?$1( |\$)" >/dev/null
+}
+
 # Give COSMIC core components time to settle after autostart fires.
 trace "waiting for COSMIC session components"
 for _ in $(seq 1 20); do
-  if pgrep -u "$(id -u)" -x cosmic-comp >/dev/null &&
-    pgrep -u "$(id -u)" -x cosmic-panel >/dev/null &&
-    pgrep -u "$(id -u)" -x cosmic-settings-daemon >/dev/null; then
+  if session_proc cosmic-comp &&
+    session_proc cosmic-panel &&
+    session_proc cosmic-settings-daemon; then
     break
   fi
   sleep 2
@@ -78,7 +86,7 @@ echo
 if [[ "$MODE" == snapshot ]]; then
   n="$SNAPSHOT_BOOTED"
   echo "booted from snapshot $n"
-  if pgrep -u "$(id -u)" -x cosmic-comp >/dev/null; then
+  if session_proc cosmic-comp; then
     ok "a COSMIC session came up from snapshot $n"
   else
     no "cosmic-comp is not running on snapshot $n"
@@ -133,7 +141,7 @@ fi
 
 # --- Core COSMIC session processes -----------------------------------------
 for proc in cosmic-comp cosmic-panel cosmic-settings-daemon; do
-  if pgrep -u "$(id -u)" -x "$proc" >/dev/null; then
+  if session_proc "$proc"; then
     ok "$proc is running"
   else
     no "$proc is not running"
