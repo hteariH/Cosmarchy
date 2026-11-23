@@ -26,16 +26,16 @@
 # effect once the shell reloaded. The phase file stays so that a guest which
 # boots again after the capture powers off instead of shooting it twice.
 
-REPORT="/var/tmp/gnomarchy-capture.txt"
-STATE_DIR="$HOME/.local/state/gnomarchy"
+REPORT="/var/tmp/cosmarchy-capture.txt"
+STATE_DIR="$HOME/.local/state/cosmarchy"
 PHASE_FILE="$STATE_DIR/capture-phase"
 
 # Long enough that a frame grabbed every few seconds lands mid-stage.
-HOLD="${GNOMARCHY_CAPTURE_HOLD:-12}"
+HOLD="${COSMARCHY_CAPTURE_HOLD:-12}"
 
 mkdir -p "$STATE_DIR"
 
-trace() { logger -t gnomarchy-capture -- "$*" 2>/dev/null || true; }
+trace() { logger -t cosmarchy-capture -- "$*" 2>/dev/null || true; }
 
 # Append rather than truncate: a second boot must not erase the transcript.
 exec >>"$REPORT" 2>&1
@@ -159,20 +159,20 @@ if [[ "$phase" == "1" ]]; then
   # The three commands open the control center on their own page and fall
   # back to a re-exec into a terminal when there is no tty, so each is
   # backgrounded the same way the old single-page menu was.
-  launch gnomarchy-menu
+  launch cosmarchy-menu
   stage 03-control-center-menu
 
-  launch gnomarchy-keybindings
+  launch cosmarchy-keybindings
   stage 04-control-center-keybindings
 
-  launch gnomarchy-manual
+  launch cosmarchy-manual
   stage 05-control-center-manual
   close_launched
 
   launch gnome-terminal --wait -- btop
   stage 06-terminal-btop
 
-  launch gnome-terminal --wait -- nvim "$HOME/.local/share/gnomarchy/README.md"
+  launch gnome-terminal --wait -- nvim "$HOME/.local/share/cosmarchy/README.md"
   stage 07-neovim
   close_launched
 
@@ -187,17 +187,17 @@ if [[ "$phase" == "1" ]]; then
   launch nautilus
   n=9
   for theme in kanagawa gruvbox rose-pine catppuccin-latte; do
-    if gnomarchy theme set "$theme" >/dev/null 2>&1; then
+    if cosmarchy theme set "$theme" >/dev/null 2>&1; then
       sleep 6
       stage "$(printf '%02d' $n)-theme-$theme"
     else
-      echo "MISS  theme $theme -- gnomarchy theme set failed"
+      echo "MISS  theme $theme -- cosmarchy theme set failed"
     fi
     n=$((n + 1))
   done
   close_launched
 
-  gnomarchy theme set tokyo-night >/dev/null 2>&1 || true
+  cosmarchy theme set tokyo-night >/dev/null 2>&1 || true
 
   echo 2 > "$PHASE_FILE"
 

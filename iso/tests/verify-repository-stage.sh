@@ -3,7 +3,7 @@
 # Exercises install/config/repository.sh against a real git remote.
 #
 # That stage turns the rsynced installation into a git repository so
-# `gnomarchy update` can pull. To do it, it fetches a commit, aligns the index
+# `cosmarchy update` can pull. To do it, it fetches a commit, aligns the index
 # to it, and then enforces that index with `git clean -fd` and
 # `git checkout -- .`.
 #
@@ -37,10 +37,10 @@ no() {
 }
 
 # The stage calls these; it is not what is under test here.
-gnomarchy_header() { :; }
-gnomarchy_step() { :; }
-gnomarchy_substep() { :; }
-gnomarchy_warn() { :; }
+cosmarchy_header() { :; }
+cosmarchy_step() { :; }
+cosmarchy_substep() { :; }
+cosmarchy_warn() { :; }
 
 # --- a remote with main and a feature branch -------------------------------
 REMOTE="$LAB/remote.git"
@@ -48,8 +48,8 @@ WORK="$LAB/work"
 
 git init -q "$WORK"
 git -C "$WORK" config core.autocrlf false
-git -C "$WORK" config user.email test@gnomarchy.local
-git -C "$WORK" config user.name "Gnomarchy Test"
+git -C "$WORK" config user.email test@cosmarchy.local
+git -C "$WORK" config user.name "Cosmarchy Test"
 
 mkdir -p "$WORK/install" "$WORK/bin"
 echo "main version" >"$WORK/bin/cmd"
@@ -86,9 +86,9 @@ deploy() {
 }
 
 run_stage() {
-  export GNOMARCHY_PATH="$1"
-  export GNOMARCHY_INSTALL="$1/install"
-  export GNOMARCHY_REPO_URL="$REMOTE"
+  export COSMARCHY_PATH="$1"
+  export COSMARCHY_INSTALL="$1/install"
+  export COSMARCHY_REPO_URL="$REMOTE"
   # shellcheck disable=SC1091
   source "$REPO_SRC/install/config/repository.sh" >/dev/null 2>&1
 }
@@ -101,8 +101,8 @@ run_stage "$T"
 [[ "$(cat "$T/bin/cmd")" == "main version" ]] && ok "content preserved" || no "content changed"
 [[ -d "$T/.git" ]] && ok "repository created" || no "no repository created"
 git -C "$T" rev-parse --verify -q refs/remotes/origin/main >/dev/null &&
-  ok "origin/main tracked, so gnomarchy update can pull" ||
-  no "origin/main missing, gnomarchy update would not work"
+  ok "origin/main tracked, so cosmarchy update can pull" ||
+  no "origin/main missing, cosmarchy update would not work"
 
 echo "-- image built from a branch that is on the remote (what CI does)"
 T="$(deploy feature "$BRANCH_SHA")"

@@ -3,11 +3,11 @@
 # plain lines, because CI reads them and nobody is there to answer.
 # Only ASCII on screen: the live console's font has no check marks.
 
-UI_BANNER='   ____  _   _  ___  __  __    _    ____   ____ _   ___   __
-  / ___|| \ | |/ _ \|  \/  |  / \  |  _ \ / ___| | | \ \ / /
- | |  _ |  \| | | | | |\/| | / _ \ | |_) | |   | |_| |\ V /
- | |_| || |\  | |_| | |  | |/ ___ \|  _ <| |___|  _  | | |
-  \____||_| \_|\___/|_|  |_/_/   \_\_| \_\\____|_| |_| |_|'
+UI_BANNER='   ____   ___   ____ __  __    _    ____   ____ _   ___   __
+  / ___| / _ \ / ___|  \/  |  / \  |  _ \ / ___| | | \ \ / /
+ | |    | | | |\___ \ |\/| | / _ \ | |_) | |   | |_| |\ V /
+ | |___ | |_| | ___) | |  | |/ ___ \|  _ <| |___|  _  | | |
+  \____| \___/ |____/|_|  |_/_/   \_\_| \_\\____|_| |_| |_|'
 
 SPIN='|/-\'
 
@@ -55,7 +55,7 @@ ensure_network() {
   ((!UNATTENDED)) || installer_abort "no network: pacstrap cannot download the base system"
   while :; do
     ui_header "No network connection"
-    ui_say "Gnomarchy downloads the base system during installation. Connect a cable, or set up Wi-Fi."
+    ui_say "Cosmarchy downloads the base system during installation. Connect a cable, or set up Wi-Fi."
     choice="$(gum choose "Retry" "Configure Wi-Fi" "Exit")" || installer_cancel
     case "$choice" in
       Retry) network_ok && return 0 ;;
@@ -75,12 +75,12 @@ choose_disk() {
   while :; do
     ui_header "Choose a disk"
     choice="$(printf '%s\n' "${lines[@]}" | awk -F'\t' '{ printf "%-16s %s\n", $1, $3 }' |
-      gum choose --header "Install Gnomarchy onto which disk? Everything on it will be erased.")" ||
+      gum choose --header "Install Cosmarchy onto which disk? Everything on it will be erased.")" ||
       installer_cancel
     dev="${choice%% *}"
     bytes="$(printf '%s\n' "${lines[@]}" | awk -F'\t' -v d="$dev" '$1 == d { print $2 }')"
     if ((bytes < INSTALLER_MIN_DISK_BYTES)); then
-      ui_warn "$dev is smaller than the 20 GiB Gnomarchy needs."
+      ui_warn "$dev is smaller than the 20 GiB Cosmarchy needs."
       sleep 2
       continue
     fi
@@ -118,7 +118,7 @@ run_form() {
 
   ui_header "This computer"
   while :; do
-    TARGET_HOSTNAME="$(gum input --header "Computer name" --value "${TARGET_HOSTNAME:-gnomarchy}")" || installer_cancel
+    TARGET_HOSTNAME="$(gum input --header "Computer name" --value "${TARGET_HOSTNAME:-cosmarchy}")" || installer_cancel
     valid_hostname "$TARGET_HOSTNAME" && break
     ui_warn "Letters, digits and inner hyphens, at most 63."
   done

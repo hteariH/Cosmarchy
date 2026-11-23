@@ -4,9 +4,9 @@ Turn a website into a desktop application with its own window, icon and
 profile.
 
 ```bash
-gnomarchy webapp add "Linear" "https://linear.app"
-gnomarchy webapp list
-gnomarchy webapp remove "Linear"
+cosmarchy webapp add "Linear" "https://linear.app"
+cosmarchy webapp list
+cosmarchy webapp remove "Linear"
 ```
 
 Also under Web App in the command center.

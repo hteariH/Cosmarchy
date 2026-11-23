@@ -10,11 +10,11 @@
 # The arguments are not needed: the menu is regenerated from the whole ESP.
 set -euo pipefail
 
-BOOT="${GNOMARCHY_BOOT_BIN:-/usr/local/lib/gnomarchy/boot/gnomarchy-boot}"
+BOOT="${COSMARCHY_BOOT_BIN:-/usr/local/lib/cosmarchy/boot/cosmarchy-boot}"
 
 if [[ ! -x "$BOOT" ]]; then
   # The boot tooling was removed; there is no menu of ours to keep in step.
-  echo "gnomarchy-boot post hook: no $BOOT; the Limine menu is not regenerated" >&2
+  echo "cosmarchy-boot post hook: no $BOOT; the Limine menu is not regenerated" >&2
   exit 0
 fi
 exec "$BOOT" update

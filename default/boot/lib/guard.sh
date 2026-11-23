@@ -8,14 +8,14 @@
 # vanish with the root, and the next normal boot would run a kernel without
 # its modules. Read-only: takes no lock, so it can run beside any writer.
 
-# The snapshot named by gnomarchy.snapshot= on the running command line.
+# The snapshot named by cosmarchy.snapshot= on the running command line.
 boot_booted_snapshot() {
   local word
   local -a words
   read -ra words <"$BOOT_ROOT/proc/cmdline" || return 1
   for word in "${words[@]}"; do
-    if [[ "$word" == gnomarchy.snapshot=* ]]; then
-      printf '%s\n' "${word#gnomarchy.snapshot=}"
+    if [[ "$word" == cosmarchy.snapshot=* ]]; then
+      printf '%s\n' "${word#cosmarchy.snapshot=}"
       return 0
     fi
   done
@@ -29,7 +29,7 @@ boot_booted_snapshot() {
 boot_discarded_root() {
   local n fstype fsroot
   if [[ -r "$BOOT_ROOT/proc/cmdline" ]] && n="$(boot_booted_snapshot)"; then
-    printf 'this system is running snapshot %s; changes here are lost at reboot - restore it first with gnomarchy snapshot restore %s\n' "$n" "$n"
+    printf 'this system is running snapshot %s; changes here are lost at reboot - restore it first with cosmarchy snapshot restore %s\n' "$n" "$n"
     return 0
   fi
   if fstype="$(boot_root_fstype)" && fsroot="$(boot_root_fsroot)" &&

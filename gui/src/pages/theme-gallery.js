@@ -1,5 +1,5 @@
 // A grid of theme cards, each showing the palette from that theme's
-// alacritty.toml. Applying runs gnomarchy-theme-set, and the window's file
+// alacritty.toml. Applying runs cosmarchy-theme-set, and the window's file
 // monitor re-themes the app as soon as it writes the GTK CSS.
 
 import GLib from 'gi://GLib';
@@ -7,14 +7,14 @@ import Gtk from 'gi://Gtk?version=4.0';
 import Adw from 'gi://Adw?version=1';
 
 import { parsePalette, swatchColors, prettyThemeName } from '../lib/themes.js';
-import { GNOMARCHY_PATH, listDir, readTextFile } from '../lib/paths.js';
+import { COSMARCHY_PATH, listDir, readTextFile } from '../lib/paths.js';
 import { run } from '../lib/actions.js';
 import { escapePango } from '../lib/markdown.js';
 
 function themeDirectories() {
   const roots = [
-    GLib.build_filenamev([GNOMARCHY_PATH, 'themes']),
-    GLib.build_filenamev([GLib.get_user_config_dir(), 'gnomarchy', 'themes']),
+    GLib.build_filenamev([COSMARCHY_PATH, 'themes']),
+    GLib.build_filenamev([GLib.get_user_config_dir(), 'cosmarchy', 'themes']),
   ];
 
   const found = new Map();
@@ -31,10 +31,10 @@ function themeDirectories() {
 
 function swatchStrip(palette) {
   const strip = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL, heightRequest: 14 });
-  strip.add_css_class('gnomarchy-swatch-strip');
+  strip.add_css_class('cosmarchy-swatch-strip');
   for (const colour of swatchColors(palette)) {
     const cell = new Gtk.Box({ hexpand: true });
-    cell.add_css_class('gnomarchy-swatch');
+    cell.add_css_class('cosmarchy-swatch');
     const provider = new Gtk.CssProvider();
     provider.load_from_string(`box { background-color: ${colour}; }`);
     cell.get_style_context().add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
@@ -53,7 +53,7 @@ export function presentThemeGallery(window) {
     // this row (Adw.ActionRow's title defaults to use-markup: true).
     const row = new Adw.ActionRow({ title: escapePango(prettyThemeName(name)), activatable: true });
     row.add_suffix(swatchStrip(palette));
-    row.gnomarchyTheme = name;
+    row.cosmarchyTheme = name;
     list.append(row);
   }
 
@@ -66,7 +66,7 @@ export function presentThemeGallery(window) {
   dialog.set_child(view);
 
   list.connect('row-activated', (_l, row) => {
-    run(['gnomarchy-theme-set', row.gnomarchyTheme]);
+    run(['cosmarchy-theme-set', row.cosmarchyTheme]);
     dialog.close();
   });
 

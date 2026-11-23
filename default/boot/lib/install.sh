@@ -3,7 +3,7 @@
 # hook whenever the limine package changes.
 
 boot_install() {
-  local disk part esp pkname partn efivars="${GNOMARCHY_BOOT_EFIVARS:-/sys/firmware/efi/efivars}"
+  local disk part esp pkname partn efivars="${COSMARCHY_BOOT_EFIVARS:-/sys/firmware/efi/efivars}"
   local -A conf=()
   local nvram
   boot_read_kv "$BOOT_CONF" conf || boot_die "no $BOOT_CONF; the installer writes it"
@@ -42,11 +42,11 @@ boot_install() {
   if [[ -d "$efivars" ]]; then
     # The output is captured first: grep -q exiting early would SIGPIPE
     # efibootmgr, and pipefail would then read a present entry as absent.
-    if nvram="$(efibootmgr)" && grep -qE '^Boot[0-9A-Fa-f]{4}\*? Gnomarchy([[:space:]]|$)' <<<"$nvram"; then
-      boot_log "the NVRAM entry Gnomarchy is already there"
+    if nvram="$(efibootmgr)" && grep -qE '^Boot[0-9A-Fa-f]{4}\*? Cosmarchy([[:space:]]|$)' <<<"$nvram"; then
+      boot_log "the NVRAM entry Cosmarchy is already there"
     elif efibootmgr --create --disk "$disk" --part "$part" \
-      --loader '\EFI\limine\BOOTX64.EFI' --label Gnomarchy >/dev/null; then
-      boot_log "created the NVRAM entry Gnomarchy"
+      --loader '\EFI\limine\BOOTX64.EFI' --label Cosmarchy >/dev/null; then
+      boot_log "created the NVRAM entry Cosmarchy"
     else
       boot_log "warning: no NVRAM entry written; the firmware still boots EFI/BOOT/BOOTX64.EFI"
     fi

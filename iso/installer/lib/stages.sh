@@ -6,7 +6,7 @@
 STAGE_FNS=(stage_partition stage_filesystems stage_base stage_configure
   stage_bootloader stage_desktop stage_finish)
 STAGE_TITLES=("Partition disk" "Create filesystems" "Install base system"
-  "Configure system" "Install bootloader" "Install Gnomarchy desktop"
+  "Configure system" "Install bootloader" "Install Cosmarchy desktop"
   "First snapshot and cleanup")
 
 BTRFS_OPTS="noatime,compress=zstd:2,space_cache=v2,discard=async"
@@ -20,7 +20,7 @@ stage_partition() {
   sgdisk --zap-all "$DISK"
   sgdisk -n 1:0:+1M -t 1:ef02 -c 1:"BIOS boot" "$DISK"
   sgdisk -n 2:0:+4G -t 2:ef00 -c 2:"EFI system" "$DISK"
-  sgdisk -n 3:0:0 -t 3:8300 -c 3:"Gnomarchy root" "$DISK"
+  sgdisk -n 3:0:0 -t 3:8300 -c 3:"Cosmarchy root" "$DISK"
   partprobe "$DISK"
   udevadm settle
   [[ -b "$ROOT_PART" ]] || { echo "partition $ROOT_PART did not appear"; return 1; }
@@ -35,7 +35,7 @@ stage_filesystems() {
       cryptsetup luksFormat --batch-mode --type luks2 --pbkdf argon2id --key-file=- "$ROOT_PART"
     printf '%s' "$DISK_PASSWORD" | cryptsetup open --key-file=- "$ROOT_PART" cryptroot
   fi
-  mkfs.btrfs -f -L GNOMARCHY "$FS_DEV"
+  mkfs.btrfs -f -L COSMARCHY "$FS_DEV"
   mount "$FS_DEV" /mnt
   for sub in @ @home @snapshots @var_log @var_cache; do
     btrfs subvolume create "/mnt/$sub"
@@ -66,7 +66,7 @@ stage_base() {
 }
 
 stage_configure() {
-  local repo="/mnt/home/$USERNAME/.local/share/gnomarchy" cmd fs_uuid luks_uuid cmdline encrypted=0
+  local repo="/mnt/home/$USERNAME/.local/share/cosmarchy" cmd fs_uuid luks_uuid cmdline encrypted=0
 
   ln -sf "/usr/share/zoneinfo/$TIMEZONE" /mnt/etc/localtime
   arch-chroot /mnt hwclock --systohc
@@ -81,12 +81,12 @@ stage_configure() {
 EOF
 
   # Keyboard: console and initramfs (a LUKS passphrase is typed here), X11 and
-  # GDM, and the record gnomarchy-first-run turns into GNOME input sources.
+  # GDM, and the record cosmarchy-first-run turns into GNOME input sources.
   {
     echo "KEYMAP=$KB_CONSOLE_KEYMAP"
     if [[ -n "$KB_CONSOLE_FONT" ]]; then echo "FONT=$KB_CONSOLE_FONT"; fi
   } >/mnt/etc/vconsole.conf
-  mkdir -p /mnt/etc/X11/xorg.conf.d /mnt/etc/gnomarchy
+  mkdir -p /mnt/etc/X11/xorg.conf.d /mnt/etc/cosmarchy
   {
     echo 'Section "InputClass"'
     echo '    Identifier "system-keyboard"'
@@ -96,7 +96,7 @@ EOF
     echo 'EndSection'
   } >/mnt/etc/X11/xorg.conf.d/00-keyboard.conf
   printf 'XKB_LAYOUT=%s\nXKB_VARIANT=%s\nLATIN=%s\n' "$KB_XKB_LAYOUT" "$KB_XKB_VARIANT" "$KB_LATIN" \
-    >/mnt/etc/gnomarchy/keyboard.conf
+    >/mnt/etc/cosmarchy/keyboard.conf
 
   echo "%wheel ALL=(ALL:ALL) ALL" >/mnt/etc/sudoers.d/10-wheel
   arch-chroot /mnt useradd -m -G wheel -s /bin/bash -c "$FULLNAME" "$USERNAME"
@@ -107,11 +107,11 @@ EOF
   # The repository, now rather than after the chroot step: the boot tooling
   # below is deployed from it.
   mkdir -p "$repo"
-  cp -a /root/gnomarchy/. "$repo/"
+  cp -a /root/cosmarchy/. "$repo/"
   chmod +x "$repo"/bin/*
   mkdir -p /mnt/usr/local/bin
-  for cmd in "$repo"/bin/gnomarchy*; do
-    ln -sf "/home/$USERNAME/.local/share/gnomarchy/bin/${cmd##*/}" "/mnt/usr/local/bin/${cmd##*/}"
+  for cmd in "$repo"/bin/cosmarchy*; do
+    ln -sf "/home/$USERNAME/.local/share/cosmarchy/bin/${cmd##*/}" "/mnt/usr/local/bin/${cmd##*/}"
   done
   arch-chroot /mnt chown -R "$USERNAME:$USERNAME" "/home/$USERNAME/.local"
 
@@ -126,28 +126,28 @@ EOF
   fi
   mkdir -p /mnt/etc/kernel
   printf '%s\n' "$cmdline" >/mnt/etc/kernel/cmdline
-  printf 'DISK=%s\nESP_PART=2\nENCRYPTED=%s\n' "$DISK" "$encrypted" >/mnt/etc/gnomarchy/boot.conf
+  printf 'DISK=%s\nESP_PART=2\nENCRYPTED=%s\n' "$DISK" "$encrypted" >/mnt/etc/cosmarchy/boot.conf
 
-  arch-chroot /mnt bash "/home/$USERNAME/.local/share/gnomarchy/default/boot/deploy.sh"
+  arch-chroot /mnt bash "/home/$USERNAME/.local/share/cosmarchy/default/boot/deploy.sh"
   arch-chroot /mnt mkinitcpio -P
 }
 
 stage_bootloader() {
-  arch-chroot /mnt /usr/local/lib/gnomarchy/boot/gnomarchy-boot install
-  arch-chroot /mnt /usr/local/lib/gnomarchy/boot/gnomarchy-boot update
+  arch-chroot /mnt /usr/local/lib/cosmarchy/boot/cosmarchy-boot install
+  arch-chroot /mnt /usr/local/lib/cosmarchy/boot/cosmarchy-boot update
 }
 
 stage_desktop() {
-  local repo="/mnt/home/$USERNAME/.local/share/gnomarchy" theme_dir theme_name bg cmd
+  local repo="/mnt/home/$USERNAME/.local/share/cosmarchy" theme_dir theme_name bg cmd
 
   # Bundled fallback wallpapers, one directory per theme:
-  # gnomarchy-theme-set resolves /usr/share/backgrounds/gnomarchy/<theme>/.
-  mkdir -p /mnt/usr/share/backgrounds/gnomarchy
+  # cosmarchy-theme-set resolves /usr/share/backgrounds/cosmarchy/<theme>/.
+  mkdir -p /mnt/usr/share/backgrounds/cosmarchy
   for theme_dir in "$repo"/themes/*/; do
     theme_name="$(basename "$theme_dir")"
     for bg in "$theme_dir"backgrounds/*; do
       [[ -f "$bg" ]] || continue
-      install -Dm644 "$bg" "/mnt/usr/share/backgrounds/gnomarchy/$theme_name/${bg##*/}"
+      install -Dm644 "$bg" "/mnt/usr/share/backgrounds/cosmarchy/$theme_name/${bg##*/}"
     done
   done
 
@@ -167,27 +167,27 @@ stage_desktop() {
 
   # Passwordless sudo for install.sh, which calls sudo throughout with nobody
   # watching. Removed when this stage's subshell exits, failure included.
-  echo "$USERNAME ALL=(ALL:ALL) NOPASSWD: ALL" >/mnt/etc/sudoers.d/99-gnomarchy-install
-  chmod 440 /mnt/etc/sudoers.d/99-gnomarchy-install
-  trap 'rm -f /mnt/etc/sudoers.d/99-gnomarchy-install' EXIT
+  echo "$USERNAME ALL=(ALL:ALL) NOPASSWD: ALL" >/mnt/etc/sudoers.d/99-cosmarchy-install
+  chmod 440 /mnt/etc/sudoers.d/99-cosmarchy-install
+  trap 'rm -f /mnt/etc/sudoers.d/99-cosmarchy-install' EXIT
 
   arch-chroot -u "$USERNAME" /mnt /bin/bash -c "
-    export GNOMARCHY_PATH=\"/home/$USERNAME/.local/share/gnomarchy\"
-    export GNOMARCHY_CHROOT_INSTALL=1
+    export COSMARCHY_PATH=\"/home/$USERNAME/.local/share/cosmarchy\"
+    export COSMARCHY_CHROOT_INSTALL=1
     export USER=\"$USERNAME\"
     export HOME=\"/home/$USERNAME\"
-    export PATH=\"/usr/local/bin:/home/$USERNAME/.local/share/gnomarchy/bin:\$PATH\"
-    bash /home/$USERNAME/.local/share/gnomarchy/install.sh
+    export PATH=\"/usr/local/bin:/home/$USERNAME/.local/share/cosmarchy/bin:\$PATH\"
+    bash /home/$USERNAME/.local/share/cosmarchy/install.sh
   "
 
   # install.sh may have added commands; publish them all.
-  for cmd in "$repo"/bin/gnomarchy*; do
-    ln -sf "/home/$USERNAME/.local/share/gnomarchy/bin/${cmd##*/}" "/mnt/usr/local/bin/${cmd##*/}"
+  for cmd in "$repo"/bin/cosmarchy*; do
+    ln -sf "/home/$USERNAME/.local/share/cosmarchy/bin/${cmd##*/}" "/mnt/usr/local/bin/${cmd##*/}"
   done
 }
 
 stage_finish() {
   # Last on purpose: snap-pac (installed by install.sh) does nothing until the
   # root config exists, so the installation's transactions left no snapshots.
-  arch-chroot /mnt /usr/local/lib/gnomarchy/boot/gnomarchy-boot snapper-init
+  arch-chroot /mnt /usr/local/lib/cosmarchy/boot/cosmarchy-boot snapper-init
 }

@@ -1,4 +1,4 @@
-// Running the gnomarchy commands.
+// Running the cosmarchy commands.
 //
 // Three shapes, because the actions are not alike: fire-and-forget, streams
 // output into a pane, and "get the window out of the way first" (the capture
@@ -9,7 +9,7 @@ import Gio from 'gi://Gio';
 import Adw from 'gi://Adw?version=1';
 
 // Gio.Subprocess.new spawns directly with no shell, so a missing executable
-// (gnomarchy-update not on PATH, say) throws synchronously instead of
+// (cosmarchy-update not on PATH, say) throws synchronously instead of
 // producing a "command not found" line on stdout -- there is no shell left to
 // print one. Every caller below needs to tell "spawned, and its own exit
 // status is the caller's business" apart from "never spawned at all", so that

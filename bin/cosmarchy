@@ -1,0 +1,227 @@
+#!/bin/bash
+
+# Cosmarchy Master CLI Dispatcher
+set -e
+
+SCRIPT_SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SCRIPT_SOURCE" ]; do
+  SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+  SCRIPT_SOURCE="$(readlink "$SCRIPT_SOURCE")"
+  [[ $SCRIPT_SOURCE != /* ]] && SCRIPT_SOURCE="$SCRIPT_DIR/$SCRIPT_SOURCE"
+done
+COSMARCHY_BIN_DIR="$(cd -P "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+export COSMARCHY_PATH="${COSMARCHY_PATH:-$(cd -- "$COSMARCHY_BIN_DIR/.." && pwd)}"
+export PATH="$COSMARCHY_BIN_DIR:$PATH"
+
+command_group="$1"
+subcommand="$2"
+
+usage() {
+  cat <<'EOF'
+Usage: cosmarchy <command> [subcommand] [arguments...]
+
+Commands:
+  menu                         Open the Cosmarchy command center (Super+Alt+Space)
+  first-run                    Re-apply desktop settings, shortcuts and favorites
+  theme <set|list|current>     Manage system and desktop color themes
+  tiling <enable|disable|status>
+                               Zone tiling with Tiling Shell, on or off
+  keymap <omarchy|gnome|status>
+                               Switch between Omarchy and Cosmarchy key layouts
+  keybindings [--list]         Search the keybindings that are actually active
+  manual [page|--grep <text>]  Read the Cosmarchy manual
+  gaming <install|status|proton>
+                               Steam, Proton-GE, Wine and launchers in one go
+  asus <status|charge|profile|keyboard|graphics>
+                               Asus ROG/TUF laptop controls
+  backgrounds [--list|--verify]
+                               Fetch/verify theme wallpapers for this machine
+  gnome <extensions|hotkeys|scaling|restart>
+                               Manage GNOME desktop settings & workflow
+  snapshot <create|list|restore>
+                               Btrfs snapshots; restore makes one the system
+  boot update                  Regenerate the boot menu, e.g. after editing
+                               /etc/kernel/cmdline
+  agent <list|claude|opencode|pi|aider>
+                               Launch or inspect AI coding agents & skills
+  webapp <add|list|remove>     Turn websites into isolated desktop applications
+  voxtype [toggle|start|stop]  Speech-to-text AI dictation (Super+D)
+  windows [install|status]     Windows apps through WinBoat (opt-in)
+  reminder <time|dur> <msg>    Schedule desktop notification reminders
+  capture <annotate|region|screen>
+                               Screenshot, optionally into the Satty annotator
+  hook <run|list>              Trigger or inspect Cosmarchy lifecycle hooks
+  update                       Perform system & Cosmarchy configuration updates
+  migrate [--list]             Apply pending Cosmarchy migrations
+  version                      Display Cosmarchy version
+  help                         Show this help message
+EOF
+}
+
+if [[ -z "$command_group" || "$command_group" == "help" || "$command_group" == "--help" || "$command_group" == "-h" ]]; then
+  usage
+  exit 0
+fi
+
+case "$command_group" in
+  menu)
+    exec cosmarchy-menu
+    ;;
+  first-run)
+    exec cosmarchy-first-run
+    ;;
+  backgrounds)
+    shift
+    exec cosmarchy-backgrounds "$@"
+    ;;
+  tiling)
+    shift
+    exec cosmarchy-tiling "$@"
+    ;;
+  keymap)
+    shift
+    exec cosmarchy-keymap "$@"
+    ;;
+  keybindings | keys)
+    shift
+    exec cosmarchy-keybindings "$@"
+    ;;
+  manual | docs)
+    shift
+    exec cosmarchy-manual "$@"
+    ;;
+  gaming | games)
+    shift
+    exec cosmarchy-gaming "$@"
+    ;;
+  asus | rog)
+    shift
+    exec cosmarchy-asus "$@"
+    ;;
+  theme)
+    case "$subcommand" in
+      set)
+        shift 2
+        exec cosmarchy-theme-set "$@"
+        ;;
+      list)
+        exec cosmarchy-theme-list
+        ;;
+      current)
+        exec cosmarchy-theme-current
+        ;;
+      *)
+        echo "Usage: cosmarchy theme <set|list|current>"
+        exit 1
+        ;;
+    esac
+    ;;
+  gnome)
+    case "$subcommand" in
+      extensions)
+        shift 2
+        exec cosmarchy-gnome-extensions "$@"
+        ;;
+      hotkeys)
+        exec cosmarchy-gnome-hotkeys
+        ;;
+      scaling)
+        shift 2
+        exec cosmarchy-gnome-scaling "$@"
+        ;;
+      restart)
+        exec cosmarchy-gnome-restart
+        ;;
+      *)
+        echo "Usage: cosmarchy gnome <extensions|hotkeys|scaling|restart>"
+        exit 1
+        ;;
+    esac
+    ;;
+  snapshot)
+    case "$subcommand" in
+      create)
+        shift 2
+        exec cosmarchy-snapshot-create "$@"
+        ;;
+      list)
+        exec cosmarchy-snapshot-list
+        ;;
+      restore)
+        shift 2
+        exec cosmarchy-snapshot-restore "$@"
+        ;;
+      notify)
+        exec cosmarchy-snapshot-notify
+        ;;
+      *)
+        echo "Usage: cosmarchy snapshot <create|list|restore>"
+        exit 1
+        ;;
+    esac
+    ;;
+  boot)
+    case "$subcommand" in
+      update)
+        if [[ ! -x /usr/local/lib/cosmarchy/boot/cosmarchy-boot ]]; then
+          echo "No boot tooling: this machine was not installed from the Cosmarchy ISO."
+          exit 1
+        fi
+        exec sudo /usr/local/lib/cosmarchy/boot/cosmarchy-boot update
+        ;;
+      *)
+        echo "Usage: cosmarchy boot update"
+        exit 1
+        ;;
+    esac
+    ;;
+  agent)
+    shift
+    exec cosmarchy-agent "$@"
+    ;;
+  webapp)
+    shift
+    exec cosmarchy-webapp "$@"
+    ;;
+  voxtype)
+    shift
+    exec cosmarchy-voxtype "$@"
+    ;;
+  windows)
+    shift
+    exec cosmarchy-windows "$@"
+    ;;
+  reminder)
+    shift
+    exec cosmarchy-reminder "$@"
+    ;;
+  capture)
+    shift
+    exec cosmarchy-capture "$@"
+    ;;
+  hook)
+    shift
+    exec cosmarchy-hook-run "$@"
+    ;;
+  update)
+    exec cosmarchy-update
+    ;;
+  migrate)
+    shift
+    exec cosmarchy-migrate "$@"
+    ;;
+  version)
+    exec cosmarchy-version
+    ;;
+  *)
+    # Check if direct binary exists (e.g. cosmarchy-theme-set)
+    if command -v "cosmarchy-$command_group" >/dev/null 2>&1; then
+      shift
+      exec "cosmarchy-$command_group" "$@"
+    else
+      echo "Unknown command: $command_group"
+      usage
+      exit 1
+    fi
+    ;;
+esac

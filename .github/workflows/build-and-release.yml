@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Gnomarchy ISO
+    name: Build Cosmarchy ISO
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -41,7 +41,7 @@ jobs:
           # was actually built from; git cannot be asked inside the container,
           # which sees the bind-mounted repository as dubious ownership.
           docker run --rm --privileged \
-            -e "GNOMARCHY_BUILD_COMMIT=${{ github.sha }}" \
+            -e "COSMARCHY_BUILD_COMMIT=${{ github.sha }}" \
             -v "${{ github.workspace }}:/workspace" \
             -w /workspace \
             archlinux:latest \
@@ -62,7 +62,7 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: gnomarchy-iso
+          name: cosmarchy-iso
           path: out/*
           retention-days: 14
 
@@ -87,27 +87,27 @@ jobs:
             PRERELEASE_FLAG="--prerelease"
           fi
 
-          NOTES="## Gnomarchy Linux ${TAG_NAME}
+          NOTES="## Cosmarchy Linux ${TAG_NAME}
 
-          **Gnomarchy** is an opinionated, developer-first Arch Linux distribution: Omarchy's tooling and rolling base, with a tuned GNOME desktop instead of Hyprland.
+          **Cosmarchy** is an opinionated, developer-first Arch Linux distribution: Omarchy's tooling and rolling base, with a tuned GNOME desktop instead of Hyprland.
 
           ### Highlights
           - **Command Center** (\`Super + Alt + Space\`): themes, web apps, capture, snapshots, updates and power in one menu.
           - **Unified Theme Engine**: 22 themes (18 dark, 4 light) syncing GNOME dark/light mode, Libadwaita accent, GTK3/GTK4 colors, GNOME Terminal, Neovim (LazyVim), btop and the GDM greeter.
-          - **GNOME Terminal by default**, themed through a dedicated Gnomarchy dconf profile.
+          - **GNOME Terminal by default**, themed through a dedicated Cosmarchy dconf profile.
           - **Zone tiling** with Tiling Shell: Ctrl + drag to a zone, \`Super + Shift + arrows\` to throw a window, \`Super + T\` to cycle layouts.
-          - **Bootable Btrfs snapshots**: every snapshot is in the Limine menu and can be restored with \`gnomarchy snapshot restore\`.
-          - **Migrations**: \`gnomarchy update\` applies configuration changes to machines that are already installed.
+          - **Bootable Btrfs snapshots**: every snapshot is in the Limine menu and can be restored with \`cosmarchy snapshot restore\`.
+          - **Migrations**: \`cosmarchy update\` applies configuration changes to machines that are already installed.
           - **Verified install**: every release is cut from a commit where the QEMU install smoke test is green - the ISO is installed and the resulting desktop checked, not merely built.
 
           ### Wallpapers
-          Theme wallpapers are downloaded at install time from the upstream Omarchy repository (pinned commit, every file checksum-verified). Gnomarchy does not redistribute them; each theme ships a generated SVG as an offline fallback. See BACKGROUNDS.md.
+          Theme wallpapers are downloaded at install time from the upstream Omarchy repository (pinned commit, every file checksum-verified). Cosmarchy does not redistribute them; each theme ships a generated SVG as an offline fallback. See BACKGROUNDS.md.
 
           ### Verification & Flashing
           Verify your download with \`sha256sum -c SHA256SUMS\`.
 
           \`\`\`bash
-          sudo dd if=gnomarchy-linux-*.iso of=/dev/sdX bs=4M status=progress oflag=sync
+          sudo dd if=cosmarchy-linux-*.iso of=/dev/sdX bs=4M status=progress oflag=sync
           \`\`\`
           "
 
@@ -117,7 +117,7 @@ jobs:
           else
             echo "Creating new release $TAG_NAME..."
             gh release create "$TAG_NAME" out/* \
-              --title "Gnomarchy Linux ${TAG_NAME}" \
+              --title "Cosmarchy Linux ${TAG_NAME}" \
               --notes "$NOTES" \
               $PRERELEASE_FLAG
           fi

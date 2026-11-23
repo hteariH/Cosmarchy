@@ -1,5 +1,5 @@
 #!/bin/bash
 
-source "$GNOMARCHY_INSTALL/login/gdm.sh"
-source "$GNOMARCHY_INSTALL/login/plymouth.sh"
-source "$GNOMARCHY_INSTALL/login/boot.sh"
+source "$COSMARCHY_INSTALL/login/gdm.sh"
+source "$COSMARCHY_INSTALL/login/plymouth.sh"
+source "$COSMARCHY_INSTALL/login/boot.sh"

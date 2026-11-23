@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gnomarchy_header "Configuring Developer Keyboard Shortcuts"
+cosmarchy_header "Configuring Developer Keyboard Shortcuts"
 
 # Window Management Hotkeys
 gsettings set org.gnome.desktop.wm.keybindings close "['<Super>w']"
@@ -10,7 +10,7 @@ gsettings set org.gnome.desktop.wm.keybindings toggle-fullscreen "['<Shift>F11']
 
 # Tiling Shell throws a window with Super+Shift+arrows, which is GNOME's
 # default for move-to-monitor. Move that one modifier further out rather than
-# leave two handlers on one accelerator; `gnomarchy tiling` keeps it there.
+# leave two handlers on one accelerator; `cosmarchy tiling` keeps it there.
 gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-left "['<Super><Control><Shift>Left']"
 gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-right "['<Super><Control><Shift>Right']"
 gsettings set org.gnome.desktop.wm.keybindings move-to-monitor-up "['<Super><Control><Shift>Up']"
@@ -26,7 +26,7 @@ gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-6 "['<Super>6
 
 # GNOME Shell binds switch-to-application-1..9 to Super+1..9 by default, so
 # every Super+N above was claimed twice and did whichever handler the shell
-# registered last. Give the keys Gnomarchy claims to the workspaces and leave
+# registered last. Give the keys Cosmarchy claims to the workspaces and leave
 # the rest with GNOME. (Dash to Dock's own hot-keys are turned off separately;
 # that setting does not touch the Shell's.)
 for n in 1 2 3 4 5 6; do
@@ -69,30 +69,30 @@ gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BI
 
 # 4. Satty Annotation Screenshot (Ctrl + Print)
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom3/ name 'Annotate Screenshot'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom3/ command 'gnomarchy-capture annotate'
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom3/ command 'cosmarchy-capture annotate'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom3/ binding '<Control>Print'
 
 # 5. Voxtype AI Speech-to-Text Dictation (Super + D)
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom4/ name 'Voxtype AI Dictation'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom4/ command 'gnomarchy voxtype toggle'
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom4/ command 'cosmarchy voxtype toggle'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom4/ binding '<Super>d'
 
 # custom5 is unused here: it was the screensaver, which is gone. The Omarchy
-# layout (gnomarchy keymap omarchy) puts the system menu in it.
+# layout (cosmarchy keymap omarchy) puts the system menu in it.
 
-# 6. Gnomarchy Command Center Menu (Super + Alt + Space)
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom6/ name 'Gnomarchy Menu'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom6/ command 'gnomarchy-menu'
+# 6. Cosmarchy Command Center Menu (Super + Alt + Space)
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom6/ name 'Cosmarchy Menu'
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom6/ command 'cosmarchy-menu'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom6/ binding '<Super><Alt>space'
 
 # 7. Searchable Keybindings (Super + K)
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom7/ name 'Keybindings'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom7/ command 'gnomarchy-keybindings'
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom7/ command 'cosmarchy-keybindings'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom7/ binding '<Super>k'
 
 # 8. The Manual (Super + Shift + K)
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom8/ name 'Manual'
-gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom8/ command 'gnomarchy-manual'
+gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom8/ command 'cosmarchy-manual'
 gsettings set org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDING_PATH/custom8/ binding '<Super><Shift>k'
 
-gnomarchy_step "Developer hotkeys established"
+cosmarchy_step "Developer hotkeys established"

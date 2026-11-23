@@ -10,7 +10,7 @@ import Pango from 'gi://Pango';
 
 import { renderBlocks, escapePango } from '../lib/markdown.js';
 import { pageTitle, searchPages } from '../lib/manual.js';
-import { GNOMARCHY_PATH, listDir, readTextFile } from '../lib/paths.js';
+import { COSMARCHY_PATH, listDir, readTextFile } from '../lib/paths.js';
 
 // libadwaita's own typography classes, so headings follow the system font
 // scale rather than a size invented here.
@@ -21,7 +21,7 @@ const BLOCK_CSS_CLASS = {
   p: 'body',
   ul: 'body',
   ol: 'body',
-  code: 'gnomarchy-code',
+  code: 'cosmarchy-code',
 };
 
 export class ManualPage {
@@ -37,7 +37,7 @@ export class ManualPage {
 
     this._list = new Gtk.ListBox({ selectionMode: Gtk.SelectionMode.SINGLE });
     this._list.add_css_class('boxed-list');
-    this._list.connect('row-activated', (_l, row) => this._open(row.gnomarchyPage));
+    this._list.connect('row-activated', (_l, row) => this._open(row.cosmarchyPage));
 
     const listBox = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL, spacing: 12 });
     listBox.append(this._search);
@@ -75,7 +75,7 @@ export class ManualPage {
   }
 
   _loadPages() {
-    const dir = GLib.build_filenamev([GNOMARCHY_PATH, 'manual']);
+    const dir = GLib.build_filenamev([COSMARCHY_PATH, 'manual']);
     return listDir(dir)
       .filter((name) => name.endsWith('.md'))
       .map((name) => ({
@@ -99,14 +99,14 @@ export class ManualPage {
         subtitle: escapePango(snippet),
         activatable: true,
       });
-      actionRow.gnomarchyPage = page;
+      actionRow.cosmarchyPage = page;
       this._list.append(actionRow);
     }
   }
 
   _activateFirst() {
     const first = this._list.get_row_at_index(0);
-    if (first !== null) this._open(first.gnomarchyPage);
+    if (first !== null) this._open(first.cosmarchyPage);
   }
 
   _open(page) {
@@ -114,7 +114,7 @@ export class ManualPage {
       orientation: Gtk.Orientation.VERTICAL,
       spacing: 4,
     });
-    body.add_css_class('gnomarchy-manual-body');
+    body.add_css_class('cosmarchy-manual-body');
 
     for (const block of renderBlocks(page.text)) {
       const label = new Gtk.Label({

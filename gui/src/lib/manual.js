@@ -10,7 +10,7 @@ export function pageTitle(fileName) {
   return `${number}  ${slug.charAt(0).toUpperCase()}${slug.slice(1)}`;
 }
 
-// Full-text, the way `gnomarchy manual --grep` is, rather than title-only:
+// Full-text, the way `cosmarchy manual --grep` is, rather than title-only:
 // the page you want is usually identified by a word inside it.
 export function searchPages(pages, query) {
   const needle = query.trim().toLowerCase();

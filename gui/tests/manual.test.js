@@ -10,7 +10,7 @@ test('pageTitle formats a numbered file name', () => {
 
 const PAGES = [
   { file: '04-tiling.md', title: '04  Tiling', text: '# Tiling\n\nUse Super+T for the grid.\n' },
-  { file: '05-themes.md', title: '05  Themes', text: '# Themes\n\nRun gnomarchy theme set.\n' },
+  { file: '05-themes.md', title: '05  Themes', text: '# Themes\n\nRun cosmarchy theme set.\n' },
 ];
 
 test('searchPages with an empty query returns every page without a snippet', () => {
@@ -30,6 +30,6 @@ test('searchPages matches the body and returns the matching line', () => {
 });
 
 test('searchPages is case-insensitive and returns nothing for a miss', () => {
-  assert.equal(searchPages(PAGES, 'GNOMARCHY THEME').length, 1);
+  assert.equal(searchPages(PAGES, 'COSMARCHY THEME').length, 1);
   assert.equal(searchPages(PAGES, 'zzz').length, 0);
 });

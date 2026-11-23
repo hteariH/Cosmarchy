@@ -1,6 +1,6 @@
-# Gnomarchy background manifest
+# Cosmarchy background manifest
 #
-# Wallpapers are NOT redistributed by Gnomarchy. They are fetched at install
+# Wallpapers are NOT redistributed by Cosmarchy. They are fetched at install
 # time from the upstream Omarchy repository, pinned to the commit below so the
 # download is reproducible and every file can be integrity-checked.
 #

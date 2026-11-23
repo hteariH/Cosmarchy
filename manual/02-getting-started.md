@@ -17,7 +17,7 @@ Boot the ISO; the installer starts on its own on the first console.
    until you choose *Install*.
 4. **Progress.** Seven stages. If one fails, the screen shows the end of the
    log and offers the full log, a shell, or power off. The log is
-   `/var/log/gnomarchy-installer.log`, copied to the installed system.
+   `/var/log/cosmarchy-installer.log`, copied to the installed system.
 
 ## The first five minutes
 
@@ -32,8 +32,8 @@ Press `Super + Return` for a terminal.
 ## Making it yours
 
 ```bash
-gnomarchy theme list
-gnomarchy theme set kanagawa
+cosmarchy theme list
+cosmarchy theme set kanagawa
 ```
 
 A theme changes the GNOME accent and dark/light mode, GTK window colours, the
@@ -44,12 +44,12 @@ terminal palette, Neovim, btop and the wallpaper - in one command.
 Your muscle memory can come with you:
 
 ```bash
-gnomarchy keymap omarchy
+cosmarchy keymap omarchy
 ```
 
-See `gnomarchy manual 03` for what it binds and `04` for tiling.
+See `cosmarchy manual 03` for what it binds and `04` for tiling.
 
 ## If you came from stock GNOME
 
 Everything you know still works. The additions are the command center, the
-theme engine and the `gnomarchy` CLI. Nothing removes GNOME behaviour.
+theme engine and the `cosmarchy` CLI. Nothing removes GNOME behaviour.

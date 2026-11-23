@@ -64,7 +64,7 @@ boot_restore() {
 
   source="$(findmnt -no SOURCE "$BOOT_ROOT/.snapshots")" || boot_die "/.snapshots is not mounted"
   source="${source%%[*}"
-  top="$BOOT_ROOT/run/gnomarchy/btrfs-top"
+  top="$BOOT_ROOT/run/cosmarchy/btrfs-top"
   mkdir -p "$top"
   mount -o subvolid=5 "$source" "$top"
   # Leave nothing mounted, whatever happens below. Expanded now: $top is

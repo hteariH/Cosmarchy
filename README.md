@@ -1,7 +1,7 @@
-# Gnomarchy Linux 🐧
+# Cosmarchy Linux 🐧
 
 <p align="center">
-  <img src="assets/logo.svg" alt="Gnomarchy" width="120">
+  <img src="assets/logo.svg" alt="Cosmarchy" width="120">
 </p>
 
 <p align="center">
@@ -16,27 +16,27 @@
 
 > **The Power of Arch Linux and Omarchy's Developer Tooling Meets the Polish of GNOME.**
 
-Gnomarchy is an opinionated, developer-first Linux distribution built on **Arch Linux**. It takes the modern rolling base, Btrfs + Snapper atomic rollback snapshots, hardware quirk mitigations, unified theme engine, and agentic CLI developer stack from **Omarchy**—and replaces the Hyprland tiling compositor stack with a finely tuned, keyboard-friendly **GNOME 51** desktop environment and **GDM**.
+Cosmarchy is an opinionated, developer-first Linux distribution built on **Arch Linux**. It takes the modern rolling base, Btrfs + Snapper atomic rollback snapshots, hardware quirk mitigations, unified theme engine, and agentic CLI developer stack from **Omarchy**—and replaces the Hyprland tiling compositor stack with a finely tuned, keyboard-friendly **GNOME 51** desktop environment and **GDM**.
 
 ---
 
 ## Highlights & Features
 
 - **⌨️ Command Center (`Super + Alt + Space`)**: A GTK application with three pages—Menu, Keybindings and Manual—covering themes, web apps, screen capture, snapshots, updates and power actions, rebindable shortcuts, and the full manual. Also opens on `Super + K` (Keybindings) and `Super + Shift + K` (Manual).
-- **🎨 Unified Cross-Desktop Theme Engine**: Change your entire system theme—GNOME dark/light mode, Libadwaita accent color, GTK3/GTK4 window colors, wallpaper, GNOME Terminal, Neovim (LazyVim), and btop—with a single command (`gnomarchy theme set <name>`).
+- **🎨 Unified Cross-Desktop Theme Engine**: Change your entire system theme—GNOME dark/light mode, Libadwaita accent color, GTK3/GTK4 window colors, wallpaper, GNOME Terminal, Neovim (LazyVim), and btop—with a single command (`cosmarchy theme set <name>`).
 - **🧩 Zone Tiling**: Tiling Shell, configured so nothing moves unless you move it — hold Ctrl while dragging to pick a zone, drag to the top for snap assist, `Super+Shift+arrows` to throw a window into the next tile.
 - **🎙️ Voxtype (System-Wide AI Dictation)**: Speech-to-text dictation on `<Super>D` powered by local, offline Whisper AI models with zero cloud fees and zero telemetry.
-- **🌐 Web App Generator (`gnomarchy webapp`)**: Turn web tools (Claude, ChatGPT, Linear, Notion, Basecamp) into standalone desktop apps with isolated profiles, auto-fetched favicons, and Dash to Dock pinning.
+- **🌐 Web App Generator (`cosmarchy webapp`)**: Turn web tools (Claude, ChatGPT, Linear, Notion, Basecamp) into standalone desktop apps with isolated profiles, auto-fetched favicons, and Dash to Dock pinning.
 - **📁 Nautilus Context Superpowers**: Native right-click file actions — H.264 video compression (CRF 28, no fixed size target), animated GIF conversion, MP3 extraction, WebP conversion, EXIF stripping, resize to 1080p, open in VS Code, and LocalSend sharing.
-- **🪟 Windows Apps, Opt-In (`gnomarchy windows install`)**: [WinBoat](https://www.winboat.app) runs Windows in a Docker container and opens its applications as ordinary desktop windows. Installed only when you ask: from the AUR, or the checksum-pinned release AppImage.
-- **⏰ Desktop Reminders & Alarms (`gnomarchy reminder`)**: Instant notification alarms with chime audio cues for pomodoro breaks, standups, or deploy checks.
-- **🤖 AI Agent OS Control Layer & Lifecycle Hooks**: Pre-installed agent skill (`AGENTS.md`) and hooks directory (`~/.config/gnomarchy/hooks/`) allowing Claude Code, Antigravity, OpenCode, or user scripts to orchestrate and react to system events.
-- **🛡️ Bootable Btrfs Snapshots**: Snapper takes a snapshot before and after every pacman transaction, and each one appears in the Limine boot menu. Boot one to try it — changes stay in memory — and `gnomarchy snapshot restore` makes it the system.
+- **🪟 Windows Apps, Opt-In (`cosmarchy windows install`)**: [WinBoat](https://www.winboat.app) runs Windows in a Docker container and opens its applications as ordinary desktop windows. Installed only when you ask: from the AUR, or the checksum-pinned release AppImage.
+- **⏰ Desktop Reminders & Alarms (`cosmarchy reminder`)**: Instant notification alarms with chime audio cues for pomodoro breaks, standups, or deploy checks.
+- **🤖 AI Agent OS Control Layer & Lifecycle Hooks**: Pre-installed agent skill (`AGENTS.md`) and hooks directory (`~/.config/cosmarchy/hooks/`) allowing Claude Code, Antigravity, OpenCode, or user scripts to orchestrate and react to system events.
+- **🛡️ Bootable Btrfs Snapshots**: Snapper takes a snapshot before and after every pacman transaction, and each one appears in the Limine boot menu. Boot one to try it — changes stay in memory — and `cosmarchy snapshot restore` makes it the system.
 - **⚡ Fast Shutdown Tuning**: Systemd timeout stop limits tuned from 90s down to 10s for instantaneous power-offs and reboots.
 - **🛡️ Default Privacy Browser (Brave Origin)**: **Brave Origin** pre-configured as the default system browser—completely debloated of crypto, AI (Leo), rewards, and telemetry, delivering uncompromising speed and ad-blocking out of the box.
 - **🖥️ Ubuntu-Style Left Dock (Dash to Dock)**: Full-height, clean left panel with pinned favorites (GNOME Terminal, Brave Origin, Files, VS Code, Bazaar App Store).
 - **📝 VS Code as the Default Editor**: Preinstalled from the official Arch repository and wired up as the graphical default for source and text files. `$EDITOR` resolves to `code --wait` under a graphical session and `nano` in a TTY or over SSH. Neovim stays installed and themed for those who prefer it.
-- **🎮 One-Command Gaming Stack**: `gnomarchy gaming install` sets up Steam, Proton-GE, Wine, Lutris, Faugus Launcher, gamescope, GameMode and MangoHud, with the 32-bit Vulkan driver matched to your GPU.
+- **🎮 One-Command Gaming Stack**: `cosmarchy gaming install` sets up Steam, Proton-GE, Wine, Lutris, Faugus Launcher, gamescope, GameMode and MangoHud, with the 32-bit Vulkan driver matched to your GPU.
 - **💬 Apps Preinstalled**: Telegram, Discord, Chromium, OBS Studio, LibreOffice, Obsidian, Spotify (through Spotify's own launcher), mise and Claude Code.
 - **📱 GSConnect**: KDE Connect for GNOME — notifications, files, clipboard and media control with your phone. Enabled out of the box, with its ports open in ufw for when you turn the firewall on.
 - **🛍️ Flatpak & Bazaar App Store**: Out-of-the-box Flatpak and Flathub integration with **Bazaar**, the modern, native GNOME software store for Flatpaks.
@@ -54,7 +54,7 @@ Gnomarchy is an opinionated, developer-first Linux distribution built on **Arch 
 | <kbd>Super</kbd> + <kbd>T</kbd> | **Tiling Shell**: Cycle the active zone layout |
 | <kbd>Super</kbd> + <kbd>Shift</kbd> + arrows | Throw the window into the next tile |
 | <kbd>Ctrl</kbd> + drag | Drop the window into a zone |
-| <kbd>Super</kbd> + <kbd>Return</kbd> | Launch **GNOME Terminal** (themed Gnomarchy profile) |
+| <kbd>Super</kbd> + <kbd>Return</kbd> | Launch **GNOME Terminal** (themed Cosmarchy profile) |
 | <kbd>Super</kbd> + <kbd>B</kbd> | Launch default web browser (**Brave Origin**) |
 | <kbd>Super</kbd> + <kbd>E</kbd> | Open **Nautilus** file manager |
 | <kbd>Super</kbd> | Open **GNOME Overview** & Instant App Search |
@@ -74,10 +74,10 @@ Gnomarchy is an opinionated, developer-first Linux distribution built on **Arch 
 
 ### Method 1: Bootable Installation ISO (Recommended)
 
-1. Download the latest `gnomarchy-linux-*.iso` from [Releases](https://github.com/hteariH/Gnomarchy/releases).
+1. Download the latest `cosmarchy-linux-*.iso` from [Releases](https://github.com/hteariH/Gnomarchy/releases).
 2. Flash to a USB drive using `dd`, `balenaEtcher`, or `caligula`:
    ```bash
-   sudo dd if=gnomarchy-linux.iso of=/dev/sdX bs=4M status=progress oflag=sync
+   sudo dd if=cosmarchy-linux.iso of=/dev/sdX bs=4M status=progress oflag=sync
    ```
 3. Boot your system in **UEFI or BIOS mode** with Secure Boot temporarily disabled.
 4. The installer starts on TTY1: pick a disk, fill in a short form (keyboard layout, user, password, computer name, timezone, optional LUKS2 encryption), check the summary and watch seven stages run. It lays out Btrfs subvolumes (`@`, `@home`, `@snapshots`, `@var_log`, `@var_cache`), installs Limine for both UEFI and BIOS, and takes a first snapshot.
@@ -92,15 +92,15 @@ curl -fsSL https://gnomarchy.pages.dev/install | bash
 
 ---
 
-## Master CLI Dispatcher (`gnomarchy`)
+## Master CLI Dispatcher (`cosmarchy`)
 
-Control the desktop and OS layer using the `gnomarchy` CLI:
+Control the desktop and OS layer using the `cosmarchy` CLI:
 
 ### Unified Theme Engine (22 Built-in Themes)
 
-Gnomarchy includes **22 built-in themes** (18 Dark, 4 Light) matching the complete Omarchy palette suite. Every theme carries a Libadwaita accent color, generated GTK3/GTK4 window colors, a 16-color ANSI palette applied to GNOME Terminal, a Neovim colorscheme, a btop system monitor theme, and the matching Papirus icon variant.
+Cosmarchy includes **22 built-in themes** (18 Dark, 4 Light) matching the complete Omarchy palette suite. Every theme carries a Libadwaita accent color, generated GTK3/GTK4 window colors, a 16-color ANSI palette applied to GNOME Terminal, a Neovim colorscheme, a btop system monitor theme, and the matching Papirus icon variant.
 
-Wallpapers are **downloaded at install time** from the upstream Omarchy repository (pinned commit, every file checksum-verified) into `/usr/share/backgrounds/gnomarchy/<theme>/`. Gnomarchy does not redistribute them — see [BACKGROUNDS.md](BACKGROUNDS.md) for the provenance and licensing reasoning. Each theme also ships a small generated SVG wallpaper as an offline fallback, and you can override either with your own images in `~/.config/gnomarchy/backgrounds/<theme>/`.
+Wallpapers are **downloaded at install time** from the upstream Omarchy repository (pinned commit, every file checksum-verified) into `/usr/share/backgrounds/cosmarchy/<theme>/`. Cosmarchy does not redistribute them — see [BACKGROUNDS.md](BACKGROUNDS.md) for the provenance and licensing reasoning. Each theme also ships a small generated SVG wallpaper as an offline fallback, and you can override either with your own images in `~/.config/cosmarchy/backgrounds/<theme>/`.
 
 | Theme | Type | Accent | Aesthetic / Palette Style |
 | :--- | :--- | :--- | :--- |
@@ -129,20 +129,20 @@ Wallpapers are **downloaded at install time** from the upstream Omarchy reposito
 
 ```bash
 # List all 22 available themes with mode and accent details
-gnomarchy theme list
+cosmarchy theme list
 
 # Switch to any theme instantly
-gnomarchy theme set "kanagawa"
-gnomarchy theme set "hackerman"
-gnomarchy theme set "flexoki-light"
+cosmarchy theme set "kanagawa"
+cosmarchy theme set "hackerman"
+cosmarchy theme set "flexoki-light"
 
 # Check active theme
-gnomarchy theme current
+cosmarchy theme current
 
 # Wallpapers: fetch, inspect or re-verify
-gnomarchy backgrounds
-gnomarchy backgrounds --list
-gnomarchy backgrounds --verify
+cosmarchy backgrounds
+cosmarchy backgrounds --list
+cosmarchy backgrounds --verify
 ```
 
 ### Asus Laptops (ROG and TUF)
@@ -151,12 +151,12 @@ Detected automatically at install time; both lines share the same `asus_wmi`
 interface, so one profile covers them.
 
 ```bash
-gnomarchy asus status            # model, asusd, graphics mode, charge limit
-gnomarchy asus gui               # ROG Control Center
-gnomarchy asus charge 80         # stop charging at 80% to spare the battery
-gnomarchy asus profile           # quiet / balanced / performance
-gnomarchy asus keyboard med      # backlight
-gnomarchy asus graphics          # switch integrated / hybrid GPU
+cosmarchy asus status            # model, asusd, graphics mode, charge limit
+cosmarchy asus gui               # ROG Control Center
+cosmarchy asus charge 80         # stop charging at 80% to spare the battery
+cosmarchy asus profile           # quiet / balanced / performance
+cosmarchy asus keyboard med      # backlight
+cosmarchy asus graphics          # switch integrated / hybrid GPU
 ```
 
 `asusctl` and **ROG Control Center**, its official GUI, both come from the
@@ -166,16 +166,16 @@ machines with a discrete NVIDIA GPU to switch to.
 ### Gaming
 
 ```bash
-gnomarchy gaming install   # Steam, Proton-GE, Wine, Lutris, launchers, overlays
-gnomarchy gaming status
-gnomarchy gaming proton    # manage Proton versions
+cosmarchy gaming install   # Steam, Proton-GE, Wine, Lutris, launchers, overlays
+cosmarchy gaming status
+cosmarchy gaming proton    # manage Proton versions
 ```
 
 One command for a working gaming setup: Steam with its 32-bit dependencies,
 Proton-GE and ProtonUp-Qt to keep it current, Wine, Lutris, Faugus Launcher,
 gamescope, GameMode and MangoHud. multilib is enabled if it is not already, and
 the 32-bit Vulkan driver is matched to the GPU rather than installing all of
-them. See `gnomarchy manual gaming`.
+them. See `cosmarchy manual gaming`.
 
 ### Window Tiling
 
@@ -185,9 +185,9 @@ for snap assist, `Super+Shift+arrows` to throw a window into the next tile,
 `Super+T` to cycle the zone layout.
 
 ```bash
-gnomarchy tiling status    # is it on, and did the shell load it?
-gnomarchy tiling disable   # stock GNOME window behaviour
-gnomarchy tiling enable    # back on, with Gnomarchy's settings re-applied
+cosmarchy tiling status    # is it on, and did the shell load it?
+cosmarchy tiling disable   # stock GNOME window behaviour
+cosmarchy tiling enable    # back on, with Cosmarchy's settings re-applied
 ```
 
 Tiling Shell's `Super+Shift+arrows` is GNOME's default for `move-to-monitor`,
@@ -196,10 +196,10 @@ so that moves to `Super+Ctrl+Shift+arrows`.
 ### The Manual
 
 ```bash
-gnomarchy manual                    # opens the command center's Manual page
-gnomarchy manual 04                 # open a page by number, as plain text
-gnomarchy manual tiling             # or by name, as plain text
-gnomarchy manual --grep whisper     # search every page, as plain text
+cosmarchy manual                    # opens the command center's Manual page
+cosmarchy manual 04                 # open a page by number, as plain text
+cosmarchy manual tiling             # or by name, as plain text
+cosmarchy manual --grep whisper     # search every page, as plain text
 ```
 
 Seventeen pages covering keybindings, tiling, themes, backgrounds, the menu,
@@ -218,8 +218,8 @@ is no display or no `gjs`.
 ### Keybindings Search
 
 ```bash
-gnomarchy keybindings          # opens the command center's Keybindings page
-gnomarchy keybindings --list   # plain text, for grepping
+cosmarchy keybindings          # opens the command center's Keybindings page
+cosmarchy keybindings --list   # plain text, for grepping
 ```
 
 Bindings can be changed from that page: press Enter on a row to capture a new
@@ -237,9 +237,9 @@ summary. Unbound actions are omitted rather than listed as available.
 The Hyprland bindings from upstream Omarchy, transcribed to GNOME:
 
 ```bash
-gnomarchy keymap omarchy   # Omarchy's layout: 10 workspaces, Super+Q/W
-gnomarchy keymap gnome     # Gnomarchy defaults (the default)
-gnomarchy keymap status    # show the active layout and its bindings
+cosmarchy keymap omarchy   # Omarchy's layout: 10 workspaces, Super+Q/W
+cosmarchy keymap gnome     # Cosmarchy defaults (the default)
+cosmarchy keymap status    # show the active layout and its bindings
 ```
 
 The Omarchy layout expands to ten workspaces on `Super+1..0`, closes windows
@@ -261,119 +261,119 @@ often than a launcher, so it keeps `Super+Space` and the menu stays on
 Bindings were transcribed from Omarchy's `default/hypr/bindings/*.lua`, not
 from memory. What Hyprland does and GNOME cannot - directional focus,
 window groups, the scratchpad, pseudo-tiling, pixel-step resize - is listed by
-`gnomarchy keymap status` rather than silently dropped.
+`cosmarchy keymap status` rather than silently dropped.
 
 ### Web Applications
 ```bash
 # Convert web apps into isolated desktop applications
-gnomarchy webapp add "Claude" "https://claude.ai"
-gnomarchy webapp add "Linear" "https://linear.app"
+cosmarchy webapp add "Claude" "https://claude.ai"
+cosmarchy webapp add "Linear" "https://linear.app"
 
 # List and remove web apps
-gnomarchy webapp list
-gnomarchy webapp remove "Claude"
+cosmarchy webapp list
+cosmarchy webapp remove "Claude"
 ```
 
 ### Desktop Reminders
 ```bash
 # Set relative countdowns or exact time reminders with sound cues
-gnomarchy reminder 25m "Pomodoro break"
-gnomarchy reminder 1h30m "Review PR"
-gnomarchy reminder 17:30 "Team Standup"
+cosmarchy reminder 25m "Pomodoro break"
+cosmarchy reminder 1h30m "Review PR"
+cosmarchy reminder 17:30 "Team Standup"
 
 # List and cancel active reminders
-gnomarchy reminder list
-gnomarchy reminder cancel <id>
+cosmarchy reminder list
+cosmarchy reminder cancel <id>
 ```
 
 ### Voxtype AI Speech-to-Text
 ```bash
 # Toggle audio capture and transcription (or press Super+D)
-gnomarchy voxtype toggle
-gnomarchy voxtype status
+cosmarchy voxtype toggle
+cosmarchy voxtype status
 ```
 
 ### Windows Apps (WinBoat)
 ```bash
 # Install WinBoat (opt-in), check what it needs, start it
-gnomarchy windows install
-gnomarchy windows status
-gnomarchy windows
+cosmarchy windows install
+cosmarchy windows status
+cosmarchy windows
 ```
 
 ### GNOME Management
 ```bash
 # List active GNOME extensions
-gnomarchy gnome extensions list
+cosmarchy gnome extensions list
 
-# Reset extensions to default Gnomarchy configuration
-gnomarchy gnome extensions reset
+# Reset extensions to default Cosmarchy configuration
+cosmarchy gnome extensions reset
 
 # Show keyboard shortcuts guide or reset to defaults
-gnomarchy gnome hotkeys
-gnomarchy gnome hotkeys reset
+cosmarchy gnome hotkeys
+cosmarchy gnome hotkeys reset
 
 # Enable experimental fractional scaling support
-gnomarchy gnome scaling enable
+cosmarchy gnome scaling enable
 ```
 
 ### Rollback Snapshots
 ```bash
 # Create an atomic snapshot before doing risky work
-gnomarchy snapshot create "Before system refactor"
+cosmarchy snapshot create "Before system refactor"
 
 # List snapshots
-gnomarchy snapshot list
+cosmarchy snapshot list
 
 # Make a snapshot the system from the next boot on (asks which, without a number)
-gnomarchy snapshot restore 12
+cosmarchy snapshot restore 12
 
 # Regenerate the Limine boot menu after editing /etc/kernel/cmdline
-gnomarchy boot update
+cosmarchy boot update
 ```
 
 The menu also regenerates itself after every kernel update, snapshot, theme
 change and initramfs rebuild. While a snapshot is booted, pacman and
-`gnomarchy update` refuse to change packages: the snapshot's changes are lost
+`cosmarchy update` refuse to change packages: the snapshot's changes are lost
 at reboot, the kernel they would install is not.
 
 ### Command Center
 ```bash
 # Open the menu (or press Super+Alt+Space)
-gnomarchy menu
+cosmarchy menu
 ```
 
 ### Screen Capture
 ```bash
-gnomarchy capture annotate   # region -> Satty annotation editor (Ctrl+Print)
-gnomarchy capture region     # region -> ~/Pictures/Screenshots + clipboard
-gnomarchy capture screen     # full screen
+cosmarchy capture annotate   # region -> Satty annotation editor (Ctrl+Print)
+cosmarchy capture region     # region -> ~/Pictures/Screenshots + clipboard
+cosmarchy capture screen     # full screen
 ```
 
 ### System Updates, Migrations & Lifecycle Hooks
 ```bash
-# Synchronize Arch packages, AUR packages, Gnomarchy config, and run any
+# Synchronize Arch packages, AUR packages, Cosmarchy config, and run any
 # pending migrations against this machine
-gnomarchy update
+cosmarchy update
 
 # Inspect or apply migrations on their own
-gnomarchy migrate --list
-gnomarchy migrate
+cosmarchy migrate --list
+cosmarchy migrate
 
-# Trigger or inspect lifecycle event hooks (~/.config/gnomarchy/hooks/)
-gnomarchy hook on-theme-change "tokyo-night"
+# Trigger or inspect lifecycle event hooks (~/.config/cosmarchy/hooks/)
+cosmarchy hook on-theme-change "tokyo-night"
 ```
 
-Gnomarchy config changes reach **already-installed** machines through
+Cosmarchy config changes reach **already-installed** machines through
 `migrations/` — timestamped, idempotent scripts applied exactly once per
-machine and recorded in `~/.local/state/gnomarchy/migrations.log`. A `git pull`
-alone changes files; `gnomarchy update` is what applies them.
+machine and recorded in `~/.local/state/cosmarchy/migrations.log`. A `git pull`
+alone changes files; `cosmarchy update` is what applies them.
 
 ---
 
 ## Building the ISO Locally
 
-To build your own bootable Gnomarchy ISO:
+To build your own bootable Cosmarchy ISO:
 
 ```bash
 # Install archiso on an Arch host
@@ -393,4 +393,4 @@ The resulting ISO will be generated in `./out/`. You can test it immediately in 
 
 ## License
 
-Gnomarchy is open-source software licensed under the **[MIT License](LICENSE)**.
+Cosmarchy is open-source software licensed under the **[MIT License](LICENSE)**.

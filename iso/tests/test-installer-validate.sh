@@ -13,7 +13,7 @@ for u in alice a_b x1 _svc "$long32"; do t_true "username '$u' accepted" valid_u
 for u in root 1abc Alice "a b" "" "${long32}a" a.b; do t_false "username '$u' refused" valid_username "$u"; done
 
 long63="$(printf 'h%.0s' {1..63})"
-for h in gnomarchy citest-host a 1host "$long63"; do t_true "hostname '$h' accepted" valid_hostname "$h"; done
+for h in cosmarchy citest-host a 1host "$long63"; do t_true "hostname '$h' accepted" valid_hostname "$h"; done
 for h in -host host- "has space" dots.not "" "${long63}h"; do t_false "hostname '$h' refused" valid_hostname "$h"; done
 
 for z in UTC Europe/Berlin America/Argentina/Buenos_Aires; do t_true "timezone $z accepted" valid_timezone "$z"; done
@@ -80,21 +80,21 @@ done <iso/installer/lib/keymaps.tsv
 echo "--- unattended answers"
 answers() {
   (
-    unset "${!GNOMARCHY_@}"
+    unset "${!COSMARCHY_@}"
     for kv in "$@"; do export "${kv?}"; done
-    installer_check_answers && declare -p GNOMARCHY_HOSTNAME GNOMARCHY_TIMEZONE GNOMARCHY_KEYMAP GNOMARCHY_ENCRYPT GNOMARCHY_DISK_PASSWORD
+    installer_check_answers && declare -p COSMARCHY_HOSTNAME COSMARCHY_TIMEZONE COSMARCHY_KEYMAP COSMARCHY_ENCRYPT COSMARCHY_DISK_PASSWORD
   ) 2>&1
 }
-out="$(answers GNOMARCHY_DISK=/dev/vda GNOMARCHY_USERNAME=citest GNOMARCHY_PASSWORD=pw)"
-t_true "minimal answers pass" grep -q 'GNOMARCHY_HOSTNAME="gnomarchy"' <<<"$out"
-t_true "timezone defaults to UTC" grep -q 'GNOMARCHY_TIMEZONE="UTC"' <<<"$out"
-t_true "keymap defaults to us" grep -q 'GNOMARCHY_KEYMAP="us"' <<<"$out"
-t_true "encryption defaults to n" grep -q 'GNOMARCHY_ENCRYPT="n"' <<<"$out"
-t_true "the disk password defaults to the user's" grep -q 'GNOMARCHY_DISK_PASSWORD="pw"' <<<"$out"
-out="$(answers GNOMARCHY_DISK=/dev/vda GNOMARCHY_USERNAME=citest GNOMARCHY_PASSWORD=pw GNOMARCHY_ENCRYPT=Y)"
-t_true "Y is normalised to y" grep -q 'GNOMARCHY_ENCRYPT="y"' <<<"$out"
-out="$(answers GNOMARCHY_USERNAME=Root GNOMARCHY_HOSTNAME=-x GNOMARCHY_KEYMAP=xx GNOMARCHY_ENCRYPT=maybe)"
-for p in GNOMARCHY_DISK GNOMARCHY_USERNAME GNOMARCHY_PASSWORD GNOMARCHY_HOSTNAME GNOMARCHY_KEYMAP GNOMARCHY_ENCRYPT; do
+out="$(answers COSMARCHY_DISK=/dev/vda COSMARCHY_USERNAME=citest COSMARCHY_PASSWORD=pw)"
+t_true "minimal answers pass" grep -q 'COSMARCHY_HOSTNAME="cosmarchy"' <<<"$out"
+t_true "timezone defaults to UTC" grep -q 'COSMARCHY_TIMEZONE="UTC"' <<<"$out"
+t_true "keymap defaults to us" grep -q 'COSMARCHY_KEYMAP="us"' <<<"$out"
+t_true "encryption defaults to n" grep -q 'COSMARCHY_ENCRYPT="n"' <<<"$out"
+t_true "the disk password defaults to the user's" grep -q 'COSMARCHY_DISK_PASSWORD="pw"' <<<"$out"
+out="$(answers COSMARCHY_DISK=/dev/vda COSMARCHY_USERNAME=citest COSMARCHY_PASSWORD=pw COSMARCHY_ENCRYPT=Y)"
+t_true "Y is normalised to y" grep -q 'COSMARCHY_ENCRYPT="y"' <<<"$out"
+out="$(answers COSMARCHY_USERNAME=Root COSMARCHY_HOSTNAME=-x COSMARCHY_KEYMAP=xx COSMARCHY_ENCRYPT=maybe)"
+for p in COSMARCHY_DISK COSMARCHY_USERNAME COSMARCHY_PASSWORD COSMARCHY_HOSTNAME COSMARCHY_KEYMAP COSMARCHY_ENCRYPT; do
   t_true "a bad $p is reported" grep -q "answers: $p" <<<"$out"
 done
 

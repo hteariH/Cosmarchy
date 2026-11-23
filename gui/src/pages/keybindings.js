@@ -22,8 +22,8 @@ export class KeybindingsPage {
       marginTop: 12, marginBottom: 12, marginStart: 12, marginEnd: 12 });
     column.append(this._search);
 
-    // Delegates to gnomarchy-keymap via the existing reset path, so
-    // bin/gnomarchy-keymap stays the only definition of what the defaults are.
+    // Delegates to cosmarchy-keymap via the existing reset path, so
+    // bin/cosmarchy-keymap stays the only definition of what the defaults are.
     const reset = new Gtk.Button({ label: 'Reset to layout defaults', halign: Gtk.Align.END });
     reset.connect('clicked', () => {
       const dialog = new Adw.AlertDialog({
@@ -35,7 +35,7 @@ export class KeybindingsPage {
       dialog.set_response_appearance('reset', Adw.ResponseAppearance.DESTRUCTIVE);
       dialog.set_close_response('cancel');
       dialog.connect('response', (_d, response) => {
-        if (response === 'reset') run(['gnomarchy-keybindings', 'reset']);
+        if (response === 'reset') run(['cosmarchy-keybindings', 'reset']);
       });
       this._window.trackDialog(dialog);
       dialog.present(this._window);
@@ -100,7 +100,7 @@ export class KeybindingsPage {
         subtitle: escapePango(formatAccel(binding.accel)),
         activatable: true,
       });
-      row.gnomarchyBinding = binding;
+      row.cosmarchyBinding = binding;
       row.connect('activated', () => this._edit(binding));
       list.append(row);
     }

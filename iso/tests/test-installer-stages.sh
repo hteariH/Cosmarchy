@@ -10,8 +10,8 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
 # The installer's functions, without running main.
-# shellcheck source=iso/installer/gnomarchy-install
-source iso/installer/gnomarchy-install
+# shellcheck source=iso/installer/cosmarchy-install
+source iso/installer/cosmarchy-install
 set +eE
 
 # A copy of the library directory with stages of our own.

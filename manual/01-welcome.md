@@ -1,6 +1,6 @@
-# Welcome to Gnomarchy
+# Welcome to Cosmarchy
 
-Gnomarchy is Omarchy's tooling and Arch base with a tuned GNOME desktop instead
+Cosmarchy is Omarchy's tooling and Arch base with a tuned GNOME desktop instead
 of Hyprland. Same rolling release, same Btrfs snapshots, same opinionated
 developer stack - a different window manager underneath.
 
@@ -20,10 +20,10 @@ GNOME is not Hyprland, and some things do not translate:
 - Configuration lives in dconf, not a text file you edit.
 
 Where a feature could not be carried across, it is named rather than quietly
-dropped. See `gnomarchy keymap status`.
+dropped. See `cosmarchy keymap status`.
 
 ## Where to go next
 
-- `gnomarchy manual 02` - getting started
-- `gnomarchy manual 03` - keybindings
-- `gnomarchy keybindings` - what is bound right now
+- `cosmarchy manual 02` - getting started
+- `cosmarchy manual 03` - keybindings
+- `cosmarchy keybindings` - what is bound right now

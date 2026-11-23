@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# Offline verification of an installed Gnomarchy system.
+# Offline verification of an installed Cosmarchy system.
 #
 # Runs on the CI host against the installed disk image, mounted read-only at
 # $ROOT. Every check here corresponds to a defect that reached a release
 # because CI only ever verified that the ISO *builds*, never that it installs.
 #
-# Usage: verify-install.sh /mnt/gnomarchy-root
+# Usage: verify-install.sh /mnt/cosmarchy-root
 set -uo pipefail
 
 ROOT="${1:?usage: verify-install.sh <mounted-root>}"
-USER_NAME="${GNOMARCHY_TEST_USER:-citest}"
+USER_NAME="${COSMARCHY_TEST_USER:-citest}"
 HOME_DIR="$ROOT/home/$USER_NAME"
 
 pass=0
@@ -75,7 +75,7 @@ else
 fi
 
 # --- Regression: a package list nothing read --------------------------------
-# These sat in gnomarchy-other.packages, which no stage ever installed.
+# These sat in cosmarchy-other.packages, which no stage ever installed.
 for pkg in chromium obs-studio libreoffice-fresh obsidian spotify-launcher mise; do
   if compgen -G "$ROOT/var/lib/pacman/local/$pkg-[0-9]*" >/dev/null; then
     ok "$pkg is installed"
@@ -94,8 +94,8 @@ fi
 # --- Regression: only the dispatcher reached the session PATH --------------
 missing_links=()
 link=""
-for cmd in gnomarchy gnomarchy-first-run gnomarchy-menu gnomarchy-capture \
-  gnomarchy-theme-set gnomarchy-backgrounds gnomarchy-migrate; do
+for cmd in cosmarchy cosmarchy-first-run cosmarchy-menu cosmarchy-capture \
+  cosmarchy-theme-set cosmarchy-backgrounds cosmarchy-migrate; do
   link="$ROOT/usr/local/bin/$cmd"
   [[ -L "$link" || -f "$link" ]] || missing_links+=("$cmd")
 done
@@ -106,18 +106,18 @@ else
 fi
 
 # --- Regression: ISO deployed without .git, so updates were impossible -----
-GNOMARCHY_CHECKOUT="$HOME_DIR/.local/share/gnomarchy"
-if [[ -d "$GNOMARCHY_CHECKOUT/.git" ]]; then
-  ok "Gnomarchy checkout has a git repository (updates possible)"
-elif [[ -d "$GNOMARCHY_CHECKOUT" ]]; then
-  no "no .git in ~/.local/share/gnomarchy"     "checkout exists but is not a repository; contains: $(ls "$GNOMARCHY_CHECKOUT" | tr '
+COSMARCHY_CHECKOUT="$HOME_DIR/.local/share/cosmarchy"
+if [[ -d "$COSMARCHY_CHECKOUT/.git" ]]; then
+  ok "Cosmarchy checkout has a git repository (updates possible)"
+elif [[ -d "$COSMARCHY_CHECKOUT" ]]; then
+  no "no .git in ~/.local/share/cosmarchy"     "checkout exists but is not a repository; contains: $(ls "$COSMARCHY_CHECKOUT" | tr '
 ' ' ')"
 else
-  no "no Gnomarchy checkout at all" "expected $GNOMARCHY_CHECKOUT"
+  no "no Cosmarchy checkout at all" "expected $COSMARCHY_CHECKOUT"
 fi
 
 # --- Regression: flat wallpaper layout never matched the theme engine ------
-BG="$ROOT/usr/share/backgrounds/gnomarchy"
+BG="$ROOT/usr/share/backgrounds/cosmarchy"
 if [[ -d "$BG/tokyo-night" ]]; then
   ok "wallpapers use the per-theme directory layout"
 else
@@ -226,7 +226,7 @@ fi
 # The shell refuses to load an extension whose metadata.json does not list its
 # major version, and says nothing about it: the extension sits in
 # enabled-extensions and does nothing. The bundled zips are pinned while Arch
-# rolls, so a GNOME release that lands between two Gnomarchy releases leaves
+# rolls, so a GNOME release that lands between two Cosmarchy releases leaves
 # them behind -- GNOME 51 did that to seven of nine. The version comes from the
 # installed package, not from a constant, so the next GNOME trips this too.
 #
@@ -245,7 +245,7 @@ done
 if [[ -z "$shell_major" ]]; then
   no "cannot tell which GNOME is installed" "no gnome-shell entry in $ROOT/var/lib/pacman/local"
 elif ((meta_checked == 0)); then
-  no "no Gnomarchy extensions deployed" "expected them under ~/.local/share/gnome-shell/extensions"
+  no "no Cosmarchy extensions deployed" "expected them under ~/.local/share/gnome-shell/extensions"
 elif ((${#stale[@]} == 0)); then
   ok "all $meta_checked deployed extensions declare GNOME $shell_major"
 else
@@ -264,7 +264,7 @@ fi
 
 # --- Regression: tiling that cannot be configured -------------------------
 #
-# Tiling Shell is Gnomarchy's tiling, configured by first-run with its
+# Tiling Shell is Cosmarchy's tiling, configured by first-run with its
 # auto-tiling off: that drops a new window into a fixed tile of a static layout
 # and never resizes the windows already on screen. None of that configuration
 # can be written without the schema.
@@ -305,7 +305,7 @@ else
 fi
 
 # --- Regression: autostart Exec depended on a PATH the session lacks -------
-AUTOSTART="$HOME_DIR/.config/autostart/gnomarchy-first-run.desktop"
+AUTOSTART="$HOME_DIR/.config/autostart/cosmarchy-first-run.desktop"
 if [[ -f "$AUTOSTART" ]]; then
   if grep -q '^Exec=/' "$AUTOSTART"; then
     ok "first-run autostart uses an absolute Exec path"
@@ -320,14 +320,14 @@ fi
 # GNOME Terminal is the terminal; a second one only cost a package and a theme
 # step. The themes' alacritty.toml files stay: they are the palette format.
 if compgen -G "$ROOT/var/lib/pacman/local/alacritty-[0-9]*" >/dev/null; then
-  no "alacritty is installed" "it was dropped from gnomarchy-base.packages"
+  no "alacritty is installed" "it was dropped from cosmarchy-base.packages"
 else
   ok "alacritty is not installed"
 fi
-if [[ -e "$ROOT/usr/local/bin/gnomarchy-screensaver" || -L "$ROOT/usr/local/bin/gnomarchy-screensaver" ]]; then
-  no "gnomarchy-screensaver is still published" "the screensaver was removed"
+if [[ -e "$ROOT/usr/local/bin/cosmarchy-screensaver" || -L "$ROOT/usr/local/bin/cosmarchy-screensaver" ]]; then
+  no "cosmarchy-screensaver is still published" "the screensaver was removed"
 else
-  ok "no gnomarchy-screensaver command"
+  ok "no cosmarchy-screensaver command"
 fi
 
 # --- Windows apps: WinBoat, opt-in -----------------------------------------
@@ -339,18 +339,18 @@ for pkg in qemu-desktop edk2-ovmf swtpm; do
     ok "$pkg is not installed"
   fi
 done
-WINDOWS_CMD="$HOME_DIR/.local/share/gnomarchy/bin/gnomarchy-windows"
-if [[ -L "$ROOT/usr/local/bin/gnomarchy-windows" ]] && grep -q 'winboat-bin' "$WINDOWS_CMD"; then
-  ok "gnomarchy windows is the WinBoat installer"
+WINDOWS_CMD="$HOME_DIR/.local/share/cosmarchy/bin/cosmarchy-windows"
+if [[ -L "$ROOT/usr/local/bin/cosmarchy-windows" ]] && grep -q 'winboat-bin' "$WINDOWS_CMD"; then
+  ok "cosmarchy windows is the WinBoat installer"
 else
-  no "gnomarchy windows is not the WinBoat installer" "$WINDOWS_CMD"
+  no "cosmarchy windows is not the WinBoat installer" "$WINDOWS_CMD"
 fi
 
 # --- Tool configs the theme engine writes into -----------------------------
 
 if [[ -f "$HOME_DIR/.config/btop/btop.conf" ]]; then
   grep -q 'color_theme *= *"current"' "$HOME_DIR/.config/btop/btop.conf" &&
-    ok "btop selects the Gnomarchy theme" ||
+    ok "btop selects the Cosmarchy theme" ||
     no "btop.conf does not select the current theme"
 else
   no "btop.conf missing"
@@ -370,14 +370,14 @@ for pkg in gjs gtk4 libadwaita; do
   fi
 done
 
-GUI_ENTRY="$HOME_DIR/.local/share/gnomarchy/gui/src/main.js"
+GUI_ENTRY="$HOME_DIR/.local/share/cosmarchy/gui/src/main.js"
 if [[ -f "$GUI_ENTRY" ]]; then
   ok "control center source is present"
 else
   no "no control center at $GUI_ENTRY"
 fi
 
-DESKTOP_ENTRY="$HOME_DIR/.local/share/applications/org.gnomarchy.ControlCenter.desktop"
+DESKTOP_ENTRY="$HOME_DIR/.local/share/applications/org.cosmarchy.ControlCenter.desktop"
 if [[ -f "$DESKTOP_ENTRY" ]]; then
   ok "control center desktop entry is published"
 else
@@ -387,8 +387,8 @@ fi
 # A half-applied port -- GUI files present but the commands still spawning a
 # terminal -- would otherwise pass every check above.
 terminal_relics=0
-for cmd in gnomarchy-menu gnomarchy-manual gnomarchy-keybindings; do
-  script="$HOME_DIR/.local/share/gnomarchy/bin/$cmd"
+for cmd in cosmarchy-menu cosmarchy-manual cosmarchy-keybindings; do
+  script="$HOME_DIR/.local/share/cosmarchy/bin/$cmd"
   [[ -f "$script" ]] || continue
   if grep -q 'exec gnome-terminal\|exec alacritty' "$script"; then
     terminal_relics=$((terminal_relics + 1))
@@ -411,7 +411,7 @@ if [[ -f "$CMDLINE_FILE" ]]; then
   cmdline="$(<"$CMDLINE_FILE")"
   ok "/etc/kernel/cmdline exists"
 else
-  no "no /etc/kernel/cmdline" "gnomarchy-boot has nothing to build the menu from"
+  no "no /etc/kernel/cmdline" "cosmarchy-boot has nothing to build the menu from"
 fi
 
 if [[ -f "$LIMINE_CONF" ]]; then
@@ -435,9 +435,9 @@ if [[ -f "$LIMINE_CONF" ]]; then
   elif ((unhashed > 0)); then
     no "limine.conf has $unhashed boot paths without a hash"
   fi
-  grep -qx 'default_entry: Gnomarchy/linux' "$LIMINE_CONF" &&
-    ok "the menu defaults to Gnomarchy/linux" || no "the menu does not default to Gnomarchy/linux"
-  grep -qx 'interface_branding: Gnomarchy' "$LIMINE_CONF" && grep -q '^term_palette: ' "$LIMINE_CONF" &&
+  grep -qx 'default_entry: Cosmarchy/linux' "$LIMINE_CONF" &&
+    ok "the menu defaults to Cosmarchy/linux" || no "the menu does not default to Cosmarchy/linux"
+  grep -qx 'interface_branding: Cosmarchy' "$LIMINE_CONF" && grep -q '^term_palette: ' "$LIMINE_CONF" &&
     ok "the menu carries the theme palette" || no "no theme palette in limine.conf"
   [[ -n "$cmdline" ]] && grep -qxF "    kernel_cmdline: $cmdline" "$LIMINE_CONF" &&
     ok "the kernel entry boots /etc/kernel/cmdline" || no "no entry boots /etc/kernel/cmdline"
@@ -460,13 +460,13 @@ if [[ -f "$BOOT_DIR/limine-bios.sys" && "$(b2 "$BOOT_DIR/limine-bios.sys")" == "
 else
   no "limine-bios.sys missing from the ESP"
 fi
-if [[ -n "${GNOMARCHY_TEST_DISK:-}" ]]; then
+if [[ -n "${COSMARCHY_TEST_DISK:-}" ]]; then
   # The CI disk is a fresh qcow2, so the boot code area is zeroed (wipefs only
   # erases signatures); only limine bios-install writes it.
-  if (($(head -c 440 "$GNOMARCHY_TEST_DISK" | tr -d '\0' | wc -c) > 0)); then
+  if (($(head -c 440 "$COSMARCHY_TEST_DISK" | tr -d '\0' | wc -c) > 0)); then
     ok "the MBR carries boot code (limine bios-install ran)"
   else
-    no "the MBR boot code is empty" "limine bios-install never ran on $GNOMARCHY_TEST_DISK"
+    no "the MBR boot code is empty" "limine bios-install never ran on $COSMARCHY_TEST_DISK"
   fi
 fi
 esp_dev="$(findmnt -no SOURCE --target "$BOOT_DIR")"
@@ -476,28 +476,28 @@ else
   no "the ESP is smaller than 4 GiB" "$esp_dev"
 fi
 
-DROPIN="$ROOT/etc/mkinitcpio.conf.d/gnomarchy.conf"
+DROPIN="$ROOT/etc/mkinitcpio.conf.d/cosmarchy.conf"
 if [[ -f "$DROPIN" ]]; then
   hooks=" $(sed -n 's/^HOOKS=(\(.*\))$/\1/p' "$DROPIN") "
   missing=()
-  for h in systemd plymouth sd-vconsole gnomarchy-overlay; do
+  for h in systemd plymouth sd-vconsole cosmarchy-overlay; do
     [[ "$hooks" == *" $h "* ]] || missing+=("$h")
   done
-  ((${#missing[@]} == 0)) && ok "initramfs HOOKS include systemd, plymouth, sd-vconsole, gnomarchy-overlay" ||
+  ((${#missing[@]} == 0)) && ok "initramfs HOOKS include systemd, plymouth, sd-vconsole, cosmarchy-overlay" ||
     no "initramfs HOOKS lack: ${missing[*]}" "$hooks"
   [[ "$hooks" == *" udev "* || "$hooks" == *" encrypt "* ]] &&
     no "busybox hooks in a systemd initramfs" "$hooks"
-  if [[ "${GNOMARCHY_TEST_ENCRYPT:-n}" == y ]]; then
+  if [[ "${COSMARCHY_TEST_ENCRYPT:-n}" == y ]]; then
     [[ "$hooks" == *" sd-encrypt "* ]] && ok "sd-encrypt is in HOOKS" || no "an encrypted install without sd-encrypt"
   else
     [[ "$hooks" == *" sd-encrypt "* ]] &&
       no "sd-encrypt in HOOKS on a plain install" "$hooks" || ok "no sd-encrypt in HOOKS on a plain install"
   fi
 else
-  no "no /etc/mkinitcpio.conf.d/gnomarchy.conf"
+  no "no /etc/mkinitcpio.conf.d/cosmarchy.conf"
 fi
-[[ -f "$ROOT/etc/initcpio/install/gnomarchy-overlay" ]] &&
-  ok "the gnomarchy-overlay initcpio hook is installed" || no "no gnomarchy-overlay initcpio hook"
+[[ -f "$ROOT/etc/initcpio/install/cosmarchy-overlay" ]] &&
+  ok "the cosmarchy-overlay initcpio hook is installed" || no "no cosmarchy-overlay initcpio hook"
 grep -q 'subvolid=' "$ROOT/etc/fstab" &&
   no "fstab pins subvolid=" "snapshots and a restored @ cannot mount" || ok "fstab mounts by subvolume name only"
 
@@ -515,71 +515,71 @@ grep -qE '^SNAPPER_CONFIGS="(.* )?root( .*)?"$' "$ROOT/etc/conf.d/snapper" &&
   ok "snapper-cleanup.timer is enabled" || no "snapper-cleanup.timer is not enabled"
 [[ -L "$ROOT/etc/systemd/system/timers.target.wants/snapper-timeline.timer" ]] &&
   no "snapper-timeline.timer is enabled" "timeline snapshots are off by design"
-[[ -L "$ROOT/etc/systemd/system/paths.target.wants/gnomarchy-boot-theme.path" ]] &&
-  ok "the boot-theme path unit is enabled" || no "gnomarchy-boot-theme.path is not enabled"
-[[ -x "$ROOT/usr/lib/snapper/plugins/50-gnomarchy-boot" ]] &&
+[[ -L "$ROOT/etc/systemd/system/paths.target.wants/cosmarchy-boot-theme.path" ]] &&
+  ok "the boot-theme path unit is enabled" || no "cosmarchy-boot-theme.path is not enabled"
+[[ -x "$ROOT/usr/lib/snapper/plugins/50-cosmarchy-boot" ]] &&
   ok "the snapper plugin is installed" || no "no executable snapper plugin"
-for hook in 00-gnomarchy-guard.hook 95-gnomarchy-boot.hook 95-gnomarchy-limine.hook; do
+for hook in 00-cosmarchy-guard.hook 95-cosmarchy-boot.hook 95-cosmarchy-limine.hook; do
   [[ -f "$ROOT/etc/pacman.d/hooks/$hook" ]] && ok "pacman hook $hook" || no "no pacman hook $hook"
 done
 # A hand-run mkinitcpio -P left the menu naming the old image's hash.
-[[ -x "$ROOT/etc/initcpio/post/gnomarchy-boot" ]] &&
+[[ -x "$ROOT/etc/initcpio/post/cosmarchy-boot" ]] &&
   ok "the mkinitcpio post hook is installed" || no "no executable mkinitcpio post hook"
 compgen -G "$ROOT/var/lib/pacman/local/snap-pac-[0-9]*" >/dev/null &&
   ok "snap-pac is installed" || no "snap-pac is not installed"
-if grep -q '<description>Gnomarchy installed</description>' "$ROOT/.snapshots/1/info.xml" 2>/dev/null; then
-  ok "snapshot 1 \"Gnomarchy installed\" exists"
+if grep -q '<description>Cosmarchy installed</description>' "$ROOT/.snapshots/1/info.xml" 2>/dev/null; then
+  ok "snapshot 1 \"Cosmarchy installed\" exists"
 else
   # The test reads .snapshots through the @snapshots mount; without it this
   # file cannot exist, which the workflow guards against.
-  no "no snapshot 1 \"Gnomarchy installed\""
+  no "no snapshot 1 \"Cosmarchy installed\""
 fi
-[[ -f "$BOOT_DIR/gnomarchy/entries/1.conf" ]] && grep -q '^///1 | ' "$LIMINE_CONF" &&
+[[ -f "$BOOT_DIR/cosmarchy/entries/1.conf" ]] && grep -q '^///1 | ' "$LIMINE_CONF" &&
   ok "snapshot 1 is in the boot menu" || no "snapshot 1 is not in the boot menu"
 
 # --- The installer's answers ------------------------------------------------
 # In CI the answers must arrive; an unset variable would otherwise skip every
 # check below without a word (sudo -E dropped them once).
-if [[ -n "${CI:-}" && -z "${GNOMARCHY_TEST_HOSTNAME:-}" ]]; then
-  no "GNOMARCHY_TEST_* variables did not reach the script" "CI is set but GNOMARCHY_TEST_HOSTNAME is not; the environment was dropped on the way in"
+if [[ -n "${CI:-}" && -z "${COSMARCHY_TEST_HOSTNAME:-}" ]]; then
+  no "COSMARCHY_TEST_* variables did not reach the script" "CI is set but COSMARCHY_TEST_HOSTNAME is not; the environment was dropped on the way in"
 fi
-if [[ -n "${GNOMARCHY_TEST_HOSTNAME:-}" ]]; then
-  [[ "$(<"$ROOT/etc/hostname")" == "$GNOMARCHY_TEST_HOSTNAME" ]] &&
-    ok "hostname is $GNOMARCHY_TEST_HOSTNAME" || no "hostname is not $GNOMARCHY_TEST_HOSTNAME" "$(<"$ROOT/etc/hostname")"
+if [[ -n "${COSMARCHY_TEST_HOSTNAME:-}" ]]; then
+  [[ "$(<"$ROOT/etc/hostname")" == "$COSMARCHY_TEST_HOSTNAME" ]] &&
+    ok "hostname is $COSMARCHY_TEST_HOSTNAME" || no "hostname is not $COSMARCHY_TEST_HOSTNAME" "$(<"$ROOT/etc/hostname")"
 fi
-if [[ -n "${GNOMARCHY_TEST_TIMEZONE:-}" ]]; then
+if [[ -n "${COSMARCHY_TEST_TIMEZONE:-}" ]]; then
   tz_link="$(readlink "$ROOT/etc/localtime")"
-  [[ -L "$ROOT/etc/localtime" && "$tz_link" == */zoneinfo/$GNOMARCHY_TEST_TIMEZONE ]] &&
-    ok "timezone is $GNOMARCHY_TEST_TIMEZONE" || no "timezone is not $GNOMARCHY_TEST_TIMEZONE" "$tz_link"
+  [[ -L "$ROOT/etc/localtime" && "$tz_link" == */zoneinfo/$COSMARCHY_TEST_TIMEZONE ]] &&
+    ok "timezone is $COSMARCHY_TEST_TIMEZONE" || no "timezone is not $COSMARCHY_TEST_TIMEZONE" "$tz_link"
 fi
-if [[ -n "${GNOMARCHY_TEST_KEYMAP:-}" ]]; then
+if [[ -n "${COSMARCHY_TEST_KEYMAP:-}" ]]; then
   # shellcheck source=../installer/lib/form.sh
   source "$(dirname "$0")/../installer/lib/form.sh"
-  if keymap_load "$GNOMARCHY_TEST_KEYMAP"; then
+  if keymap_load "$COSMARCHY_TEST_KEYMAP"; then
     grep -qx "KEYMAP=$KB_CONSOLE_KEYMAP" "$ROOT/etc/vconsole.conf" &&
       ok "console keymap is $KB_CONSOLE_KEYMAP" || no "console keymap is not $KB_CONSOLE_KEYMAP"
     grep -qF "Option \"XkbLayout\" \"$KB_XKB_LAYOUT\"" "$ROOT/etc/X11/xorg.conf.d/00-keyboard.conf" &&
       ok "X11 layout is $KB_XKB_LAYOUT" || no "X11 layout is not $KB_XKB_LAYOUT"
-    grep -qx "XKB_LAYOUT=$KB_XKB_LAYOUT" "$ROOT/etc/gnomarchy/keyboard.conf" &&
+    grep -qx "XKB_LAYOUT=$KB_XKB_LAYOUT" "$ROOT/etc/cosmarchy/keyboard.conf" &&
       ok "first-run will set input source $KB_XKB_LAYOUT" || no "keyboard.conf does not name $KB_XKB_LAYOUT"
   else
-    no "GNOMARCHY_TEST_KEYMAP $GNOMARCHY_TEST_KEYMAP is not in keymaps.tsv"
+    no "COSMARCHY_TEST_KEYMAP $COSMARCHY_TEST_KEYMAP is not in keymaps.tsv"
   fi
 fi
-grep -q 'Installation complete' "$ROOT/var/log/gnomarchy-installer.log" &&
-  ok "the installer log is on the target" || no "no complete installer log at /var/log/gnomarchy-installer.log"
+grep -q 'Installation complete' "$ROOT/var/log/cosmarchy-installer.log" &&
+  ok "the installer log is on the target" || no "no complete installer log at /var/log/cosmarchy-installer.log"
 
-if [[ "${GNOMARCHY_TEST_ENCRYPT:-n}" != y ]]; then
+if [[ "${COSMARCHY_TEST_ENCRYPT:-n}" != y ]]; then
   [[ "$cmdline" == *"rd.luks.name="* ]] &&
     no "rd.luks.name on a plain install" "$cmdline" || ok "no rd.luks.name on a plain install"
 fi
-if [[ "${GNOMARCHY_TEST_ENCRYPT:-n}" == y ]]; then
-  if [[ -n "${GNOMARCHY_TEST_LUKS_DEV:-}" ]]; then
-    luks_uuid="$(blkid -s UUID -o value "$GNOMARCHY_TEST_LUKS_DEV")"
+if [[ "${COSMARCHY_TEST_ENCRYPT:-n}" == y ]]; then
+  if [[ -n "${COSMARCHY_TEST_LUKS_DEV:-}" ]]; then
+    luks_uuid="$(blkid -s UUID -o value "$COSMARCHY_TEST_LUKS_DEV")"
     [[ -n "$luks_uuid" && " $cmdline " == *" rd.luks.name=$luks_uuid=cryptroot "* ]] &&
       ok "rd.luks.name opens the LUKS partition" || no "rd.luks.name does not name $luks_uuid" "$cmdline"
   else
-    echo "  SKIP  rd.luks.name check: GNOMARCHY_TEST_LUKS_DEV is not set"
+    echo "  SKIP  rd.luks.name check: COSMARCHY_TEST_LUKS_DEV is not set"
   fi
   if [[ -f "$ROOT/etc/crypttab" ]] && grep -q '^cryptroot' "$ROOT/etc/crypttab"; then
     no "crypttab also opens cryptroot" "the root is opened from the command line"

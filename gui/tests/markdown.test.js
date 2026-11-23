@@ -21,9 +21,9 @@ test('renderBlocks joins wrapped paragraph lines into one block', () => {
 });
 
 test('renderBlocks keeps fenced code verbatim and unformatted', () => {
-  const blocks = renderBlocks('```bash\ngnomarchy update\na **b** `c`\n```\n');
+  const blocks = renderBlocks('```bash\ncosmarchy update\na **b** `c`\n```\n');
   assert.deepEqual(blocks, [
-    { type: 'code', markup: 'gnomarchy update\na **b** `c`' },
+    { type: 'code', markup: 'cosmarchy update\na **b** `c`' },
   ]);
 });
 

@@ -3,8 +3,8 @@
 ## Seeing what is bound
 
 ```bash
-gnomarchy keybindings
-gnomarchy keybindings --list
+cosmarchy keybindings
+cosmarchy keybindings --list
 ```
 
 With no arguments this opens the command center's Keybindings page; `--list`
@@ -24,8 +24,8 @@ names the action that currently holds it and offers **Replace** or **Cancel**
 rather than silently taking it over.
 
 **Reset to layout defaults**, at the bottom of the page, re-applies the
-machine's recorded keymap profile by running `gnomarchy-keybindings reset`
-underneath - so `bin/gnomarchy-keymap` stays the one place the defaults for
+machine's recorded keymap profile by running `cosmarchy-keybindings reset`
+underneath - so `bin/cosmarchy-keymap` stays the one place the defaults for
 `gnome` and `omarchy` below are defined, rather than a copy living in the GUI
 too.
 
@@ -35,12 +35,12 @@ slot. GNOME Settings already does that.
 ## Two profiles
 
 ```bash
-gnomarchy keymap gnome
-gnomarchy keymap omarchy
-gnomarchy keymap status
+cosmarchy keymap gnome
+cosmarchy keymap omarchy
+cosmarchy keymap status
 ```
 
-### Gnomarchy defaults
+### Cosmarchy defaults
 
     Super + Return            terminal
     Super + B                 browser
@@ -72,18 +72,18 @@ gnomarchy keymap status
 
 GNOME binds `switch-to-application-1` to `Super + 1` and so on up to
 `Super + 9`: press one and it focuses, or launches, the Nth pinned app in the
-dock. Gnomarchy puts the workspaces on those same keys, so each of them used to
+dock. Cosmarchy puts the workspaces on those same keys, so each of them used to
 have two handlers and did whichever the shell registered last.
 
 The workspaces win, because that is what both profiles advertise:
 
 | profile | workspaces | still switches applications |
 |---|---|---|
-| Gnomarchy defaults | `Super + 1..6` | `Super + 7`, `8`, `9` |
+| Cosmarchy defaults | `Super + 1..6` | `Super + 7`, `8`, `9` |
 | Omarchy | `Super + 1..0` (ten) | nothing — all nine are workspaces |
 
 Switching back from the Omarchy profile hands `Super + 7..9` to the
-application switcher again. `gnomarchy keybindings` reads dconf, so it always
+application switcher again. `cosmarchy keybindings` reads dconf, so it always
 lists what is really bound.
 
 ## One deliberate difference from Omarchy
@@ -98,4 +98,4 @@ profiles.
 Hyprland features with no GNOME equivalent: directional window focus
 (Omarchy's `Super + arrows`), window groups, the scratchpad, pseudo-tiling,
 pixel-step window resize, moving a workspace between monitors.
-`gnomarchy keymap status` lists them rather than pretending they exist.
+`cosmarchy keymap status` lists them rather than pretending they exist.

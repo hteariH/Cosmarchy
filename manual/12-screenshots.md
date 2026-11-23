@@ -4,9 +4,9 @@
     Ctrl + Print     region capture straight into the Satty annotator
 
 ```bash
-gnomarchy capture annotate
-gnomarchy capture region
-gnomarchy capture screen
+cosmarchy capture annotate
+cosmarchy capture region
+cosmarchy capture screen
 ```
 
 Also under Capture in the command center.

@@ -146,14 +146,14 @@ boot_store_gc() {
   done
 }
 
-# Percent of the ESP in use. GNOMARCHY_BOOT_ESP_SIZE_KB exists for the tests,
+# Percent of the ESP in use. COSMARCHY_BOOT_ESP_SIZE_KB exists for the tests,
 # whose ESP is a plain directory.
 boot_esp_usage() {
   local pct="" used
-  if [[ -n "${GNOMARCHY_BOOT_ESP_SIZE_KB:-}" ]]; then
+  if [[ -n "${COSMARCHY_BOOT_ESP_SIZE_KB:-}" ]]; then
     used="$(du -sk --apparent-size "$BOOT_ESP" | cut -f1)" || used=""
-    if [[ "$used" =~ ^[0-9]+$ ]] && ((GNOMARCHY_BOOT_ESP_SIZE_KB > 0)); then
-      pct=$((used * 100 / GNOMARCHY_BOOT_ESP_SIZE_KB))
+    if [[ "$used" =~ ^[0-9]+$ ]] && ((COSMARCHY_BOOT_ESP_SIZE_KB > 0)); then
+      pct=$((used * 100 / COSMARCHY_BOOT_ESP_SIZE_KB))
     fi
   else
     pct="$(df -P "$BOOT_ESP" | awk 'NR == 2 { sub("%", "", $5); print $5 }')" || pct=""

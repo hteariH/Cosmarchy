@@ -3,18 +3,18 @@
 # In-guest session verification.
 #
 # Runs inside the installed system's first graphical session, after the
-# gnomarchy-first-run autostart entry has done its work. These are the checks
+# cosmarchy-first-run autostart entry has done its work. These are the checks
 # that cannot be made offline: dconf only holds them once a session with a
 # D-Bus bus has actually applied them.
 #
-# Writes its report to ~/.local/state/gnomarchy/verify/<mode>.txt and powers
+# Writes its report to ~/.local/state/cosmarchy/verify/<mode>.txt and powers
 # off, so CI reads the outcome from the disk image rather than the serial
 # console. /home is its own subvolume: the report survives a snapshot boot,
 # whose root is a tmpfs overlay that /var/tmp used to vanish with.
 # Progress also goes to the journal. A report written only to a file tells us
 # nothing when the script hangs before finishing, which is exactly what
 # happened: the run timed out with no output at all.
-trace() { logger -t gnomarchy-verify -- "$*" 2>/dev/null || true; }
+trace() { logger -t cosmarchy-verify -- "$*" 2>/dev/null || true; }
 
 trace "verify-session started as $(whoami), session=${XDG_SESSION_TYPE:-unknown}"
 
@@ -22,10 +22,10 @@ MODE=session
 SNAPSHOT_BOOTED=""
 read -ra cmdline_words </proc/cmdline
 for word in "${cmdline_words[@]}"; do
-  [[ "$word" == gnomarchy.snapshot=* ]] && SNAPSHOT_BOOTED="${word#*=}"
+  [[ "$word" == cosmarchy.snapshot=* ]] && SNAPSHOT_BOOTED="${word#*=}"
 done
 [[ -n "$SNAPSHOT_BOOTED" ]] && MODE=snapshot
-REPORT_DIR="$HOME/.local/state/gnomarchy/verify"
+REPORT_DIR="$HOME/.local/state/cosmarchy/verify"
 mkdir -p "$REPORT_DIR"
 exec >"$REPORT_DIR/$MODE.txt" 2>&1
 
@@ -62,19 +62,19 @@ finish() {
 # dconf, but do not wait forever - report what we see instead of hanging.
 trace "waiting for first-run to finish"
 for i in $(seq 1 24); do
-  [[ -f "$HOME/.local/state/gnomarchy/first-run.done" ]] && break
+  [[ -f "$HOME/.local/state/cosmarchy/first-run.done" ]] && break
   sleep 5
 done
-trace "first-run stamp present: $([[ -f "$HOME/.local/state/gnomarchy/first-run.done" ]] && echo yes || echo no)"
+trace "first-run stamp present: $([[ -f "$HOME/.local/state/cosmarchy/first-run.done" ]] && echo yes || echo no)"
 
 echo "=== Session verification ==="
 echo "session type: ${XDG_SESSION_TYPE:-unknown}"
 echo
 
-if [[ -f "$HOME/.local/state/gnomarchy/first-run.done" ]]; then
-  ok "gnomarchy-first-run completed"
+if [[ -f "$HOME/.local/state/cosmarchy/first-run.done" ]]; then
+  ok "cosmarchy-first-run completed"
 else
-  no "gnomarchy-first-run never completed" "autostart entry did not run"
+  no "cosmarchy-first-run never completed" "autostart entry did not run"
 fi
 
 # --- Third boot: running from a snapshot ------------------------------------
@@ -86,14 +86,14 @@ if [[ "$MODE" == snapshot ]]; then
     no "/ is not an overlay" "$(findmnt -no FSTYPE,SOURCE,OPTIONS /)"
   [[ " ${cmdline_words[*]} " == *" rootflags=subvol=@snapshots/$n/snapshot "* ]] &&
     ok "the root is snapshot $n" || no "the command line does not point at snapshot $n"
-  if echo probe >/var/tmp/gnomarchy-overlay-probe; then
+  if echo probe >/var/tmp/cosmarchy-overlay-probe; then
     ok "the root accepts writes (CI checks they never reach the snapshot)"
   else
     no "the snapshot root is not writable"
   fi
   notified=0
   for _ in $(seq 1 30); do
-    if journalctl --user -t gnomarchy-snapshot-notify --no-pager | grep -q "booted from snapshot $n"; then
+    if journalctl --user -t cosmarchy-snapshot-notify --no-pager | grep -q "booted from snapshot $n"; then
       notified=1
       break
     fi
@@ -104,12 +104,12 @@ if [[ "$MODE" == snapshot ]]; then
   systemctl --failed --no-legend --no-pager
   # A transaction here put the new kernel on the persistent ESP while its
   # modules vanished with the overlay, so the guard hook must refuse it.
-  if guard_out="$(/usr/local/lib/gnomarchy/boot/gnomarchy-boot guard 2>&1)"; then
-    no "gnomarchy-boot guard lets a snapshot boot through"
+  if guard_out="$(/usr/local/lib/cosmarchy/boot/cosmarchy-boot guard 2>&1)"; then
+    no "cosmarchy-boot guard lets a snapshot boot through"
   elif [[ "$guard_out" == *"running snapshot $n"* ]]; then
-    ok "gnomarchy-boot guard refuses a snapshot boot and names it"
+    ok "cosmarchy-boot guard refuses a snapshot boot and names it"
   else
-    no "gnomarchy-boot guard refused without naming snapshot $n" "$guard_out"
+    no "cosmarchy-boot guard refused without naming snapshot $n" "$guard_out"
   fi
   menu_before="$(b2sum /boot/limine.conf)"
   pkg="$(find /var/cache/pacman/pkg -name 'file-[0-9]*.pkg.tar.zst' | sort | tail -n1)"
@@ -122,12 +122,12 @@ if [[ "$MODE" == snapshot ]]; then
   fi
   [[ "$(b2sum /boot/limine.conf)" == "$menu_before" ]] &&
     ok "the refused transaction left the menu alone" || no "the refused transaction changed limine.conf"
-  if gnomarchy snapshot restore "$n" --yes; then
-    ok "gnomarchy snapshot restore $n succeeded"
+  if cosmarchy snapshot restore "$n" --yes; then
+    ok "cosmarchy snapshot restore $n succeeded"
   else
-    no "gnomarchy snapshot restore $n failed"
+    no "cosmarchy snapshot restore $n failed"
   fi
-  grep -qx 'default_entry: Gnomarchy/linux' /boot/limine.conf &&
+  grep -qx 'default_entry: Cosmarchy/linux' /boot/limine.conf &&
     ok "the menu defaults to linux again" || no "the menu does not default to linux after the restore"
   finish
 fi
@@ -213,7 +213,7 @@ fi
 
 # --- Regression: tiling enabled but not running ----------------------------
 #
-# Tiling Shell is the only tiling Gnomarchy ships. Enabled is not the same as
+# Tiling Shell is the only tiling Cosmarchy ships. Enabled is not the same as
 # loaded: a build that does not declare this shell's version sits in
 # enabled-extensions and does nothing, which is what GNOME 51 did to the
 # zips that were bundled for 50. Ask the shell, not dconf.
@@ -241,10 +241,10 @@ fi
 
 # --- Regression: two commands on one accelerator ---------------------------
 #
-# Gnomarchy binds Super+K to the keybindings browser and Super+Shift+K to the
-# manual, and the tiling extension Gnomarchy used to offer wanted K and Shift+K
+# Cosmarchy binds Super+K to the keybindings browser and Super+Shift+K to the
+# manual, and the tiling extension Cosmarchy used to offer wanted K and Shift+K
 # for hjkl navigation. Both were set at once for a whole release: the key did
-# whichever the shell happened to register last. No Gnomarchy custom keybinding
+# whichever the shell happened to register last. No Cosmarchy custom keybinding
 # may share an accelerator with Tiling Shell's.
 collect_custom_bindings() {
   local list slot path binding
@@ -285,7 +285,7 @@ done
 if ((${#tiling_keys[@]} == 0)); then
   echo "INFO  no tiling extension bindings to compare against"
 elif ((${#clashes[@]} == 0)); then
-  ok "no Gnomarchy command shares a key with the tiling extension (${#tiling_keys[@]} checked)"
+  ok "no Cosmarchy command shares a key with the tiling extension (${#tiling_keys[@]} checked)"
 else
   no "${#clashes[@]} accelerator(s) bound twice" "${clashes[*]}"
 fi
@@ -293,7 +293,7 @@ fi
 # --- Regression: Super+N switched workspace and launched an app ------------
 #
 # GNOME ships switch-to-application-1..9 on Super+1..9 in
-# org.gnome.shell.keybindings, and Gnomarchy puts switch-to-workspace-N on the
+# org.gnome.shell.keybindings, and Cosmarchy puts switch-to-workspace-N on the
 # same keys in org.gnome.desktop.wm.keybindings -- six of them by default, all
 # nine on the Omarchy profile. Every one of those keys had two handlers and did
 # whichever the shell registered last. Turning Dash to Dock's hot-keys off,
@@ -350,7 +350,7 @@ for entry in /usr/share/applications/code-oss.desktop   /usr/share/applications/
 done
 
 # --- Boot menu: snapshots, snap-pac and the theme ---------------------------
-BOOT_BIN=/usr/local/lib/gnomarchy/boot/gnomarchy-boot
+BOOT_BIN=/usr/local/lib/cosmarchy/boot/cosmarchy-boot
 LIMINE=/boot/limine.conf
 
 limine_refs_ok() {
@@ -386,10 +386,10 @@ else
 fi
 
 # shellcheck source=../../default/boot/lib/palette.sh
-source "$HOME/.local/share/gnomarchy/default/boot/lib/palette.sh"
-want="$(boot_palette_from_alacritty "$HOME/.local/share/gnomarchy/themes/gruvbox/alacritty.toml" |
+source "$HOME/.local/share/cosmarchy/default/boot/lib/palette.sh"
+want="$(boot_palette_from_alacritty "$HOME/.local/share/cosmarchy/themes/gruvbox/alacritty.toml" |
   sed -n 's/^BACKGROUND=//p')"
-gnomarchy-theme-set gruvbox >/dev/null
+cosmarchy-theme-set gruvbox >/dev/null
 recoloured=0
 for _ in $(seq 1 20); do
   grep -qx "term_background: 00$want" "$LIMINE" && { recoloured=1; break; }
@@ -397,16 +397,16 @@ for _ in $(seq 1 20); do
 done
 ((recoloured)) && ok "a theme change recolours the Limine menu" ||
   no "the Limine menu kept its colours after a theme change" "$(grep '^term_background' "$LIMINE")"
-gnomarchy-theme-set tokyo-night >/dev/null
+cosmarchy-theme-set tokyo-night >/dev/null
 # The theme change queues a menu regeneration (a path unit) that renders the
 # default entry. Wait for it to land and finish, or it can run after the
 # hand-over below and reset the third boot's default.
-want_back="$(boot_palette_from_alacritty "$HOME/.local/share/gnomarchy/themes/tokyo-night/alacritty.toml" |
+want_back="$(boot_palette_from_alacritty "$HOME/.local/share/cosmarchy/themes/tokyo-night/alacritty.toml" |
   sed -n 's/^BACKGROUND=//p')"
 settled=0
 for _ in $(seq 1 30); do
   if grep -qx "term_background: 00$want_back" "$LIMINE" &&
-    ! systemctl is-active --quiet gnomarchy-boot-theme.service; then
+    ! systemctl is-active --quiet cosmarchy-boot-theme.service; then
     settled=1
     break
   fi
@@ -425,12 +425,12 @@ tz="$(timedatectl show -p Timezone --value)"
 # what it needs from the base install is: Docker running, the user in its
 # group from the first login on, FreeRDP. KVM is not checked: this session
 # runs in a VM without nested virtualization.
-if windows_status="$(gnomarchy windows status 2>&1)"; then
-  ok "gnomarchy windows status runs"
+if windows_status="$(cosmarchy windows status 2>&1)"; then
+  ok "cosmarchy windows status runs"
 else
-  no "gnomarchy windows status failed" "$windows_status"
+  no "cosmarchy windows status failed" "$windows_status"
 fi
-[[ "$windows_status" == *"not installed (gnomarchy windows install)"* ]] &&
+[[ "$windows_status" == *"not installed (cosmarchy windows install)"* ]] &&
   ok "WinBoat is not installed until asked for" || no "WinBoat status is unexpected" "$windows_status"
 [[ "$windows_status" == *"Docker: the service is running"* ]] &&
   ok "Docker is running for WinBoat" || no "Docker is not running" "$windows_status"
@@ -443,12 +443,12 @@ fi
 # every module and built its window, which makes this the compiler this stack
 # does not otherwise have.
 trace "launching the control center"
-setsid gnomarchy-menu >/var/tmp/gnomarchy-gui.log 2>&1 &
+setsid cosmarchy-menu >/var/tmp/cosmarchy-gui.log 2>&1 &
 gui_pid=$!
 
 owned=0
 for _ in $(seq 1 20); do
-  if busctl --user list --no-legend --no-pager | grep -q org.gnomarchy.ControlCenter; then
+  if busctl --user list --no-legend --no-pager | grep -q org.cosmarchy.ControlCenter; then
     owned=1
     break
   fi
@@ -456,9 +456,9 @@ for _ in $(seq 1 20); do
 done
 
 if (( owned )); then
-  ok "control center owns org.gnomarchy.ControlCenter"
+  ok "control center owns org.cosmarchy.ControlCenter"
 else
-  no "control center never appeared on the session bus" "$(tail -n 5 /var/tmp/gnomarchy-gui.log)"
+  no "control center never appeared on the session bus" "$(tail -n 5 /var/tmp/cosmarchy-gui.log)"
 fi
 
 kill "$gui_pid" 2>/dev/null || true  # already gone if it crashed; not a failure
@@ -467,11 +467,11 @@ kill "$gui_pid" 2>/dev/null || true  # already gone if it crashed; not a failure
 # snapshot 1, includes CI's autologin and this script. No queued regeneration
 # may follow --default, so let the theme service go idle first.
 for _ in $(seq 1 30); do
-  systemctl is-active --quiet gnomarchy-boot-theme.service || break
+  systemctl is-active --quiet cosmarchy-boot-theme.service || break
   sleep 1
 done
 if [[ "$snap" =~ ^[0-9]+$ ]] && sudo -n "$BOOT_BIN" update --default "snapshot:$snap" &&
-  grep -q "^default_entry: Gnomarchy/Snapshots/$snap | " "$LIMINE"; then
+  grep -q "^default_entry: Cosmarchy/Snapshots/$snap | " "$LIMINE"; then
   ok "the next boot defaults to snapshot $snap"
   echo "SNAPSHOT: $snap"
 else

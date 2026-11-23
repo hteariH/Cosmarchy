@@ -2,8 +2,8 @@
 
 `gui/` is a GTK4/libadwaita application written in GJS, run directly with
 `gjs -m gui/src/main.js --page=<menu|keybindings|manual>` — there is no build
-step and no transpilation. `bin/gnomarchy-menu`, `bin/gnomarchy-keybindings`
-and `bin/gnomarchy-manual` launch it and fall back to their old text paths
+step and no transpilation. `bin/cosmarchy-menu`, `bin/cosmarchy-keybindings`
+and `bin/cosmarchy-manual` launch it and fall back to their old text paths
 when there is no display or no `gjs`.
 
 `gui/src/lib/` splits into two kinds of module. The ones with a unit test in

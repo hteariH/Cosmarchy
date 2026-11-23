@@ -54,7 +54,7 @@ boot_snapper_init() {
   # pipefail would then read an existing snapshot as absent.
   local listed
   listed="$(snapper --no-dbus --csvout --no-headers -c root list --columns description)"
-  if ! grep -qxF 'Gnomarchy installed' <<<"$listed"; then
-    snapper --no-dbus -c root create --description 'Gnomarchy installed'
+  if ! grep -qxF 'Cosmarchy installed' <<<"$listed"; then
+    snapper --no-dbus -c root create --description 'Cosmarchy installed'
   fi
 }

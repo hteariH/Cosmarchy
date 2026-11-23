@@ -1,8 +1,8 @@
 #!/bin/bash
 
-gnomarchy_header "Installing Base Gnomarchy Packages"
+cosmarchy_header "Installing Base Cosmarchy Packages"
 
-package_file="$GNOMARCHY_INSTALL/gnomarchy-base.packages"
+package_file="$COSMARCHY_INSTALL/cosmarchy-base.packages"
 
 # Parse packages, removing comments and blank lines
 mapfile -t packages < <(grep -v '^#' "$package_file" | grep -v '^[[:space:]]*$' | tr -d '\r')
@@ -22,10 +22,10 @@ done < <(pacman -Slq 2>/dev/null)
 # every package missing: fall back to handing the full list to pacman so it
 # reports the real problem itself.
 if ((${#available_index[@]} == 0)); then
-  gnomarchy_warn "Could not read the package databases; installing without pre-validation."
+  cosmarchy_warn "Could not read the package databases; installing without pre-validation."
   echo "Installing ${#packages[@]} core packages via pacman..."
   sudo pacman -S --noconfirm --needed "${packages[@]}"
-  gnomarchy_step "Core packages successfully installed"
+  cosmarchy_step "Core packages successfully installed"
   return 0 2>/dev/null || exit 0
 fi
 
@@ -43,19 +43,19 @@ for pkg in "${packages[@]}"; do
 done
 
 if ((${#unresolved[@]} > 0)); then
-  gnomarchy_warn "${#unresolved[@]} package(s) not found in any configured repository:"
+  cosmarchy_warn "${#unresolved[@]} package(s) not found in any configured repository:"
   for pkg in "${unresolved[@]}"; do
-    gnomarchy_substep "$pkg"
+    cosmarchy_substep "$pkg"
   done
-  gnomarchy_warn "Continuing without them; dependent features may be unavailable."
+  cosmarchy_warn "Continuing without them; dependent features may be unavailable."
 fi
 
 if ((${#resolved[@]} == 0)); then
-  gnomarchy_error "No installable packages resolved - check the mirrorlist and try again."
+  cosmarchy_error "No installable packages resolved - check the mirrorlist and try again."
   exit 1
 fi
 
 echo "Installing ${#resolved[@]} core packages via pacman..."
 sudo pacman -S --noconfirm --needed "${resolved[@]}"
 
-gnomarchy_step "Core packages successfully installed"
+cosmarchy_step "Core packages successfully installed"

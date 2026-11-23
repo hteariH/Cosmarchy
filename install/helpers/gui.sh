@@ -7,9 +7,9 @@
 # troubleshooting page matters most, there is no display and possibly no gjs.
 # In those cases this returns non-zero and the caller uses its text path.
 
-gnomarchy_launch_gui() {
+cosmarchy_launch_gui() {
   local page="$1"
-  local root="${GNOMARCHY_PATH:-$HOME/.local/share/gnomarchy}"
+  local root="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
   local entry="$root/gui/src/main.js"
 
   [[ -n "$WAYLAND_DISPLAY" || -n "$DISPLAY" ]] || return 1

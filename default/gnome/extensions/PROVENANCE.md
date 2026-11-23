@@ -15,7 +15,7 @@ for GNOME 46-51 (Arch only has it in the AUR). It is KDE Connect for GNOME;
 `install/config/systemd.sh` adds the ufw rules for its ports 1714-1764. `install-extensions.py` falls back to fetching
 them from there by UUID when a zip is absent, so they can simply be replaced.
 
-`tilingshell@ferrarodomenico.com` is Gnomarchy's tiling, with
+`tilingshell@ferrarodomenico.com` is Cosmarchy's tiling, with
 `enable-autotiling` off. Its auto-tiling places a new window into a fixed tile
 of a static layout and never resizes the windows already on screen, which is
 not the behaviour the distribution advertised; everything else it does --
@@ -30,7 +30,7 @@ fork -- the extensions.gnome.org Forge stops at GNOME 49.
 `tophat@fflewddur.github.io` was the top-bar CPU/memory monitor. Its last
 release (v24) stops at GNOME 50 and there is no build for 51 on
 extensions.gnome.org or in its GitHub releases, so it is no longer shipped.
-Bring it back once a release declares the GNOME version Gnomarchy runs.
+Bring it back once a release declares the GNOME version Cosmarchy runs.
 
 Whenever Arch moves to a new GNOME, every zip here has to be checked against
 it: `iso/tests/verify-install.sh` fails the install smoke test for any

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Gnomarchy Brave Origin Installer
+Cosmarchy Brave Origin Installer
 Downloads official pre-compiled Brave Origin Linux binary from GitHub releases,
 installs it to /opt/brave-origin, sets up system symlinks, desktop entry, and default browser handler.
 """

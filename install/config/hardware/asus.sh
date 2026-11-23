@@ -49,7 +49,7 @@ if lspci 2>/dev/null | grep -iE 'vga|3d' | grep -qi nvidia; then
       echo "  Hybrid NVIDIA graphics detected; installing supergfxctl..."
       if "$helper" -S --needed --noconfirm supergfxctl >/dev/null 2>&1; then
         sudo systemctl enable supergfxd.service >/dev/null 2>&1 || true
-        echo "  supergfxd enabled - switch with 'gnomarchy asus graphics'"
+        echo "  supergfxd enabled - switch with 'cosmarchy asus graphics'"
       else
         echo "  Warning: supergfxctl failed to build; graphics switching unavailable."
       fi

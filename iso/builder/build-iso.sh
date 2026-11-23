@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# Build Gnomarchy Bootable Installation ISO
+# Build Cosmarchy Bootable Installation ISO
 set -e
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 ISO_DIR="$REPO_ROOT/iso"
 CONFIGS_DIR="$ISO_DIR/configs"
 OUT_DIR="${1:-$REPO_ROOT/out}"
-WORK_DIR="/tmp/gnomarchy-iso-work"
-PROFILE_DIR="/tmp/gnomarchy-iso-profile"
+WORK_DIR="/tmp/cosmarchy-iso-work"
+PROFILE_DIR="/tmp/cosmarchy-iso-profile"
 
 if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root (or with sudo) to invoke mkarchiso."
@@ -22,7 +22,7 @@ if ! command -v mkarchiso >/dev/null 2>&1 || ! command -v rsync >/dev/null 2>&1;
   pacman -S --noconfirm --needed archiso git rsync base-devel
 fi
 
-echo -e "\033[1;36m==> Preparing Gnomarchy ISO Profile\033[0m"
+echo -e "\033[1;36m==> Preparing Cosmarchy ISO Profile\033[0m"
 echo "Repository Root: $REPO_ROOT"
 echo "Output Directory: $OUT_DIR"
 
@@ -43,8 +43,8 @@ if [ -d /usr/share/archiso/configs/releng ]; then
   fi
 fi
 
-# 2. Overlay Gnomarchy custom configurations
-echo "Overlaying Gnomarchy custom configurations..."
+# 2. Overlay Cosmarchy custom configurations
+echo "Overlaying Cosmarchy custom configurations..."
 cp -r "$CONFIGS_DIR/"* "$PROFILE_DIR/"
 
 # 3. Merge releng packages + custom packages and deduplicate
@@ -56,8 +56,8 @@ elif [ -f "$CONFIGS_DIR/packages.x86_64" ]; then
 fi
 
 # 4. Synchronize current repository into ISO root for offline/local install
-echo "Syncing Gnomarchy files into live ISO filesystem..."
-mkdir -p "$PROFILE_DIR/airootfs/root/gnomarchy"
+echo "Syncing Cosmarchy files into live ISO filesystem..."
+mkdir -p "$PROFILE_DIR/airootfs/root/cosmarchy"
 # Exclude anything a CI job may leave in the repo root; the whole tree is
 # copied into the image, and the smoke test shipped its OVMF_VARS.fd this way.
 rsync -a \
@@ -65,7 +65,7 @@ rsync -a \
   --exclude="*.fd" --exclude="*.qcow2" --exclude="*.img" --exclude="*.iso" \
   --exclude="answers" --exclude="artifacts" --exclude="*.log" \
   --exclude="node_modules" --exclude=".wrangler" --exclude="__pycache__" \
-  "$REPO_ROOT/" "$PROFILE_DIR/airootfs/root/gnomarchy/"
+  "$REPO_ROOT/" "$PROFILE_DIR/airootfs/root/cosmarchy/"
 
 # Record which commit this image was built from.
 #
@@ -77,16 +77,16 @@ rsync -a \
 # have and reverted every file the branch changed -- so the smoke test was
 # verifying main rather than the branch under test, and the installer was
 # rewriting its own scripts while bash was still reading them.
-# GNOMARCHY_BUILD_COMMIT wins over asking git, because this script usually runs
+# COSMARCHY_BUILD_COMMIT wins over asking git, because this script usually runs
 # inside a container with the repository bind-mounted: .git is present but owned
 # by another uid, so git refuses it as dubious ownership and reports nothing.
-BUILD_COMMIT="${GNOMARCHY_BUILD_COMMIT:-}"
+BUILD_COMMIT="${COSMARCHY_BUILD_COMMIT:-}"
 if [[ -z "$BUILD_COMMIT" ]] && git -C "$REPO_ROOT" rev-parse HEAD >/dev/null 2>&1; then
   BUILD_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD)"
 fi
 
 if [[ -n "$BUILD_COMMIT" ]]; then
-  printf '%s\n' "$BUILD_COMMIT" > "$PROFILE_DIR/airootfs/root/gnomarchy/install/.build-commit"
+  printf '%s\n' "$BUILD_COMMIT" > "$PROFILE_DIR/airootfs/root/cosmarchy/install/.build-commit"
   echo "Image records build commit ${BUILD_COMMIT:0:7}"
 else
   echo "Build commit unknown; the installed repository will track main."
@@ -94,22 +94,22 @@ fi
 
 # Ensure installer script permissions inside profile
 chmod 755 "$PROFILE_DIR/airootfs/root/.automated_script.sh" 2>/dev/null || true
-chmod +x "$PROFILE_DIR/airootfs/root/gnomarchy/bin"/* 2>/dev/null || true
-chmod +x "$PROFILE_DIR/airootfs/root/gnomarchy/install.sh" 2>/dev/null || true
+chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/bin"/* 2>/dev/null || true
+chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/install.sh" 2>/dev/null || true
 
 # Pre-populate bundled wallpapers into ISO live filesystem
 echo "Installing bundled wallpapers to ISO rootfs..."
-mkdir -p "$PROFILE_DIR/airootfs/usr/share/backgrounds/gnomarchy"
+mkdir -p "$PROFILE_DIR/airootfs/usr/share/backgrounds/cosmarchy"
 for bg in "$REPO_ROOT"/themes/*/backgrounds/*; do
   if [ -f "$bg" ]; then
-    cp -f "$bg" "$PROFILE_DIR/airootfs/usr/share/backgrounds/gnomarchy/" 2>/dev/null || true
+    cp -f "$bg" "$PROFILE_DIR/airootfs/usr/share/backgrounds/cosmarchy/" 2>/dev/null || true
   fi
 done
-chmod 755 "$PROFILE_DIR/airootfs/usr/share/backgrounds/gnomarchy" 2>/dev/null || true
-chmod 644 "$PROFILE_DIR/airootfs/usr/share/backgrounds/gnomarchy"/* 2>/dev/null || true
+chmod 755 "$PROFILE_DIR/airootfs/usr/share/backgrounds/cosmarchy" 2>/dev/null || true
+chmod 644 "$PROFILE_DIR/airootfs/usr/share/backgrounds/cosmarchy"/* 2>/dev/null || true
 
 # 5. Run mkarchiso
-echo -e "\n\033[1;36m==> Running mkarchiso to build Gnomarchy ISO...\033[0m"
+echo -e "\n\033[1;36m==> Running mkarchiso to build Cosmarchy ISO...\033[0m"
 mkarchiso -v -w "$WORK_DIR" -o "$OUT_DIR" "$PROFILE_DIR"
 
 echo -e "\n\033[1;32m✓ ISO Build Completed Successfully!\033[0m"

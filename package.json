@@ -1,8 +1,8 @@
 {
-  "name": "gnomarchy-site",
+  "name": "cosmarchy-site",
   "version": "1.0.0",
   "private": true,
-  "description": "Official website for Gnomarchy Linux",
+  "description": "Official website for Cosmarchy Linux",
   "scripts": {
     "dev": "wrangler pages dev site",
     "build": "node -e \"console.log('Site ready in site/')\"",

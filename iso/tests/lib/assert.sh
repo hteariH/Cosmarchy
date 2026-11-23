@@ -42,11 +42,11 @@ t_false() {
 }
 
 # t_golden LABEL ACTUAL_FILE GOLDEN_FILE
-# GNOMARCHY_UPDATE_GOLDEN=1 rewrites the golden file instead of comparing; read
+# COSMARCHY_UPDATE_GOLDEN=1 rewrites the golden file instead of comparing; read
 # the diff before committing one.
 t_golden() {
   local label="$1" actual="$2" golden="$3"
-  if [[ "${GNOMARCHY_UPDATE_GOLDEN:-}" == 1 ]]; then
+  if [[ "${COSMARCHY_UPDATE_GOLDEN:-}" == 1 ]]; then
     cp "$actual" "$golden"
     t_ok "$label (golden updated)"
   elif diff -u "$golden" "$actual" >/dev/null; then

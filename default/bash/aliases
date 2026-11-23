@@ -1,4 +1,4 @@
-# Gnomarchy developer aliases
+# Cosmarchy developer aliases
 
 # Listing (eza) - `ls` is safe to shadow, flags are compatible enough
 alias ls='eza --icons'
@@ -33,7 +33,7 @@ alias vim='nvim'
 alias ..='cd ..'
 alias ...='cd ../..'
 
-alias update='gnomarchy update'
-alias theme='gnomarchy theme'
-alias snapshot='gnomarchy snapshot'
-alias menu='gnomarchy menu'
+alias update='cosmarchy update'
+alias theme='cosmarchy theme'
+alias snapshot='cosmarchy snapshot'
+alias menu='cosmarchy menu'

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gnomarchy_header "Installing & Configuring GNOME Extensions"
+cosmarchy_header "Installing & Configuring GNOME Extensions"
 
 EXTENSIONS=(
   "dash-to-dock@micxgx.gmail.com"
@@ -25,14 +25,14 @@ if command -v gnome-extensions >/dev/null 2>&1; then
   done
 fi
 
-# 3. Configure Tiling Shell, Gnomarchy's tiling, without auto-placement
+# 3. Configure Tiling Shell, Cosmarchy's tiling, without auto-placement
 #
 # enable-autotiling stays OFF here. With it on, Tiling Shell drops each new
 # window into a fixed tile of a static layout and never touches the windows
 # already on screen -- which is not tiling. With it off, Tiling Shell is a good
 # manual tiler: hold Ctrl while dragging to pick a zone, drag to the top for
 # snap assist, Super+Shift+arrows to throw a window into the next tile.
-# bin/gnomarchy-tiling writes the same values; keep the two in step.
+# bin/cosmarchy-tiling writes the same values; keep the two in step.
 if gsettings list-schemas 2>/dev/null | grep -q "org.gnome.shell.extensions.tilingshell"; then
   echo "  Configuring Tiling Shell (manual zones, no auto-placement)..."
   TS="org.gnome.shell.extensions.tilingshell"
@@ -128,4 +128,4 @@ gsettings set org.gnome.shell favorite-apps "[ \
   'org.gnome.Settings.desktop' \
 ]" 2>/dev/null || true
 
-gnomarchy_step "GNOME extensions installed and pre-configured"
+cosmarchy_step "GNOME extensions installed and pre-configured"

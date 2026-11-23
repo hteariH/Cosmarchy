@@ -1,10 +1,10 @@
-# The Gnomarchy mark
+# The Cosmarchy mark
 
 A grid of hard blocks with one cell replaced by a circle that is too big for it.
 
 The grid is Omarchy: a terminal aesthetic of axis-aligned blocks, the same
 language as its own blocky wordmark. The circle is GNOME: soft geometry in a
-place the grid did not leave room for. Gnomarchy is the point where those two
+place the grid did not leave room for. Cosmarchy is the point where those two
 meet, so the mark is a grid that something round has grown through.
 
 The circle is 58% wider than the cell it occupies. That is the whole idea: a
@@ -34,7 +34,7 @@ Rejected on the way here, for the record:
 | :-- | :-- |
 | `assets/logo.svg` | the mark, on transparency |
 | `assets/logo-mono.svg` | single colour via `currentColor`; print, stencils, terminals |
-| `site/assets/gnomarchy-icon.svg` | app icon, inset on the rounded square GNOME expects |
+| `site/assets/cosmarchy-icon.svg` | app icon, inset on the rounded square GNOME expects |
 | `site/favicon.svg` | the same, smaller radius |
 | `site/assets/banner.png` | 1200x630 brand card; the site's Open Graph image |
 
@@ -79,11 +79,11 @@ rerun it rather than retouching the PNG. It needs Pillow and picks up DejaVu or
 Segoe UI, whichever the machine has.
 
 It replaced an AI-rendered picture of a desk that the site presented as
-"Gnomarchy GNOME 50 Desktop Interface". It was not a screenshot of anything --
+"Cosmarchy GNOME 50 Desktop Interface". It was not a screenshot of anything --
 the terminal text in it was nonsense and the logo on the wall was invented --
 so it was making a claim the project could not keep. A brand card claims
 nothing. A real screenshot would be better still, and should replace it once
 there is one worth showing.
 
-`site/assets/gnomarchy-wordmark.svg` was a rect-traced bitmap rather than
+`site/assets/cosmarchy-wordmark.svg` was a rect-traced bitmap rather than
 outlined type, referenced by nothing. It has been deleted.

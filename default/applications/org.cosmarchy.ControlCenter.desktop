@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Cosmarchy
+Comment=Themes, shortcuts, capture, snapshots and the manual
+Exec=cosmarchy-menu
+Icon=preferences-desktop
+Terminal=false
+Categories=GNOME;GTK;Settings;
+Keywords=cosmarchy;theme;keybindings;manual;snapshot;
+StartupWMClass=org.cosmarchy.ControlCenter

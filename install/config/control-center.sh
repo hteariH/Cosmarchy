@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gnomarchy_header "Installing the Gnomarchy Control Center"
+cosmarchy_header "Installing the Cosmarchy Control Center"
 
 # Nothing is built: the app is GJS source that arrives with the repository and
 # updates with `git pull`, like everything else here. All this stage does is
@@ -10,14 +10,14 @@ gnomarchy_header "Installing the Gnomarchy Control Center"
 # No dconf is written, so this works inside arch-chroot: the three commands
 # that launch it are already bound by install/desktop/set-gnome-hotkeys.sh.
 APPLICATIONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
-DESKTOP_SOURCE="$GNOMARCHY_PATH/default/applications/org.gnomarchy.ControlCenter.desktop"
+DESKTOP_SOURCE="$COSMARCHY_PATH/default/applications/org.cosmarchy.ControlCenter.desktop"
 
 if [[ ! -f "$DESKTOP_SOURCE" ]]; then
-  gnomarchy_warn "No desktop entry at $DESKTOP_SOURCE; skipping."
+  cosmarchy_warn "No desktop entry at $DESKTOP_SOURCE; skipping."
   return 0 2>/dev/null || exit 0
 fi
 
 mkdir -p "$APPLICATIONS_DIR"
 cp -f "$DESKTOP_SOURCE" "$APPLICATIONS_DIR/"
 
-gnomarchy_step "Control center published to $APPLICATIONS_DIR"
+cosmarchy_step "Control center published to $APPLICATIONS_DIR"

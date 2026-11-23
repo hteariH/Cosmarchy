@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
-iso_name="gnomarchy-linux"
-iso_label="GNOMARCHY_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
-iso_publisher="Gnomarchy Linux Project <https://github.com/hteariH/Gnomarchy>"
-iso_application="Gnomarchy Linux Live/Installation Media"
+iso_name="cosmarchy-linux"
+iso_label="COSMARCHY_$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y%m)"
+iso_publisher="Cosmarchy Linux Project <https://github.com/hteariH/Gnomarchy>"
+iso_application="Cosmarchy Linux Live/Installation Media"
 iso_version="$(date --date="@${SOURCE_DATE_EPOCH:-$(date +%s)}" +%Y.%m.%d)"
 install_dir="arch"
 buildmodes=('iso')
@@ -22,5 +22,5 @@ file_permissions=(
   ["/root/.gnupg"]="0:0:700"
   ["/usr/local/bin/choose-mirror"]="0:0:755"
   ["/root/configurator"]="0:0:755"
-  ["/root/gnomarchy/iso/installer/gnomarchy-install"]="0:0:755"
+  ["/root/cosmarchy/iso/installer/cosmarchy-install"]="0:0:755"
 )

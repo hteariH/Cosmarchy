@@ -49,30 +49,30 @@ keymap_id_from_menu() {
   [[ "$1" =~ $re ]] && printf '%s\n' "${BASH_REMATCH[1]}"
 }
 
-# installer_check_answers — validates the GNOMARCHY_* answers read from
-# gnomarchy-unattended.conf and fills the defaults. Prints every problem, not
+# installer_check_answers — validates the COSMARCHY_* answers read from
+# cosmarchy-unattended.conf and fills the defaults. Prints every problem, not
 # just the first, because each CI round trip is long.
 installer_check_answers() {
   local -a problems=()
-  GNOMARCHY_FULLNAME="${GNOMARCHY_FULLNAME:-}"
-  GNOMARCHY_HOSTNAME="${GNOMARCHY_HOSTNAME:-gnomarchy}"
-  GNOMARCHY_TIMEZONE="${GNOMARCHY_TIMEZONE:-UTC}"
-  GNOMARCHY_KEYMAP="${GNOMARCHY_KEYMAP:-us}"
-  GNOMARCHY_ENCRYPT="${GNOMARCHY_ENCRYPT:-n}"
-  GNOMARCHY_DISK_PASSWORD="${GNOMARCHY_DISK_PASSWORD:-${GNOMARCHY_PASSWORD:-}}"
+  COSMARCHY_FULLNAME="${COSMARCHY_FULLNAME:-}"
+  COSMARCHY_HOSTNAME="${COSMARCHY_HOSTNAME:-cosmarchy}"
+  COSMARCHY_TIMEZONE="${COSMARCHY_TIMEZONE:-UTC}"
+  COSMARCHY_KEYMAP="${COSMARCHY_KEYMAP:-us}"
+  COSMARCHY_ENCRYPT="${COSMARCHY_ENCRYPT:-n}"
+  COSMARCHY_DISK_PASSWORD="${COSMARCHY_DISK_PASSWORD:-${COSMARCHY_PASSWORD:-}}"
 
-  [[ -n "${GNOMARCHY_DISK:-}" ]] || problems+=("GNOMARCHY_DISK is not set")
-  valid_username "${GNOMARCHY_USERNAME:-}" ||
-    problems+=("GNOMARCHY_USERNAME '${GNOMARCHY_USERNAME:-}' is not a valid username")
-  [[ -n "${GNOMARCHY_PASSWORD:-}" ]] || problems+=("GNOMARCHY_PASSWORD is not set")
-  valid_hostname "$GNOMARCHY_HOSTNAME" || problems+=("GNOMARCHY_HOSTNAME '$GNOMARCHY_HOSTNAME' is not a valid hostname")
-  valid_timezone "$GNOMARCHY_TIMEZONE" || problems+=("GNOMARCHY_TIMEZONE '$GNOMARCHY_TIMEZONE' is not a timezone")
-  keymap_fields "$GNOMARCHY_KEYMAP" >/dev/null ||
-    problems+=("GNOMARCHY_KEYMAP '$GNOMARCHY_KEYMAP' is not in keymaps.tsv")
-  case "${GNOMARCHY_ENCRYPT,,}" in
-    y | yes) GNOMARCHY_ENCRYPT=y ;;
-    n | no) GNOMARCHY_ENCRYPT=n ;;
-    *) problems+=("GNOMARCHY_ENCRYPT must be y or n, got '$GNOMARCHY_ENCRYPT'") ;;
+  [[ -n "${COSMARCHY_DISK:-}" ]] || problems+=("COSMARCHY_DISK is not set")
+  valid_username "${COSMARCHY_USERNAME:-}" ||
+    problems+=("COSMARCHY_USERNAME '${COSMARCHY_USERNAME:-}' is not a valid username")
+  [[ -n "${COSMARCHY_PASSWORD:-}" ]] || problems+=("COSMARCHY_PASSWORD is not set")
+  valid_hostname "$COSMARCHY_HOSTNAME" || problems+=("COSMARCHY_HOSTNAME '$COSMARCHY_HOSTNAME' is not a valid hostname")
+  valid_timezone "$COSMARCHY_TIMEZONE" || problems+=("COSMARCHY_TIMEZONE '$COSMARCHY_TIMEZONE' is not a timezone")
+  keymap_fields "$COSMARCHY_KEYMAP" >/dev/null ||
+    problems+=("COSMARCHY_KEYMAP '$COSMARCHY_KEYMAP' is not in keymaps.tsv")
+  case "${COSMARCHY_ENCRYPT,,}" in
+    y | yes) COSMARCHY_ENCRYPT=y ;;
+    n | no) COSMARCHY_ENCRYPT=n ;;
+    *) problems+=("COSMARCHY_ENCRYPT must be y or n, got '$COSMARCHY_ENCRYPT'") ;;
   esac
 
   ((${#problems[@]} == 0)) && return 0

@@ -6,7 +6,7 @@ The desktop configuration is applied at first login, not during installation -
 the installer runs in a chroot where dconf writes go nowhere.
 
 ```bash
-gnomarchy first-run
+cosmarchy first-run
 ```
 
 Then log out and back in.
@@ -14,11 +14,11 @@ Then log out and back in.
 To see what happened on the last attempt:
 
 ```bash
-journalctl --user -t gnomarchy-first-run
+journalctl --user -t cosmarchy-first-run
 ```
 
 That trace names the step that failed. Nothing at all means the autostart entry
-never ran; check that `~/.config/autostart/gnomarchy-first-run.desktop` exists
+never ran; check that `~/.config/autostart/cosmarchy-first-run.desktop` exists
 and does **not** contain `X-GNOME-Autostart-Phase`, which makes GNOME 50 and later skip
 the entry entirely.
 
@@ -29,7 +29,7 @@ Usually a missing compiled schema:
     GLib.FileError: Failed to open file ".../schemas/gschemas.compiled"
 
 ```bash
-gnomarchy update
+cosmarchy update
 ```
 
 Or directly:
@@ -45,12 +45,12 @@ Log out and back in afterwards - extensions load only when the shell starts.
 ## Tiling does nothing
 
 ```bash
-gnomarchy tiling status
+cosmarchy tiling status
 ```
 
 `shell state` should read `ACTIVE`. Anything else means the shell refused the
 extension -- usually a build that does not declare the running GNOME version.
-`gnomarchy tiling enable` re-applies Gnomarchy's settings if they were changed
+`cosmarchy tiling enable` re-applies Cosmarchy's settings if they were changed
 by hand.
 
 ## The wallpaper is a plain gradient
@@ -59,20 +59,20 @@ That is the bundled SVG fallback, which means the upstream wallpapers did not
 download.
 
 ```bash
-gnomarchy backgrounds
-gnomarchy theme set "$(gnomarchy theme current)"
+cosmarchy backgrounds
+cosmarchy theme set "$(cosmarchy theme current)"
 ```
 
-## gnomarchy update says nothing changed
+## cosmarchy update says nothing changed
 
 Check that it is actually tracking a repository:
 
 ```bash
-git -C ~/.local/share/gnomarchy status -sb
+git -C ~/.local/share/cosmarchy status -sb
 ```
 
 Machines installed from older ISOs were deployed without one. Recent versions
-of `gnomarchy update` create it automatically.
+of `cosmarchy update` create it automatically.
 
 ## A kernel command-line change does nothing
 
@@ -80,34 +80,34 @@ The boot menu is generated from `/etc/kernel/cmdline`, and editing that file
 alone does not regenerate it:
 
 ```bash
-gnomarchy boot update
+cosmarchy boot update
 ```
 
 The same applies if Limine warns of a hash mismatch at boot: the menu names a
 kernel or initramfs that has changed since it was written. Press a key to boot
-anyway, then run `gnomarchy boot update`.
+anyway, then run `cosmarchy boot update`.
 
 ## pacman says "this system is running snapshot N"
 
 You booted a snapshot from the menu, and package changes there would be lost
 at the next reboot while the kernel they install would not. Reboot into the
 normal entry, or make the snapshot the system with
-`gnomarchy snapshot restore N` and reboot. "A restore is pending" means a
+`cosmarchy snapshot restore N` and reboot. "A restore is pending" means a
 restore already ran: reboot first.
 
 ## A command is not found from a keybinding
 
-Every `gnomarchy-*` command must be in `/usr/local/bin` to be reachable from the
+Every `cosmarchy-*` command must be in `/usr/local/bin` to be reachable from the
 GNOME session, which does not read your shell profile.
 
 ```bash
-ls /usr/local/bin/gnomarchy*
-gnomarchy update
+ls /usr/local/bin/cosmarchy*
+cosmarchy update
 ```
 
 ## Getting more detail
 
-    /var/log/gnomarchy-installer.log      the installer, with the failing stage
-    /var/log/gnomarchy-install.log        installation
+    /var/log/cosmarchy-installer.log      the installer, with the failing stage
+    /var/log/cosmarchy-install.log        installation
     journalctl -b 0 /usr/bin/gnome-shell  the current session's shell
-    gnomarchy version --verbose           version, theme, migrations applied
+    cosmarchy version --verbose           version, theme, migrations applied

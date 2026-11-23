@@ -1,12 +1,12 @@
 # Snapshots and Rollback
 
 The root filesystem is Btrfs with Snapper, and every snapshot appears in the
-Limine boot menu under **Gnomarchy → Snapshots**.
+Limine boot menu under **Cosmarchy → Snapshots**.
 
 ```bash
-gnomarchy snapshot create "Before trying something risky"
-gnomarchy snapshot list
-gnomarchy snapshot restore 12
+cosmarchy snapshot create "Before trying something risky"
+cosmarchy snapshot list
+cosmarchy snapshot restore 12
 ```
 
 ## Automatic snapshots
@@ -14,8 +14,8 @@ gnomarchy snapshot restore 12
 `snap-pac` takes one before and one after every pacman transaction, so a
 package update that goes wrong is already covered. There are no timeline
 snapshots. Snapper prunes only the pairs `snap-pac` takes, keeping the last
-10 (5 marked important). Snapshots from `gnomarchy snapshot create` and
-snapshot 1, "Gnomarchy installed", are kept until you delete them.
+10 (5 marked important). Snapshots from `cosmarchy snapshot create` and
+snapshot 1, "Cosmarchy installed", are kept until you delete them.
 
 ## Trying a snapshot
 
@@ -27,23 +27,23 @@ snapshot 1, "Gnomarchy installed", are kept until you delete them.
    so and offers to restore it.
 
 Package changes are refused while you run a snapshot: pacman and
-`gnomarchy update` stop with "this system is running snapshot N". The boot
+`cosmarchy update` stop with "this system is running snapshot N". The boot
 partition is not part of the snapshot, so a kernel installed there would
 outlive the modules that went with it. Restore the snapshot first if you
 want to keep working from it.
 
 ## Restoring
 
-`gnomarchy snapshot restore <number>` makes a snapshot the system from the
+`cosmarchy snapshot restore <number>` makes a snapshot the system from the
 next boot on. It works from the normal system and from a snapshot you booted.
 The system you had is kept as `@restore-backup-<time>` until the next restore.
 Until you reboot, a second restore is refused, and so are package changes.
 
-After the reboot, run `gnomarchy update`. `/home` is not rolled back, and the
+After the reboot, run `cosmarchy update`. `/home` is not rolled back, and the
 record of applied migrations lives there, so migrations that ran after the
 snapshot was taken are not run again by themselves - their changes to the
 system are gone with the rest. The same update also puts the boot tooling
-from your current Gnomarchy checkout back in place of the snapshot's copy.
+from your current Cosmarchy checkout back in place of the snapshot's copy.
 
 ## Limits
 
@@ -60,7 +60,7 @@ and every initramfs rebuild (`mkinitcpio -P` included) regenerate it. The
 kernel command line lives in `/etc/kernel/cmdline`; after editing it, run
 
 ```bash
-gnomarchy boot update
+cosmarchy boot update
 ```
 
 ## Subvolume layout

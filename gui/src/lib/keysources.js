@@ -1,7 +1,7 @@
 // Every keybinding actually in effect, read through Gio.Settings.
 //
 // The bash original parsed the output of `gsettings` and had to special-case
-// "@as []" by hand (bin/gnomarchy-keybindings:36). Typed access removes that,
+// "@as []" by hand (bin/cosmarchy-keybindings:36). Typed access removes that,
 // and -- unlike string parsing -- it can also write, which the editor needs.
 
 import Gio from 'gi://Gio';
@@ -10,7 +10,7 @@ import { normalizeAccel } from './accel.js';
 
 const MEDIA_KEYS = 'org.gnome.settings-daemon.plugins.media-keys';
 const CUSTOM_SCHEMA = `${MEDIA_KEYS}.custom-keybinding`;
-// Tiling Shell is the only tiling extension Gnomarchy ships.
+// Tiling Shell is the only tiling extension Cosmarchy ships.
 const TILING_SHELL = 'org.gnome.shell.extensions.tilingshell';
 
 const SCHEMA_SECTIONS = [
@@ -19,7 +19,7 @@ const SCHEMA_SECTIONS = [
   ['org.gnome.mutter.keybindings', 'Mutter'],
 ];
 
-// Mirrors bin/gnomarchy-keybindings:dump_manual_tiling()'s `case` block.
+// Mirrors bin/cosmarchy-keybindings:dump_manual_tiling()'s `case` block.
 const TILING_SHELL_LABELS = {
   'move-window-left': 'Throw the window into the tile left',
   'move-window-down': 'Throw the window into the tile down',
@@ -48,7 +48,7 @@ function readCustomSlots() {
     const command = slot.get_string('command');
     bindings.push({
       id: `custom:${path}`,
-      section: 'Gnomarchy Commands',
+      section: 'Cosmarchy Commands',
       accel,
       description: name === '' ? command : name,
       kind: 'custom',
@@ -61,7 +61,7 @@ function readCustomSlots() {
 }
 
 // `keyOrder`, when given, both restricts and orders the keys read -- needed
-// for Tiling Shell, whose case block in bin/gnomarchy-keybindings lists keys
+// for Tiling Shell, whose case block in bin/cosmarchy-keybindings lists keys
 // in a deliberate (non-alphabetical) order. Without it, keys come
 // from the schema itself, sorted, matching dump_schema()'s `sort`.
 function readStrvSchema(schemaId, section, keyFilter, labelFor, keyOrder = null) {
@@ -109,7 +109,7 @@ function tilingShellEnabled() {
   return shell.get_strv('enabled-extensions').some((name) => name.includes('tilingshell'));
 }
 
-// Section order mirrors collect() in bin/gnomarchy-keybindings exactly, since
+// Section order mirrors collect() in bin/cosmarchy-keybindings exactly, since
 // the page renders sections in array order: custom slots, the three
 // desktop/shell/mutter schemas, then Tiling Shell last.
 export function readBindings() {

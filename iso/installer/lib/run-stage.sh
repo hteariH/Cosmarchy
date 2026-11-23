@@ -1,6 +1,6 @@
 #!/bin/bash
 # run-stage.sh LIBDIR FUNCTION — runs one installation stage in this fresh bash
-# process. gnomarchy-install starts it rather than calling the function in a
+# process. cosmarchy-install starts it rather than calling the function in a
 # subshell: errexit is off inside anything called as an operand of if, ! or ||,
 # and a subshell inherits that, so a stage could run on past a failure.
 # The globals a stage reads arrive in the environment (exported by main).

@@ -1,7 +1,7 @@
-// Gnomarchy Control Center.
+// Cosmarchy Control Center.
 //
-// Launched by bin/gnomarchy-menu, bin/gnomarchy-keybindings and
-// bin/gnomarchy-manual as: gjs -m <this file> --page=<name>
+// Launched by bin/cosmarchy-menu, bin/cosmarchy-keybindings and
+// bin/cosmarchy-manual as: gjs -m <this file> --page=<name>
 //
 // HANDLES_COMMAND_LINE gives single-instance behaviour: pressing Super+K while
 // the window is already open on the Manual page switches page and presents the
@@ -19,7 +19,7 @@ import { dataFile } from './lib/paths.js';
 const VALID_PAGES = ['menu', 'keybindings', 'manual'];
 
 const application = new Adw.Application({
-  applicationId: 'org.gnomarchy.ControlCenter',
+  applicationId: 'org.cosmarchy.ControlCenter',
   flags: Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
 });
 
@@ -27,7 +27,7 @@ let window = null;
 
 application.connect('startup', () => {
   const provider = new Gtk.CssProvider();
-  provider.load_from_path(dataFile('gnomarchy-gui.css'));
+  provider.load_from_path(dataFile('cosmarchy-gui.css'));
   Gtk.StyleContext.add_provider_for_display(
     Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
   );

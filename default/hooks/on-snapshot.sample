@@ -5,4 +5,4 @@
 description="$1"
 
 # Example: Push notification or audit log
-# logger -t gnomarchy-snapshot "Snapshot created: $description"
+# logger -t cosmarchy-snapshot "Snapshot created: $description"

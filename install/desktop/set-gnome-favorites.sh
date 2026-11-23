@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gnomarchy_header "Configuring Dock Favorites"
+cosmarchy_header "Configuring Dock Favorites"
 
 # Favorites must be computed from what is actually installed, not guessed.
 #
@@ -44,7 +44,7 @@ add_first_available "io.github.kolunmi.Bazaar.desktop"
 add_first_available "org.gnome.Settings.desktop"
 
 if ((${#favorites[@]} == 0)); then
-  gnomarchy_warn "No known applications found; leaving dock favorites untouched."
+  cosmarchy_warn "No known applications found; leaving dock favorites untouched."
   return 0 2>/dev/null || exit 0
 fi
 
@@ -57,7 +57,7 @@ list="$(IFS=,; echo "${quoted[*]}")"
 gsettings set org.gnome.shell favorite-apps "[$list]" 2>/dev/null || true
 
 for fav in "${favorites[@]}"; do
-  gnomarchy_substep "$fav"
+  cosmarchy_substep "$fav"
 done
 
-gnomarchy_step "Dock favorites set (${#favorites[@]} apps)"
+cosmarchy_step "Dock favorites set (${#favorites[@]} apps)"

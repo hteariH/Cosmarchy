@@ -1,0 +1,101 @@
+#!/bin/bash
+
+# Cosmarchy first-run desktop configuration
+#
+# Anything that writes to dconf needs a live D-Bus session bus. The ISO
+# installer runs inside arch-chroot, where no session bus exists, so every
+# `gsettings set` issued there is silently discarded. Custom keybindings are
+# the worst case: they live at relocatable dconf paths and cannot be expressed
+# in a gschema override, so they have no fallback at all.
+#
+# This script applies that configuration on the user's first graphical login,
+# then removes its own autostart entry. It is idempotent and safe to re-run by
+# hand at any time:  cosmarchy first-run
+set -eEo pipefail
+
+COSMARCHY_PATH="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
+export COSMARCHY_PATH
+export COSMARCHY_INSTALL="$COSMARCHY_PATH/install"
+export PATH="$COSMARCHY_PATH/bin:$PATH"
+
+AUTOSTART_FILE="$HOME/.config/autostart/cosmarchy-first-run.desktop"
+STAMP="${XDG_STATE_HOME:-$HOME/.local/state}/cosmarchy/first-run.done"
+
+# Launched from an autostart entry there is no terminal, so anything printed
+# here is lost. Mirror progress into the journal, which is where anyone
+# debugging "my shortcuts did not apply" will actually look:
+#
+#   journalctl --user -t cosmarchy-first-run
+trace() { logger -t cosmarchy-first-run -- "$*" 2>/dev/null || true; }
+
+# Report where it died rather than exiting silently mid-way.
+trap 'rc=$?; ((rc)) && trace "aborted with status $rc"' EXIT
+
+trace "starting (session=${XDG_SESSION_TYPE:-unknown}, user=$(id -un))"
+
+if ! command -v gsettings >/dev/null 2>&1; then
+  trace "gsettings unavailable; cannot configure the desktop"
+  echo "gsettings is unavailable; cannot configure the desktop." >&2
+  exit 1
+fi
+
+# Refuse to run without a session bus: writing here would silently do nothing,
+# and we would then delete the autostart entry and never retry.
+if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" && ! -S "/run/user/$(id -u)/bus" ]]; then
+  trace "no D-Bus session bus; skipping, will retry at next login"
+  echo "No D-Bus session bus; skipping (will retry at next login)." >&2
+  exit 0
+fi
+
+source "$COSMARCHY_INSTALL/helpers/presentation.sh"
+
+cosmarchy_header "Applying Cosmarchy Desktop Configuration"
+
+# The desktop steps are plain scripts that call gsettings; with a session bus
+# present they now actually take effect.
+for step in set-gnome-settings set-gnome-extensions set-gnome-terminal \
+  set-gnome-favorites set-gnome-hotkeys set-hardware-session set-keyboard-layout; do
+  script="$COSMARCHY_INSTALL/desktop/$step.sh"
+  [[ -f "$script" ]] || {
+    trace "step $step: script missing at $script"
+    continue
+  }
+  trace "step $step: running"
+  # shellcheck source=/dev/null
+  source "$script" || {
+    trace "step $step: FAILED"
+    cosmarchy_warn "Step $step reported an error; continuing."
+  }
+done
+
+# Re-apply the active theme so the terminal palette, GTK colours and wallpaper
+# land now that dconf writes actually persist.
+theme="tokyo-night"
+[[ -f "$HOME/.config/cosmarchy/current/theme.name" ]] &&
+  theme="$(<"$HOME/.config/cosmarchy/current/theme.name")"
+if command -v cosmarchy-theme-set >/dev/null 2>&1; then
+  cosmarchy-theme-set "$theme" >/dev/null 2>&1 ||
+    cosmarchy_warn "Could not apply theme $theme."
+fi
+
+trace "applying theme"
+mkdir -p "$(dirname "$STAMP")"
+date -Iseconds > "$STAMP"
+trace "wrote stamp $STAMP"
+
+# Remove the autostart entry so this runs only once per user.
+rm -f "$AUTOSTART_FILE"
+trace "completed successfully"
+
+cosmarchy_step "Desktop configuration applied"
+
+# Extensions only load after the shell restarts. Under Wayland the shell cannot
+# be restarted in place, so ask the user to log out instead of doing it for them.
+if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]]; then
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -u normal -i preferences-desktop \
+      "Cosmarchy is ready" \
+      "Log out and back in once to finish loading the desktop extensions." 2>/dev/null || true
+  fi
+  cosmarchy_warn "Log out and back in once to load the GNOME extensions."
+fi

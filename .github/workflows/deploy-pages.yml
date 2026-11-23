@@ -1,4 +1,4 @@
-name: Deploy Gnomarchy Website to Cloudflare Pages
+name: Deploy Cosmarchy Website to Cloudflare Pages
 
 on:
   push:

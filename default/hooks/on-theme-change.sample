@@ -1,5 +1,5 @@
 #!/bin/bash
-# Triggered when Gnomarchy theme changes
+# Triggered when Cosmarchy theme changes
 # Arguments: $1 = Theme name (e.g. "tokyo-night")
 
 theme="$1"

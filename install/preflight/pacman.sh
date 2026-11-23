@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gnomarchy_header "Configuring Pacman Package Manager"
+cosmarchy_header "Configuring Pacman Package Manager"
 
 # Enable parallel downloads and ILoveCandy if not already configured
 sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 5/' /etc/pacman.conf
@@ -15,4 +15,4 @@ fi
 
 # Refresh package databases
 sudo pacman -Sy --noconfirm
-gnomarchy_step "Pacman optimized and databases synchronized"
+cosmarchy_step "Pacman optimized and databases synchronized"

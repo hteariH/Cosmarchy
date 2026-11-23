@@ -3,8 +3,8 @@
 #
 # A theme's alacritty.toml is the canonical palette (CLAUDE.md, The theme
 # engine). This turns it into the KEY=rrggbb lines of
-# /etc/gnomarchy/boot-theme.conf, which gnomarchy-boot reads. Sourced by
-# gnomarchy-theme-set as the user, so it depends on nothing else here.
+# /etc/cosmarchy/boot-theme.conf, which cosmarchy-boot reads. Sourced by
+# cosmarchy-theme-set as the user, so it depends on nothing else here.
 
 # boot_palette_from_alacritty FILE — prints BACKGROUND, FOREGROUND, ACCENT,
 # NORMAL_0..7 and BRIGHT_0..7, or fails naming the first missing colour.

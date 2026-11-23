@@ -1,6 +1,6 @@
-# Gnomarchy Verification & Testing Guide
+# Cosmarchy Verification & Testing Guide
 
-This guide details the procedure for testing Gnomarchy scripts, the live ISO build, and the installed GNOME environment.
+This guide details the procedure for testing Cosmarchy scripts, the live ISO build, and the installed GNOME environment.
 
 ---
 
@@ -18,21 +18,21 @@ dock entries, a deployed tree with no `.git`, helper commands missing from the
 session PATH, and a wallpaper path pointing at a layout that no longer existed.
 
 The installer is driven by an answers file on a separate disk labeled
-`GNOMARCHY`, so **the ISO under test is byte for byte the ISO that ships**.
+`COSMARCHY`, so **the ISO under test is byte for byte the ISO that ships**.
 To reproduce locally:
 
 ```bash
-printf '%s\n' 'GNOMARCHY_DISK=/dev/vda' 'GNOMARCHY_FULLNAME="Test User"' \
-  'GNOMARCHY_USERNAME=citest' 'GNOMARCHY_PASSWORD=test-password' \
-  'GNOMARCHY_ENCRYPT=n' 'GNOMARCHY_HOSTNAME=citest-host' \
-  'GNOMARCHY_TIMEZONE=Europe/Berlin' 'GNOMARCHY_KEYMAP=de' \
-  > gnomarchy-unattended.conf
-# With GNOMARCHY_ENCRYPT=y, add GNOMARCHY_DISK_PASSWORD=<passphrase> (optional;
+printf '%s\n' 'COSMARCHY_DISK=/dev/vda' 'COSMARCHY_FULLNAME="Test User"' \
+  'COSMARCHY_USERNAME=citest' 'COSMARCHY_PASSWORD=test-password' \
+  'COSMARCHY_ENCRYPT=n' 'COSMARCHY_HOSTNAME=citest-host' \
+  'COSMARCHY_TIMEZONE=Europe/Berlin' 'COSMARCHY_KEYMAP=de' \
+  > cosmarchy-unattended.conf
+# With COSMARCHY_ENCRYPT=y, add COSMARCHY_DISK_PASSWORD=<passphrase> (optional;
 # without it the user's password is used).
 
 truncate -s 8M answers.img
-mkfs.vfat -n GNOMARCHY answers.img
-mcopy -i answers.img gnomarchy-unattended.conf ::/
+mkfs.vfat -n COSMARCHY answers.img
+mcopy -i answers.img cosmarchy-unattended.conf ::/
 ```
 
 Attach `answers.img` as a second drive and the installer runs without prompts.
@@ -61,13 +61,13 @@ Not covered by CI:
 The offline and session layers:
 
 - **Offline** (`iso/tests/verify-install.sh`, run against the mounted image):
-  GDM enabled, whisper backend installed, every `gnomarchy-*` command in
+  GDM enabled, whisper backend installed, every `cosmarchy-*` command in
   `/usr/local/bin`, a real git checkout, per-theme wallpaper layout with the
   upstream images downloaded, exactly one visible Brave entry, an autostart
   entry with an absolute `Exec`, the btop/LazyVim configs, and no Alacritty
   or screensaver left behind.
 - **In session** (`iso/tests/verify-session.sh`, run inside a real autologin
-  session): `gnomarchy-first-run` completed, the custom keybindings are in
+  session): `cosmarchy-first-run` completed, the custom keybindings are in
   dconf, `Super+W` and `Super+1` work, the dock is on the left, exactly one
   Brave in favorites, the wallpaper is not the SVG placeholder, and GNOME
   Terminal carries a full 16-colour palette.
@@ -110,7 +110,7 @@ sudo apt install qemu-system-x86 ovmf
    ```
 2. **Launch QEMU with UEFI Boot**:
    ```bash
-   ./run-vm.sh out/gnomarchy-linux-*.iso
+   ./run-vm.sh out/cosmarchy-linux-*.iso
    ```
 3. **Verify Installer Workflow**:
    - Confirm Tokyo Night colors display on TTY1.
@@ -129,14 +129,14 @@ sudo apt install qemu-system-x86 ovmf
 
 ## 3. Desktop Environment & Functional Verification
 
-Once logged into the Gnomarchy desktop:
+Once logged into the Cosmarchy desktop:
 
 1. **Test Tiling (Tiling Shell)**:
-   - `gnomarchy tiling status` reports `shell state: ACTIVE`.
+   - `cosmarchy tiling status` reports `shell state: ACTIVE`.
    - Hold <kbd>Ctrl</kbd> while dragging a window; the zones appear and the window drops into one with 8px gaps.
    - <kbd>Super</kbd> + <kbd>Shift</kbd> + arrows throws the focused window into the next tile.
 2. **Test Keybindings**:
-   - <kbd>Super</kbd> + <kbd>Return</kbd>: Launches GNOME Terminal in the Gnomarchy
+   - <kbd>Super</kbd> + <kbd>Return</kbd>: Launches GNOME Terminal in the Cosmarchy
      profile (JetBrains Mono 10, no scrollbar, 110x30).
    - <kbd>Super</kbd> + <kbd>1</kbd>–<kbd>6</kbd>: Switches workspaces.
    - <kbd>Super</kbd> + <kbd>W</kbd>: Closes active window.
@@ -149,14 +149,14 @@ Once logged into the Gnomarchy desktop:
    - <kbd>Ctrl</kbd> + <kbd>Print</kbd>: confirm a slurp region selector appears,
      then that Satty opens with the grab.
    - Cancel a selection with <kbd>Esc</kbd> and confirm no error notification.
-   - `gnomarchy capture screen` writes into `~/Pictures/Screenshots/`.
+   - `cosmarchy capture screen` writes into `~/Pictures/Screenshots/`.
 5. **Test Theme Engine**:
    - Open a terminal and run:
      ```bash
-     gnomarchy theme list
-     gnomarchy theme set catppuccin
-     gnomarchy theme set gruvbox
-     gnomarchy theme set tokyo-night
+     cosmarchy theme list
+     cosmarchy theme set catppuccin
+     cosmarchy theme set gruvbox
+     cosmarchy theme set tokyo-night
      ```
    - Verify that:
      - GNOME wallpaper changes immediately.
@@ -166,8 +166,8 @@ Once logged into the Gnomarchy desktop:
      - `btop` opens in the new palette (verify `color_theme = "current"` in
        `~/.config/btop/btop.conf`).
      - Neovim theme updates on launch, and
-       `~/.config/nvim/lua/plugins/gnomarchy-colorscheme.lua` names the new scheme.
-     - GTK apps follow: `~/.config/gtk-4.0/gnomarchy-theme.css` is regenerated and
+       `~/.config/nvim/lua/plugins/cosmarchy-colorscheme.lua` names the new scheme.
+     - GTK apps follow: `~/.config/gtk-4.0/cosmarchy-theme.css` is regenerated and
        `gtk.css` imports it exactly once (re-run the theme set twice and confirm
        the import is not duplicated).
 6. **Test Voxtype**:
@@ -176,22 +176,22 @@ Once logged into the Gnomarchy desktop:
      typed into the focused window (a re-login may be needed for the `input` group).
 7. **Test Backgrounds**:
    ```bash
-   gnomarchy backgrounds --list     # 92/92 installed after a networked install
-   gnomarchy backgrounds --verify   # every file matches the pinned manifest
+   cosmarchy backgrounds --list     # 92/92 installed after a networked install
+   cosmarchy backgrounds --verify   # every file matches the pinned manifest
    ```
-   - Confirm `/usr/share/backgrounds/gnomarchy/<theme>/` holds per-theme folders.
+   - Confirm `/usr/share/backgrounds/cosmarchy/<theme>/` holds per-theme folders.
    - Corrupt a file (`sudo truncate -s -1 <file>`), re-run `--verify` (must report
-     CORRUPT and exit non-zero), then `gnomarchy backgrounds` and confirm it repairs.
+     CORRUPT and exit non-zero), then `cosmarchy backgrounds` and confirm it repairs.
    - Offline check: install with networking disabled and confirm the install still
      completes and every theme falls back to its bundled SVG wallpaper.
-   - Drop an image into `~/.config/gnomarchy/backgrounds/nord/`, run
-     `gnomarchy theme set nord`, and confirm your file wins over the downloaded one.
+   - Drop an image into `~/.config/cosmarchy/backgrounds/nord/`, run
+     `cosmarchy theme set nord`, and confirm your file wins over the downloaded one.
 8. **Test Btrfs Snapshots**:
    ```bash
-   gnomarchy snapshot create "Test Snapshot"
-   gnomarchy snapshot list
+   cosmarchy snapshot create "Test Snapshot"
+   cosmarchy snapshot list
    ```
-   - Reboot: the snapshot is under Gnomarchy → Snapshots in the Limine menu. Boot it, confirm the 'Booted snapshot' notification, then run `gnomarchy snapshot restore <n>` and reboot.
+   - Reboot: the snapshot is under Cosmarchy → Snapshots in the Limine menu. Boot it, confirm the 'Booted snapshot' notification, then run `cosmarchy snapshot restore <n>` and reboot.
 
 ---
 
@@ -202,16 +202,16 @@ installed, so they need testing separately from a fresh install:
 
 ```bash
 # On a machine installed from an older commit:
-gnomarchy migrate --list      # should list pending migrations
-gnomarchy update              # pulls, then applies them
-gnomarchy migrate --list      # should now report none pending
+cosmarchy migrate --list      # should list pending migrations
+cosmarchy update              # pulls, then applies them
+cosmarchy migrate --list      # should now report none pending
 ```
 
-Confirm each migration is idempotent by running `gnomarchy migrate` a second
-time after clearing a single line from `~/.local/state/gnomarchy/migrations.log`:
+Confirm each migration is idempotent by running `cosmarchy migrate` a second
+time after clearing a single line from `~/.local/state/cosmarchy/migrations.log`:
 re-running must not error or duplicate configuration (check that `gtk.css` still
-has exactly one `gnomarchy-theme.css` import).
+has exactly one `cosmarchy-theme.css` import).
 
 On a **fresh** install the ledger is baselined by
-`install/post-install/migrations-baseline.sh`, so `gnomarchy migrate --list`
+`install/post-install/migrations-baseline.sh`, so `cosmarchy migrate --list`
 should report zero pending immediately after installation.

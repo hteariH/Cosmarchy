@@ -2,13 +2,13 @@
 
 # Guard: Ensure we are running on Arch Linux
 if [ ! -f /etc/arch-release ]; then
-  gnomarchy_error "Gnomarchy requires an Arch Linux base system (/etc/arch-release not found)."
+  cosmarchy_error "Cosmarchy requires an Arch Linux base system (/etc/arch-release not found)."
   exit 1
 fi
 
 # Ensure user is not root directly, but has sudo capabilities
-if [[ $EUID -eq 0 && -z "$GNOMARCHY_CHROOT_INSTALL" ]]; then
-  gnomarchy_error "Do not run the Gnomarchy installer directly as root. Run as a regular user with sudo privileges."
+if [[ $EUID -eq 0 && -z "$COSMARCHY_CHROOT_INSTALL" ]]; then
+  cosmarchy_error "Do not run the Cosmarchy installer directly as root. Run as a regular user with sudo privileges."
   exit 1
 fi
 
@@ -21,16 +21,16 @@ fi
 # before blocking.
 if ! sudo -n true 2>/dev/null; then
   echo
-  gnomarchy_warn "================================================================"
-  gnomarchy_warn "  Your sudo password is required to continue."
-  gnomarchy_warn "  Type it at the prompt below - the installer is waiting."
-  gnomarchy_warn "================================================================"
+  cosmarchy_warn "================================================================"
+  cosmarchy_warn "  Your sudo password is required to continue."
+  cosmarchy_warn "  Type it at the prompt below - the installer is waiting."
+  cosmarchy_warn "================================================================"
   echo
 
   if ! sudo -v; then
     echo
-    gnomarchy_error "Sudo privileges are required to install Gnomarchy."
-    gnomarchy_error "Nothing has been changed on this system yet; re-run the installer to try again."
+    cosmarchy_error "Sudo privileges are required to install Cosmarchy."
+    cosmarchy_error "Nothing has been changed on this system yet; re-run the installer to try again."
     exit 1
   fi
 fi
@@ -43,8 +43,8 @@ fi
     sleep 50
   done
 ) &
-GNOMARCHY_SUDO_KEEPALIVE_PID=$!
-export GNOMARCHY_SUDO_KEEPALIVE_PID
+COSMARCHY_SUDO_KEEPALIVE_PID=$!
+export COSMARCHY_SUDO_KEEPALIVE_PID
 
 # Stop the keepalive when the installer exits, however it exits.
-trap 'kill "$GNOMARCHY_SUDO_KEEPALIVE_PID" 2>/dev/null || true' EXIT
+trap 'kill "$COSMARCHY_SUDO_KEEPALIVE_PID" 2>/dev/null || true' EXIT

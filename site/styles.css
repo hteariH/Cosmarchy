@@ -1,11 +1,11 @@
 /* ==========================================================================
-   Gnomarchy — Official Website Stylesheet
+   Cosmarchy — Official Website Stylesheet
    Distinctive Modern Workstation Aesthetic: The Polish of GNOME + Power of Arch
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-/* --- 7 Built-in Gnomarchy Themes --- */
+/* --- 7 Built-in Cosmarchy Themes --- */
 :root, [data-theme="tokyo-night"] {
   --theme-id: "tokyo-night";
   --theme-name: "Tokyo Night";
@@ -1485,7 +1485,7 @@ footer.gnome-footer {
 
 
 /* ==========================================================================
-   Gnomarchy mark
+   Cosmarchy mark
    ========================================================================== */
 
 .brand-mark {

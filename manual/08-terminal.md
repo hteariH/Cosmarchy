@@ -7,7 +7,7 @@ GNOME Terminal is the default. `Super + Return` opens one.
 It integrates with GNOME properly and, unlike GNOME Console, it supports custom
 colour palettes - which the theme engine needs in order to theme it.
 
-## The Gnomarchy profile
+## The Cosmarchy profile
 
 The installer creates a profile with a fixed id so the theme engine always
 knows which one to recolour:
@@ -22,7 +22,7 @@ switch will overwrite them.
 ## Shell
 
 Bash with starship, zoxide and mise. Aliases live in
-`~/.local/share/gnomarchy/default/bash/aliases`.
+`~/.local/share/cosmarchy/default/bash/aliases`.
 
 Note that `grep`, `find` and `cat` are deliberately not shadowed by ripgrep, fd
 and bat. Scripts and muscle memory depend on their real flags. The modern tools

@@ -22,7 +22,7 @@ EXTENSIONS = [
 
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 bundled_dir = os.path.join(repo_root, "default", "gnome", "extensions")
-override_file = os.path.join(repo_root, "default", "gnome", "00_gnomarchy.gschema.override")
+override_file = os.path.join(repo_root, "default", "gnome", "00_cosmarchy.gschema.override")
 
 system_ext_dir = "/usr/share/gnome-shell/extensions"
 user_ext_dir = os.path.expanduser("~/.local/share/gnome-shell/extensions")
@@ -133,7 +133,7 @@ def main():
 
     # Copy system-wide GSettings override
     if os.path.exists(override_file):
-        dest_override = os.path.join(system_schema_dir, "00_gnomarchy.gschema.override")
+        dest_override = os.path.join(system_schema_dir, "00_cosmarchy.gschema.override")
         is_root = hasattr(os, "geteuid") and os.geteuid() == 0
         can_write_schema = os.access(system_schema_dir, os.W_OK) if os.path.exists(system_schema_dir) else False
         if can_write_schema or is_root:

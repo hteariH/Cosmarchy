@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Gnomarchy Snapshot Notice
+Name=Cosmarchy Snapshot Notice
 Comment=Says so when the system was booted from a snapshot
-Exec=/usr/local/bin/gnomarchy snapshot notify
+Exec=/usr/local/bin/cosmarchy snapshot notify
 Terminal=false
 NoDisplay=true
 X-GNOME-Autostart-enabled=true

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [[ -f "$HOME/.config/cosmarchy/current/theme.name" ]]; then
+  cat "$HOME/.config/cosmarchy/current/theme.name"
+else
+  echo "tokyo-night"
+fi

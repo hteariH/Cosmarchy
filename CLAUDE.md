@@ -4,9 +4,9 @@ Guidance for Claude Code working in this repository.
 
 ## What this is
 
-Gnomarchy is an Arch Linux distribution: Omarchy's tooling and rolling base
+Cosmarchy is an Arch Linux distribution: Omarchy's tooling and rolling base
 with a tuned GNOME 51 desktop instead of Hyprland. It ships as an installable
-ISO and as a config repository that lives at `~/.local/share/gnomarchy` on
+ISO and as a config repository that lives at `~/.local/share/cosmarchy` on
 installed machines.
 
 Two things follow from that and shape everything else:
@@ -20,7 +20,7 @@ Two things follow from that and shape everything else:
 ## Layout
 
 ```
-bin/                     the gnomarchy CLI; one file per subcommand
+bin/                     the cosmarchy CLI; one file per subcommand
 install/
   preflight/             guards, pacman setup (enables multilib)
   packaging/             package installation
@@ -29,18 +29,18 @@ install/
   desktop/               GNOME configuration (dconf; needs a session)
   login/                 GDM, Plymouth, the Limine menu (boot.sh)
   post-install/          cleanup, migration baseline
-  gnomarchy-base.packages   pacman list, official repos only
+  cosmarchy-base.packages   pacman list, official repos only
 migrations/              timestamped, once-per-machine repair scripts
 themes/                  22 themes; alacritty.toml is the canonical palette
-manual/                  numbered pages read by `gnomarchy manual`
+manual/                  numbered pages read by `cosmarchy manual`
 gui/                     the control center: GTK4/libadwaita in GJS, no build step
 iso/
   builder/build-iso.sh   archiso profile assembly
-  installer/             the installer (gnomarchy-install + lib/)
-  configs/airootfs/root/.automated_script.sh   starts iso/installer/gnomarchy-install on tty1
+  installer/             the installer (cosmarchy-install + lib/)
+  configs/airootfs/root/.automated_script.sh   starts iso/installer/cosmarchy-install on tty1
   tests/                 smoke-test verification scripts
 default/                 files deployed onto the installed system
-  boot/                  gnomarchy-boot, snapper plugin, pacman hooks, initcpio install and post hooks (deployed root-owned)
+  boot/                  cosmarchy-boot, snapper plugin, pacman hooks, initcpio install and post hooks (deployed root-owned)
 ```
 
 `install.sh` sources the stages in order and wraps each in `run_stage`, which
@@ -64,9 +64,9 @@ So the rule is:
 | Work | Where it goes |
 |---|---|
 | packages, files, udev, systemd enablement | `install/` stages |
-| anything touching dconf, PipeWire or the seat | `gnomarchy-first-run` |
+| anything touching dconf, PipeWire or the seat | `cosmarchy-first-run` |
 
-`install/desktop/all.sh` checks `gnomarchy_can_write_dconf` and, when there is
+`install/desktop/all.sh` checks `cosmarchy_can_write_dconf` and, when there is
 no session, writes an autostart entry instead of configuring anything.
 
 ### The autostart entry must not declare a phase
@@ -80,23 +80,23 @@ the default position and an unthemed terminal. Do not add it back.
 ## Migrations
 
 `migrations/<YYYY-MM-DD-HHMM>-<slug>.sh`, applied exactly once per machine,
-recorded in `~/.local/state/gnomarchy/migrations.log`. `gnomarchy update` runs
+recorded in `~/.local/state/cosmarchy/migrations.log`. `cosmarchy update` runs
 pending ones after the git pull; `install/post-install/migrations-baseline.sh`
 marks them all applied on a fresh install rather than replaying them.
 
 They must be **idempotent** — they may run on a machine in any prior state.
 
 If a change alters behaviour on an existing machine, it needs one. Adding a
-package to `gnomarchy-base.packages` alone reaches new installs only.
+package to `cosmarchy-base.packages` alone reaches new installs only.
 
 ## Conventions
 
 - `#!/bin/bash`, `[[ ]]` for strings, `(( ))` for arithmetic, `$HOME` never a
   hardcoded path.
-- Helpers from `install/helpers/presentation.sh`: `gnomarchy_header`,
-  `gnomarchy_step`, `gnomarchy_warn`, `gnomarchy_error`, `gnomarchy_substep`.
-  `gnomarchy_error` only prints — add an explicit `exit` if you mean to stop.
-- New `bin/gnomarchy-*` commands need a case in `bin/gnomarchy` **and** they are
+- Helpers from `install/helpers/presentation.sh`: `cosmarchy_header`,
+  `cosmarchy_step`, `cosmarchy_warn`, `cosmarchy_error`, `cosmarchy_substep`.
+  `cosmarchy_error` only prints — add an explicit `exit` if you mean to stop.
+- New `bin/cosmarchy-*` commands need a case in `bin/cosmarchy` **and** they are
   symlinked into `/usr/local/bin` by `install/config/symlinks.sh`. Without that
   symlink the GNOME session cannot find them; it does not read your shell
   profile.
@@ -109,7 +109,7 @@ package to `gnomarchy-base.packages` alone reaches new installs only.
 Five separate defects shipped because a failure was hidden behind `2>/dev/null`
 or `|| true`: extension schemas never compiled, Brave binaries left
 non-executable, the git checkout never created, the install log never written,
-`gnomarchy update` reporting success after a failed pull.
+`cosmarchy update` reporting success after a failed pull.
 
 Suppress output only where failure genuinely does not matter, and say so in a
 comment. Prefer reporting and continuing over silence.
@@ -127,7 +127,7 @@ curl -sSL "https://archlinux.org/packages/search/json/?name=<pkg>"
 curl -sSL "https://aur.archlinux.org/rpc/v5/info?arg[]=<pkg>"
 ```
 
-`gnomarchy-base.packages` must contain only official-repo packages; AUR belongs
+`cosmarchy-base.packages` must contain only official-repo packages; AUR belongs
 in an opt-in command with an AUR helper and a fallback.
 
 `install/packaging/base.sh` now partitions the list against the sync databases
@@ -148,7 +148,7 @@ A `unit` job runs first (`iso/tests/unit.sh`: the fast tests plus shellcheck)
 and the install job needs it. The install job runs twice, a `plain` and an
 `encrypted` variant; the encrypted one is checked offline only. The plain
 variant then boots a session, takes a snapshot, boots that snapshot and
-restores it. Session reports are under `~/.local/state/gnomarchy/verify/`
+restores it. Session reports are under `~/.local/state/cosmarchy/verify/`
 (`session.txt`, `snapshot.txt`) because a snapshot boot's `/var/tmp` is
 volatile.
 
@@ -178,26 +178,26 @@ filesystem, so `-e` is false however correct the link is. Test with `-L`.
 
 ### Driving the installer unattended
 
-Answers are read from a file on a device labelled `GNOMARCHY`, so the ISO under
+Answers are read from a file on a device labelled `COSMARCHY`, so the ISO under
 test stays byte-identical to the one that ships. FAT labels are capped at 11
 characters.
 
 ```bash
-printf '%s\n' 'GNOMARCHY_DISK=/dev/vda' 'GNOMARCHY_USERNAME=citest' \
-  'GNOMARCHY_PASSWORD=test' 'GNOMARCHY_ENCRYPT=n' > gnomarchy-unattended.conf
-truncate -s 8M answers.img && mkfs.vfat -n GNOMARCHY answers.img
-mcopy -i answers.img gnomarchy-unattended.conf ::/
+printf '%s\n' 'COSMARCHY_DISK=/dev/vda' 'COSMARCHY_USERNAME=citest' \
+  'COSMARCHY_PASSWORD=test' 'COSMARCHY_ENCRYPT=n' > cosmarchy-unattended.conf
+truncate -s 8M answers.img && mkfs.vfat -n COSMARCHY answers.img
+mcopy -i answers.img cosmarchy-unattended.conf ::/
 ```
 
 ## Diagnosing a failure
 
 ```bash
-/var/log/gnomarchy-installer.log            the installer's own log; the [n/7] lines show the stage
-/var/log/gnomarchy-install.log              installation; STAGE markers show where it stopped
-/var/log/pacman.log                         gnomarchy-boot output from the pacman hooks
-journalctl --user -t gnomarchy-first-run    desktop configuration
-journalctl --user -t gnomarchy-verify       the CI session check
-gnomarchy version --verbose                 version, theme, migrations applied
+/var/log/cosmarchy-installer.log            the installer's own log; the [n/7] lines show the stage
+/var/log/cosmarchy-install.log              installation; STAGE markers show where it stopped
+/var/log/pacman.log                         cosmarchy-boot output from the pacman hooks
+journalctl --user -t cosmarchy-first-run    desktop configuration
+journalctl --user -t cosmarchy-verify       the CI session check
+cosmarchy version --verbose                 version, theme, migrations applied
 ```
 
 The install log is written by `install.sh` teeing into it. Before that existed,
@@ -205,14 +205,14 @@ the installer told users to read a file that was always empty.
 
 ## The theme engine
 
-`gnomarchy-theme-set` is the only thing that should write these:
+`cosmarchy-theme-set` is the only thing that should write these:
 
 ```
 ~/.config/btop/themes/current.theme
 ~/.config/nvim/lua/plugins/theme.lua
-~/.config/nvim/lua/plugins/gnomarchy-colorscheme.lua
-~/.config/gtk-{3,4}.0/gnomarchy-theme.css
-/etc/gnomarchy/boot-theme.conf
+~/.config/nvim/lua/plugins/cosmarchy-colorscheme.lua
+~/.config/gtk-{3,4}.0/cosmarchy-theme.css
+/etc/cosmarchy/boot-theme.conf
 ```
 
 Each theme's `alacritty.toml` is the canonical palette: GNOME Terminal's dconf
@@ -226,41 +226,41 @@ UUID (`b1dcc9dd-…`) is created at install time.
 
 ## The bootloader and snapshots
 
-`gnomarchy-boot` is the only thing that writes `/boot/limine.conf`. It
+`cosmarchy-boot` is the only thing that writes `/boot/limine.conf`. It
 regenerates the whole file from `/etc/kernel/cmdline`, the kernels on the ESP,
-per-snapshot records in `/boot/gnomarchy/entries/` and the theme in
-`/etc/gnomarchy/boot-theme.conf`. Change the command line in
-`/etc/kernel/cmdline`, never in `limine.conf`, then `gnomarchy boot update`.
+per-snapshot records in `/boot/cosmarchy/entries/` and the theme in
+`/etc/cosmarchy/boot-theme.conf`. Change the command line in
+`/etc/kernel/cmdline`, never in `limine.conf`, then `cosmarchy boot update`.
 
 What regenerates it: the `Target = *` pacman hook, the snapper plugin, the
-theme path unit, and the mkinitcpio post hook `/etc/initcpio/post/gnomarchy-boot`,
+theme path unit, and the mkinitcpio post hook `/etc/initcpio/post/cosmarchy-boot`,
 which catches a hand-run `mkinitcpio -P`. Kernel entries carry a `#b2sum`, so
 a stale menu would otherwise panic; `hash_mismatch_panic: no` turns that into
 a warning.
 
-`00-gnomarchy-guard.hook` runs `gnomarchy-boot guard` before every pacman
-transaction and aborts it on a snapshot boot (`gnomarchy.snapshot=` on the
+`00-cosmarchy-guard.hook` runs `cosmarchy-boot guard` before every pacman
+transaction and aborts it on a snapshot boot (`cosmarchy.snapshot=` on the
 command line) or with a restore pending (root FSROOT `/@restore-backup-*`):
 the ESP survives the reboot and the root does not, so a kernel upgrade would
-leave a kernel with no modules. `gnomarchy update` asks the same guard first.
+leave a kernel with no modules. `cosmarchy update` asks the same guard first.
 
-It runs as root from `/usr/local/lib/gnomarchy/boot/`, copied there by
-`default/boot/deploy.sh` (installer, `install.sh`, `gnomarchy update`). Root
+It runs as root from `/usr/local/lib/cosmarchy/boot/`, copied there by
+`default/boot/deploy.sh` (installer, `install.sh`, `cosmarchy update`). Root
 never executes scripts from a user's home.
 
-Snapshot kernels are content-addressed in `/boot/gnomarchy/store/`; a
+Snapshot kernels are content-addressed in `/boot/cosmarchy/store/`; a
 snapshot boots read-only under `systemd.volatile=overlay`, which needs the
-`gnomarchy-overlay` initcpio hook. fstab must not contain `subvolid=`.
+`cosmarchy-overlay` initcpio hook. fstab must not contain `subvolid=`.
 
-`gnomarchy-boot`'s fast tests run its real code against a fake tree through
-`GNOMARCHY_BOOT_ROOT`: `iso/tests/unit.sh`, in an archlinux container.
+`cosmarchy-boot`'s fast tests run its real code against a fake tree through
+`COSMARCHY_BOOT_ROOT`: `iso/tests/unit.sh`, in an archlinux container.
 
 ## The control center GUI
 
 `gui/` is a GTK4/libadwaita application written in GJS, run directly with
 `gjs -m gui/src/main.js --page=<menu|keybindings|manual>` — there is no build
-step and no transpilation. `bin/gnomarchy-menu`, `bin/gnomarchy-keybindings`
-and `bin/gnomarchy-manual` launch it and fall back to their old text paths
+step and no transpilation. `bin/cosmarchy-menu`, `bin/cosmarchy-keybindings`
+and `bin/cosmarchy-manual` launch it and fall back to their old text paths
 when there is no display or no `gjs`.
 
 `gui/src/lib/` splits into two kinds of module. The ones with a unit test in

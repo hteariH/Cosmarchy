@@ -4,8 +4,8 @@ Press `Super + D` to start, press it again to stop. The transcription is typed
 into whatever window has focus.
 
 ```bash
-gnomarchy voxtype toggle
-gnomarchy voxtype status
+cosmarchy voxtype toggle
+cosmarchy voxtype status
 ```
 
 ## How it works
@@ -15,7 +15,7 @@ Recording goes to a temporary file and is transcribed by `whisper-cli` from the
 and there is no account or API key.
 
 The model (`base.en`, about 140 MB) is downloaded on first use and cached in
-`~/.local/share/gnomarchy/models/`.
+`~/.local/share/cosmarchy/models/`.
 
 ## Requirements
 

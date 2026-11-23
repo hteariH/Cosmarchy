@@ -1,5 +1,5 @@
 /**
- * Gnomarchy — interactive client application
+ * Cosmarchy — interactive client application
  *
  * Theme switcher, dictation sequence and the CLI
  * playground. Every string in CLI_ENTRIES is what the corresponding script in
@@ -49,7 +49,7 @@
     }
 
     try {
-      localStorage.setItem('gnomarchy-theme', theme.id);
+      localStorage.setItem('cosmarchy-theme', theme.id);
     } catch (e) {}
 
     const navLabel = document.getElementById('navThemeLabel');
@@ -130,50 +130,50 @@
   // `output` is verbatim; `note` is this site talking, not the script.
   const CLI_ENTRIES = {
     theme: {
-      cmd: 'gnomarchy theme set nord',
+      cmd: 'cosmarchy theme set nord',
       output: 'Applied theme: nord',
       note: 'Terse on purpose. The palette reaches GNOME Terminal, ' +
             'GTK 3 and 4, Neovim, btop, the GNOME accent and the wallpaper — ' +
             'all generated from the theme’s alacritty.toml.'
     },
     tiling: {
-      cmd: 'gnomarchy tiling status',
+      cmd: 'cosmarchy tiling status',
       output: `Tiling: on (Tiling Shell)
-  auto-placement: false (Gnomarchy keeps it off)
+  auto-placement: false (Cosmarchy keeps it off)
   Ctrl + drag to pick a zone, Super+Shift+arrows to throw a window
   shell state:    ACTIVE
 
-Switch with: gnomarchy tiling <enable|disable>`,
+Switch with: cosmarchy tiling <enable|disable>`,
       note: 'shell state is the shell’s own answer, not dconf’s: an ' +
             'extension built for an older GNOME is enabled and does nothing.'
     },
     snapshot: {
-      cmd: 'gnomarchy snapshot create "Before the kernel upgrade"',
+      cmd: 'cosmarchy snapshot create "Before the kernel upgrade"',
       output: `Creating Snapper root snapshot: Before the kernel upgrade
 Snapshot created successfully.`,
       note: 'Snapper snapshots the root before and after every pacman transaction. ' +
             'Each snapshot appears in the Limine menu and boots with its own kernel; ' +
-            'gnomarchy snapshot restore makes one the system. /home is a separate ' +
+            'cosmarchy snapshot restore makes one the system. /home is a separate ' +
             'subvolume and is not part of a root snapshot.'
     },
     webapp: {
-      cmd: 'gnomarchy webapp add Claude https://claude.ai',
+      cmd: 'cosmarchy webapp add Claude https://claude.ai',
       output: `Fetching icon for claude.ai...
 ✓ Web application 'Claude' created successfully!
-  Location: /home/you/.local/share/applications/gnomarchy-webapp-claude.desktop
+  Location: /home/you/.local/share/applications/cosmarchy-webapp-claude.desktop
   URL:      https://claude.ai`,
       note: 'The app gets its own browser profile under ' +
-            '~/.local/share/gnomarchy/webapps/claude/profile and is appended to ' +
+            '~/.local/share/cosmarchy/webapps/claude/profile and is appended to ' +
             'the GNOME favourites, which is what the dock reads.'
     },
     keymap: {
-      cmd: 'gnomarchy keymap status',
+      cmd: 'cosmarchy keymap status',
       output: `Keyboard layout: gnome
 
   Super + Return            terminal
   Super + B                 browser
   Super + E                 file manager
-  Super + Alt + Space       Gnomarchy menu
+  Super + Alt + Space       Cosmarchy menu
   Super + K                 searchable keybindings
   Super + Shift + K         the manual
   Super + T                 cycle the zone layout (manual tiling)
@@ -183,15 +183,15 @@ Snapshot created successfully.`,
   Super + 1..6              switch to workspace 1..6
   Super + Shift + 1..6      move window to workspace
 
-Switch with: gnomarchy keymap <omarchy|gnome>`,
-      note: 'gnomarchy keybindings goes further and reads the bindings back out ' +
+Switch with: cosmarchy keymap <omarchy|gnome>`,
+      note: 'cosmarchy keybindings goes further and reads the bindings back out ' +
             'of dconf, so it shows what is really set rather than what was ' +
             'intended.'
     },
     update: {
-      cmd: 'gnomarchy update',
-      output: `==> Updating Gnomarchy System Packages
-==> Updating Gnomarchy Configurations
+      cmd: 'cosmarchy update',
+      output: `==> Updating Cosmarchy System Packages
+==> Updating Cosmarchy Configurations
     Configuration updated
 ==> Updating Boot Tooling
     Boot menu regenerated
@@ -202,16 +202,16 @@ Switch with: gnomarchy keymap <omarchy|gnome>`,
             'success regardless, which hid a broken git pull for weeks.'
     },
     windows: {
-      cmd: 'gnomarchy windows status',
+      cmd: 'cosmarchy windows status',
       output: `WinBoat:
-  no    not installed (gnomarchy windows install)
+  no    not installed (cosmarchy windows install)
 Requirements:
   ok    KVM: /dev/kvm is usable
   ok    Docker: the service is running
   ok    Docker: compose is available
   ok    Docker: you is in the docker group
   ok    FreeRDP: xfreerdp3 is installed`,
-      note: 'Opt-in. gnomarchy windows install takes winboat-bin from the AUR, or the ' +
+      note: 'Opt-in. cosmarchy windows install takes winboat-bin from the AUR, or the ' +
             'checksum-pinned release AppImage; WinBoat then runs Windows in a ' +
             'container and opens its apps as ordinary windows.'
     }
@@ -283,7 +283,7 @@ Requirements:
   // --- Init -----------------------------------------------------------------
   document.addEventListener('DOMContentLoaded', () => {
     try {
-      applyTheme(localStorage.getItem('gnomarchy-theme') || 'tokyo-night');
+      applyTheme(localStorage.getItem('cosmarchy-theme') || 'tokyo-night');
     } catch (e) {
       applyTheme('tokyo-night');
     }

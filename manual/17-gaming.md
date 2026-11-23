@@ -1,9 +1,9 @@
 # Gaming
 
 ```bash
-gnomarchy gaming install   # the whole stack
-gnomarchy gaming status    # what is present
-gnomarchy gaming proton    # manage Proton versions
+cosmarchy gaming install   # the whole stack
+cosmarchy gaming status    # what is present
+cosmarchy gaming proton    # manage Proton versions
 ```
 
 Also under **Gaming** in the command center.
@@ -29,8 +29,8 @@ From the AUR, or Flatpak when no AUR helper is present:
 
 ## multilib
 
-Steam and every 32-bit library live in the multilib repository. Gnomarchy
-enables it during installation; if it is off, `gnomarchy gaming install`
+Steam and every 32-bit library live in the multilib repository. Cosmarchy
+enables it during installation; if it is off, `cosmarchy gaming install`
 enables it before doing anything else.
 
 ## Graphics drivers

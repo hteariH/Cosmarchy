@@ -1,5 +1,5 @@
 #!/bin/bash
 
-source "$GNOMARCHY_INSTALL/preflight/guard.sh"
-source "$GNOMARCHY_INSTALL/preflight/show-env.sh"
-source "$GNOMARCHY_INSTALL/preflight/pacman.sh"
+source "$COSMARCHY_INSTALL/preflight/guard.sh"
+source "$COSMARCHY_INSTALL/preflight/show-env.sh"
+source "$COSMARCHY_INSTALL/preflight/pacman.sh"

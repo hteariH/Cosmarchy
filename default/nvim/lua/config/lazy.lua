@@ -19,7 +19,7 @@ require("lazy").setup({
   spec = {
     -- LazyVim core and its default plugin set
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
-    -- Gnomarchy theme files land here (lua/plugins/theme.lua)
+    -- Cosmarchy theme files land here (lua/plugins/theme.lua)
     { import = "plugins" },
   },
   defaults = { lazy = false, version = false },

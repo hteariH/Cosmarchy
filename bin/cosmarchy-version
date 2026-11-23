@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Report the installed Cosmarchy version, plus the git ref when the install
+# is tracking the repository (which is the normal case).
+COSMARCHY_PATH="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
+
+version="unknown"
+if [[ -f "$COSMARCHY_PATH/VERSION" ]]; then
+  version="$(<"$COSMARCHY_PATH/VERSION")"
+fi
+
+ref=""
+if [[ -d "$COSMARCHY_PATH/.git" ]] && command -v git >/dev/null 2>&1; then
+  ref="$(git -C "$COSMARCHY_PATH" describe --tags --always --dirty 2>/dev/null || true)"
+fi
+
+echo "Cosmarchy Linux v${version}${ref:+ (${ref})}"
+echo "Arch Linux Rolling + GNOME $(gnome-shell --version 2>/dev/null | grep -oE '[0-9]+' | head -n1 || echo '50')"
+
+if [[ "$1" == "--verbose" || "$1" == "-v" ]]; then
+  theme_file="$HOME/.config/cosmarchy/current/theme.name"
+  [[ -f "$theme_file" ]] && echo "Active theme: $(<"$theme_file")"
+  echo "Install path: $COSMARCHY_PATH"
+  applied="${XDG_STATE_HOME:-$HOME/.local/state}/cosmarchy/migrations.log"
+  if [[ -f "$applied" ]]; then
+    echo "Migrations applied: $(wc -l < "$applied")"
+  fi
+fi

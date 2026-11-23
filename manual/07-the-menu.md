@@ -26,9 +26,9 @@ Everything in the menu is also a plain command, and the menu is a front end,
 never the only way in:
 
 ```bash
-gnomarchy menu
-gnomarchy theme set nord
-gnomarchy capture annotate
+cosmarchy menu
+cosmarchy theme set nord
+cosmarchy capture annotate
 ```
 
 ## The keyboard model
@@ -52,7 +52,7 @@ itself.
 
 ## How it works
 
-`gnomarchy menu`, `gnomarchy keybindings` and `gnomarchy manual` all open this
+`cosmarchy menu`, `cosmarchy keybindings` and `cosmarchy manual` all open this
 same application on their own page. Each falls back to its old text-only path
 when there is no graphical display or `gjs` is not installed, which keeps
 piping, scripting and SSH sessions working exactly as before.

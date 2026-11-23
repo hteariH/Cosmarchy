@@ -1,7 +1,7 @@
-"""Generate the Open Graph / README banner from the real Gnomarchy mark.
+"""Generate the Open Graph / README banner from the real Cosmarchy mark.
 
 The previous banner was an AI-rendered fantasy desk presented on the site as
-"Gnomarchy GNOME 50 Desktop Interface". It was not a screenshot of anything,
+"Cosmarchy GNOME 50 Desktop Interface". It was not a screenshot of anything,
 so it has been replaced by a plain brand card that claims nothing.
 """
 import os
@@ -83,7 +83,7 @@ name_top, tag_top, tag2_top = 0, 132, 186
 block_h = tag2_top + 44
 block_top = (H - block_h) / 2 - 14
 
-d.text((text_x, (block_top + name_top) * SS), "Gnomarchy", font=name, fill=TEXT)
+d.text((text_x, (block_top + name_top) * SS), "Cosmarchy", font=name, fill=TEXT)
 d.text((text_x + 6 * SS, (block_top + tag_top) * SS),
        "Arch Linux, rolling, with a tuned GNOME 51 desktop.", font=tag, fill=MUTED)
 d.text((text_x + 6 * SS, (block_top + tag2_top) * SS),

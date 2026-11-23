@@ -24,7 +24,7 @@ const PAGES = [
 export const ControlWindow = GObject.registerClass(
   class ControlWindow extends Adw.ApplicationWindow {
     _init(application) {
-      super._init({ application, title: 'Gnomarchy', defaultWidth: 980, defaultHeight: 680 });
+      super._init({ application, title: 'Cosmarchy', defaultWidth: 980, defaultHeight: 680 });
 
       this._pages = {
         menu: new MenuPage(this),
@@ -56,7 +56,7 @@ export const ControlWindow = GObject.registerClass(
       });
 
       const sidebar = new Adw.NavigationPage({
-        title: 'Gnomarchy',
+        title: 'Cosmarchy',
         child: new Adw.ToolbarView({
           content: new Gtk.ScrolledWindow({ child: this._sidebarList, vexpand: true }),
         }),
@@ -171,13 +171,13 @@ export const ControlWindow = GObject.registerClass(
     }
 
     // GTK4 does not reload gtk.css when it changes, so without this the app
-    // keeps the old colours after `gnomarchy theme set`. The file is absent
+    // keeps the old colours after `cosmarchy theme set`. The file is absent
     // until a theme has been applied at least once (and always absent on a
-    // non-Gnomarchy host), which is not an error -- stock Adwaita is then the
+    // non-Cosmarchy host), which is not an error -- stock Adwaita is then the
     // correct appearance.
     _watchTheme() {
       const path = GLib.build_filenamev([
-        GLib.get_user_config_dir(), 'gtk-4.0', 'gnomarchy-theme.css',
+        GLib.get_user_config_dir(), 'gtk-4.0', 'cosmarchy-theme.css',
       ]);
       this._themeProvider = null;
 

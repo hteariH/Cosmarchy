@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gnomarchy_header "Setting Up Extension & Developer Tooling"
+cosmarchy_header "Setting Up Extension & Developer Tooling"
 
 # Ensure pipx path is configured
 pipx ensurepath >/dev/null 2>&1 || true
@@ -11,17 +11,17 @@ if ! command -v gext >/dev/null 2>&1; then
   pipx install gnome-extensions-cli --system-site-packages >/dev/null 2>&1 || true
 fi
 
-# mise comes from the official repositories (gnomarchy-base.packages).
+# mise comes from the official repositories (cosmarchy-base.packages).
 
 # Claude Code, with Anthropic's native installer: it is not in the official
 # repositories, and the installer keeps it updated itself, into ~/.local/bin.
 if ! command -v claude >/dev/null 2>&1 && [[ ! -x "$HOME/.local/bin/claude" ]]; then
   echo "Installing Claude Code..."
   if curl -fsSL https://claude.ai/install.sh | bash; then
-    gnomarchy_substep "Claude Code installed"
+    cosmarchy_substep "Claude Code installed"
   else
-    # Not fatal: gnomarchy agent claude falls back to npx.
-    gnomarchy_warn "Claude Code could not be installed; run: curl -fsSL https://claude.ai/install.sh | bash"
+    # Not fatal: cosmarchy agent claude falls back to npx.
+    cosmarchy_warn "Claude Code could not be installed; run: curl -fsSL https://claude.ai/install.sh | bash"
   fi
 fi
 
@@ -39,4 +39,4 @@ if ! command -v paru >/dev/null 2>&1; then
   rm -rf /tmp/paru-install
 fi
 
-gnomarchy_step "Developer and extension tooling configured"
+cosmarchy_step "Developer and extension tooling configured"

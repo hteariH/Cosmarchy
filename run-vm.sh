@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
-# Test Gnomarchy ISO or Installed Disk in QEMU with UEFI
+# Test Cosmarchy ISO or Installed Disk in QEMU with UEFI
 set -e
 
-ISO_PATH="${1:-out/gnomarchy-linux-*.iso}"
-DISK_IMAGE="gnomarchy-test.qcow2"
+ISO_PATH="${1:-out/cosmarchy-linux-*.iso}"
+DISK_IMAGE="cosmarchy-test.qcow2"
 
 # Resolve wildcard if needed
 ISO_FILE=$(ls -1 $ISO_PATH 2>/dev/null | head -n 1 || true)
 
 if [[ ! -f "$ISO_FILE" && ! -f "$DISK_IMAGE" ]]; then
-  echo "Usage: ./run-vm.sh [path/to/gnomarchy.iso]"
+  echo "Usage: ./run-vm.sh [path/to/cosmarchy.iso]"
   echo "No ISO found matching: $ISO_PATH"
   exit 1
 fi

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gnomarchy_header "Deploying Developer Tool Configurations"
+cosmarchy_header "Deploying Developer Tool Configurations"
 
 # Copy a shipped default into place without ever clobbering a config the user
 # has already customised. Existing files are backed up once, so re-running the
@@ -16,9 +16,9 @@ deploy_config() {
     if cmp -s "$src" "$dest"; then
       return 0
     fi
-    if [[ ! -f "$dest.gnomarchy-bak" ]]; then
-      cp -f "$dest" "$dest.gnomarchy-bak"
-      echo "  Backed up existing $(basename "$dest") -> $(basename "$dest").gnomarchy-bak"
+    if [[ ! -f "$dest.cosmarchy-bak" ]]; then
+      cp -f "$dest" "$dest.cosmarchy-bak"
+      echo "  Backed up existing $(basename "$dest") -> $(basename "$dest").cosmarchy-bak"
     fi
   fi
 
@@ -26,9 +26,9 @@ deploy_config() {
   echo "  Installed $(basename "$dest")"
 }
 
-DEFAULTS="$GNOMARCHY_PATH/default"
+DEFAULTS="$COSMARCHY_PATH/default"
 
-# 1. btop: selects the "current" theme that `gnomarchy theme set` rewrites.
+# 1. btop: selects the "current" theme that `cosmarchy theme set` rewrites.
 deploy_config "$DEFAULTS/btop/btop.conf" "$HOME/.config/btop/btop.conf"
 
 # 2. Neovim: LazyVim bootstrap. Without this the per-theme neovim.lua plugin
@@ -45,4 +45,4 @@ if [[ -d "$DEFAULTS/nvim" ]]; then
   fi
 fi
 
-gnomarchy_step "Developer tool configurations deployed"
+cosmarchy_step "Developer tool configurations deployed"

@@ -1,6 +1,6 @@
 // Where the repository is, and small file helpers over Gio.
 //
-// GNOMARCHY_PATH is honoured when set (the installer and the CLI both export
+// COSMARCHY_PATH is honoured when set (the installer and the CLI both export
 // it); otherwise it is derived from this file's own location, so the app runs
 // from a checkout without any environment at all.
 
@@ -8,17 +8,17 @@ import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
 
 function repoRoot() {
-  const fromEnv = GLib.getenv('GNOMARCHY_PATH');
+  const fromEnv = GLib.getenv('COSMARCHY_PATH');
   if (fromEnv !== null && fromEnv !== '') return fromEnv;
   // .../gui/src/lib/paths.js -> up four levels
   const here = Gio.File.new_for_uri(import.meta.url);
   return here.get_parent().get_parent().get_parent().get_parent().get_path();
 }
 
-export const GNOMARCHY_PATH = repoRoot();
+export const COSMARCHY_PATH = repoRoot();
 
 export function dataFile(name) {
-  return GLib.build_filenamev([GNOMARCHY_PATH, 'gui', 'data', name]);
+  return GLib.build_filenamev([COSMARCHY_PATH, 'gui', 'data', name]);
 }
 
 // Returns null when the file is absent, which several callers treat as "not

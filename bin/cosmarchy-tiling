@@ -1,0 +1,149 @@
+#!/bin/bash
+
+# Cosmarchy tiling
+#
+# Tiling is Tiling Shell with auto-tiling off. Zones you choose: hold Ctrl
+# while dragging, or drag to the top for snap assist, or throw the window with
+# Super+Shift+arrows. Nothing moves unless you move it.
+#
+#   enable   turn Tiling Shell on and re-apply Cosmarchy's configuration
+#   disable  turn it off; windows behave as in stock GNOME
+#   status   show whether it is on and loaded
+#
+# Its auto-tiling stays off: it drops a new window into a fixed tile of a
+# static layout and never resizes the windows already on screen, which is not
+# what anyone means by automatic tiling.
+set -eEo pipefail
+
+UUID="tilingshell@ferrarodomenico.com"
+TS="org.gnome.shell.extensions.tilingshell"
+
+STATE_DIR="$HOME/.config/cosmarchy/current"
+
+info() { echo -e "\033[1;36m$1\033[0m"; }
+good() { echo -e "\033[1;32m  $1\033[0m"; }
+warn() { echo -e "\033[1;33m  $1\033[0m"; }
+
+require_session() {
+  if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" && ! -S "/run/user/$(id -u)/bus" ]]; then
+    echo "No D-Bus session bus; run this from inside your desktop session." >&2
+    exit 1
+  fi
+}
+
+# Tiling Shell throws windows with Super+Shift+arrows, which is GNOME's
+# default for move-to-monitor. Move that rather than leave it double-bound;
+# it keeps working, one modifier further out.
+reserve_shift_arrows() {
+  local dir
+  for dir in left right up down; do
+    gsettings set org.gnome.desktop.wm.keybindings "move-to-monitor-$dir" "['<Super><Control><Shift>${dir^}']"
+  done
+}
+
+# The same values install/desktop/set-gnome-extensions.sh writes. Repeated
+# here so that `enable` brings back a Tiling Shell whose settings were changed
+# by hand -- above all enable-autotiling.
+configure() {
+  gsettings list-schemas 2>/dev/null | grep -qx "$TS" || {
+    warn "Tiling Shell's schema is not installed; is the extension deployed?"
+    return 1
+  }
+
+  reserve_shift_arrows
+
+  gsettings set "$TS" enable-autotiling false
+  gsettings set "$TS" enable-tiling-system true
+  gsettings set "$TS" enable-snap-assist true
+  gsettings set "$TS" active-screen-edges true
+  gsettings set "$TS" resize-complementing-windows true
+  gsettings set "$TS" enable-span-multiple-tiles true
+  gsettings set "$TS" restore-window-original-size true
+  gsettings set "$TS" enable-move-keybindings true
+  gsettings set "$TS" show-indicator false
+
+  gsettings set "$TS" inner-gaps 8
+  gsettings set "$TS" outer-gaps 8
+
+  gsettings set "$TS" move-window-left "['<Super><Shift>Left']"
+  gsettings set "$TS" move-window-right "['<Super><Shift>Right']"
+  gsettings set "$TS" move-window-up "['<Super><Shift>Up']"
+  gsettings set "$TS" move-window-down "['<Super><Shift>Down']"
+  gsettings set "$TS" untile-window "['<Super><Shift>u']"
+  gsettings set "$TS" cycle-layouts "['<Super>t']"
+}
+
+set_extension() {
+  local action="$1"
+  if ! command -v gnome-extensions >/dev/null 2>&1; then
+    warn "gnome-extensions is unavailable; cannot $action $UUID"
+    return 1
+  fi
+  gnome-extensions "$action" "$UUID"
+}
+
+is_enabled() {
+  gsettings get org.gnome.shell enabled-extensions 2>/dev/null | grep -q "$UUID"
+}
+
+case "${1:-status}" in
+  enable | on)
+    require_session
+    info "Enabling tiling (Tiling Shell)"
+    set_extension enable || warn "Could not enable $UUID; see: gnome-extensions info $UUID"
+    configure
+
+    mkdir -p "$STATE_DIR"
+    echo on > "$STATE_DIR/tiling"
+
+    good "Tiling enabled"
+    echo
+    echo "  Ctrl + drag               pick a zone for the window"
+    echo "  drag to the top edge      snap assist"
+    echo "  Super + Shift + arrows    throw the window into the next tile"
+    echo "  Super + Shift + U         untile, back to its original size"
+    echo "  Super + T                 cycle the zone layout"
+    ;;
+
+  disable | off)
+    require_session
+    info "Disabling tiling"
+    set_extension disable || warn "Could not disable $UUID; see: gnome-extensions info $UUID"
+
+    mkdir -p "$STATE_DIR"
+    echo off > "$STATE_DIR/tiling"
+
+    good "Tiling Shell is off; windows behave as in stock GNOME"
+    echo "  'cosmarchy tiling enable' turns it back on."
+    ;;
+
+  status)
+    if is_enabled; then
+      auto="$(gsettings get "$TS" enable-autotiling 2>/dev/null || echo unknown)"
+      echo "Tiling: on (Tiling Shell)"
+      echo "  auto-placement: $auto (Cosmarchy keeps it off)"
+      echo "  Ctrl + drag to pick a zone, Super+Shift+arrows to throw a window"
+
+      # Loaded is not the same as enabled: a build that does not declare this
+      # shell version sits in enabled-extensions and does nothing.
+      if command -v gnome-extensions >/dev/null 2>&1; then
+        state="$(gnome-extensions info "$UUID" 2>/dev/null |
+          grep -i '^ *State:' | sed 's/.*: *//')"
+        [[ -n "$state" ]] && echo "  shell state:    $state"
+      fi
+    else
+      echo "Tiling: off"
+    fi
+    echo
+    echo "Switch with: cosmarchy tiling <enable|disable>"
+    ;;
+
+  *)
+    echo "Usage: cosmarchy tiling <enable|disable|status>"
+    echo
+    echo "  enable    zone tiling with Tiling Shell, the default"
+    echo "  disable   turn it off"
+    echo "  status    show whether it is on"
+    exit 1
+    ;;
+esac

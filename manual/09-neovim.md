@@ -4,11 +4,11 @@ Neovim is set up with LazyVim. First launch syncs plugins and takes a moment.
 
 ## Theming
 
-Each Gnomarchy theme ships a Neovim colorscheme. `gnomarchy theme set` writes
+Each Cosmarchy theme ships a Neovim colorscheme. `cosmarchy theme set` writes
 two files:
 
     ~/.config/nvim/lua/plugins/theme.lua
-    ~/.config/nvim/lua/plugins/gnomarchy-colorscheme.lua
+    ~/.config/nvim/lua/plugins/cosmarchy-colorscheme.lua
 
 Both are regenerated on every theme switch - do not edit them.
 
@@ -20,7 +20,7 @@ after the theme spec has run, and the theme switch is silently undone.
 Everything else under `~/.config/nvim/` is yours. Add files to `lua/plugins/`
 as you would with any LazyVim setup; only the two files above are managed.
 
-If you already had a Neovim configuration when Gnomarchy was installed, it was
+If you already had a Neovim configuration when Cosmarchy was installed, it was
 left untouched and no LazyVim bootstrap was written.
 
 ## The editor for quick edits

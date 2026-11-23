@@ -1,9 +1,9 @@
 # Themes
 
 ```bash
-gnomarchy theme list
-gnomarchy theme set tokyo-night
-gnomarchy theme current
+cosmarchy theme list
+cosmarchy theme set tokyo-night
+cosmarchy theme current
 ```
 
 22 themes: 18 dark, 4 light. Switching is instant and applies everywhere.
@@ -27,7 +27,7 @@ Nord, Osaka Jade, Retro 82, Ristretto, Rose Pine, Solitude, Vantablack, White.
 
 ## Where a theme lives
 
-    ~/.local/share/gnomarchy/themes/<name>/
+    ~/.local/share/cosmarchy/themes/<name>/
       alacritty.toml    the canonical 16-colour palette
       neovim.lua        a lazy.nvim plugin spec
       btop.theme
@@ -41,7 +41,7 @@ CSS are both generated from it.
 ## Your own theme
 
 Drop a directory with the same layout into
-`~/.config/gnomarchy/themes/<name>/` and it appears in `theme list`. User
+`~/.config/cosmarchy/themes/<name>/` and it appears in `theme list`. User
 themes take precedence over bundled ones with the same name.
 
 ## Files the engine owns
@@ -50,6 +50,6 @@ Do not hand-edit these; they are rewritten on every theme switch:
 
     ~/.config/btop/themes/current.theme
     ~/.config/nvim/lua/plugins/theme.lua
-    ~/.config/nvim/lua/plugins/gnomarchy-colorscheme.lua
-    ~/.config/gtk-3.0/gnomarchy-theme.css
-    ~/.config/gtk-4.0/gnomarchy-theme.css
+    ~/.config/nvim/lua/plugins/cosmarchy-colorscheme.lua
+    ~/.config/gtk-3.0/cosmarchy-theme.css
+    ~/.config/gtk-4.0/cosmarchy-theme.css

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Compatibility shim for `cosmarchy gnome hotkeys`.
+#
+# This used to print a hand-written list of keybindings. It drifted from
+# reality almost immediately -- it still advertised Alacritty, Super+B and six
+# workspaces long after those changed -- and it could not represent the Omarchy
+# layout at all. The real list is derived from dconf by cosmarchy-keybindings.
+
+case "${1:-}" in
+  reset)
+    # Re-apply whichever layout profile is active rather than replaying one
+    # fixed set of bindings.
+    exec cosmarchy-keymap "$(cat "$HOME/.config/cosmarchy/current/keymap" 2>/dev/null || echo gnome)"
+    ;;
+  *)
+    exec cosmarchy-keybindings "$@"
+    ;;
+esac
