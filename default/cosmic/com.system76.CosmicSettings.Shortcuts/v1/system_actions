@@ -1,0 +1,4 @@
+{
+    Terminal: "cosmic-term",
+    WebBrowser: "command -v brave-origin >/dev/null && exec brave-origin || command -v brave >/dev/null && exec brave || command -v brave-browser >/dev/null && exec brave-browser || flatpak run com.brave.Browser >/dev/null 2>&1 || command -v chromium >/dev/null && exec chromium || exec xdg-open https://",
+}
