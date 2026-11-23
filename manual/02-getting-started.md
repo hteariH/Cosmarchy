@@ -28,14 +28,16 @@ panel layout. Cosmarchy does not override what it asks.
 
 ## The first five minutes
 
-- Press `Super + Alt + Space` for the **Command Center** (`cosmarchy-menu` in
-  COSMIC Terminal): keybindings, manual, tiling, gaming, web apps, screen
-  capture, snapshots, updates, COSMIC Settings, and power.
-- Press `Super + Alt + /` for the **Keybindings browser**, read directly from
-  your active COSMIC RON files.
-- Press `Super + Alt + M` for this **Manual**.
+- Press `Super + Alt + Space` for **Cosmarchy actions** in COSMIC Launcher
+  (prefilled with `c `): tiling, snapshots, updates, web apps, screen capture,
+  gaming, COSMIC Settings, and power. (`cosmarchy menu` provides the same flat
+  list in a TTY or over SSH.)
+- Press `Super + Alt + /` for **Keybindings** in COSMIC Launcher (`c key `),
+  read directly from your active COSMIC RON files.
+- Press `Super + Alt + M` for this **Manual** in COSMIC Launcher (`c man `).
 - Press `Super + Return` (or COSMIC's `Super + T`) for **COSMIC Terminal**.
-- Press `Super` alone for **COSMIC Launcher**.
+- Press `Super` alone for **COSMIC Launcher** (you can also type `c `, `c key `,
+  or `c man ` from there).
 - Press `Super + Y` to toggle auto-tiling on the current workspace.
 
 ## Preinstalled apps & phone sync

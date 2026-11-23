@@ -7,8 +7,13 @@ the full architecture, bootloader/snapshot layout, and verification details.
 
 - Cosmarchy runs the stock **COSMIC 1.11** desktop on Wayland with
   `cosmic-greeter` on `greetd`. There is no GNOME, no dconf, no theme engine,
-  and no `gui/` control center (phase 1 text-only CLI tools: `cosmarchy-menu`,
+  and no windowed `gui/` or libcosmic control center. Instead, Cosmarchy ships
+  a `pop-launcher` plugin (Python 3, stdlib only) under `launcher/cosmarchy/`
+  and a single action catalog at `launcher/actions.tsv` (`c `, `c key `,
+  `c man `), alongside text CLI fallbacks (`cosmarchy-menu`,
   `cosmarchy-keybindings`, `cosmarchy-manual`).
+- `launcher/` must never live under `bin/` (`install/config/symlinks.sh`
+  publishes everything matching `bin/cosmarchy*` into `/usr/local/bin`).
 - COSMIC configuration lives as plain RON files under `default/cosmic/`,
   deployed atomically into `~/.config/cosmic/` inside `arch-chroot` by
   `install/helpers/cosmic.sh` (`cosmarchy_cosmic_deploy` /

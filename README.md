@@ -25,7 +25,7 @@ Cosmarchy is an opinionated, developer-first Linux distribution built on **Arch 
 - **Authentic Stock COSMIC 1.11 + `greetd`**: Full COSMIC Wayland desktop with `cosmic-initial-setup` on first login (language, keyboard, timezone, Wi-Fi, accessibility, appearance, panel layout) and native COSMIC apps (`cosmic-terminal`, `cosmic-files`, `cosmic-text-editor`, `cosmic-player`, `cosmic-store`).
 - **Built-in Auto-Tiling (Per Workspace)**: COSMIC's native auto-tiling is enabled out of the box with per-workspace behavior (`Super + Y` to toggle, `Super + G` to float a window, `Super + O` for orientation, `Super + S` for stacking, or `cosmarchy tiling <enable|disable|toggle|status>`).
 - **Non-Conflicting Shortcuts**: All COSMIC default shortcuts remain intact. Cosmarchy adds its own bindings strictly on free keys (`Super + Return`, `Super + E`, `Super + D`, `Ctrl + Print`, `Super + Alt + Space`, `Super + Alt + /`, `Super + Alt + M`).
-- **Command Center (`Super + Alt + Space`)**: Fast terminal UI (`gum` inside `cosmic-term`) covering keybindings, the local manual, tiling, gaming, web apps, screen capture, snapshots, updates, COSMIC Settings, and power actions.
+- **COSMIC Launcher Integration (`Super + Alt + Space`, `c `)**: Native `pop-launcher` plugin exposing Cosmarchy actions (`c `), active keybindings (`c key ` on `Super + Alt + /`), and local manual pages (`c man ` on `Super + Alt + M`) directly inside COSMIC Launcher. Backed by a single `launcher/actions.tsv` catalog, with a flat `gum filter` fallback (`cosmarchy menu`) for TTY and SSH sessions.
 - **Voxtype (System-Wide Local AI Dictation)**: Offline speech-to-text dictation on `Super + D` powered by local `whisper-cpp` (`whisper-cli`) and `ydotool` — zero cloud fees and zero telemetry.
 - **Web App Generator (`cosmarchy webapp`)**: Turn web tools (Claude, ChatGPT, Linear, Notion) into isolated desktop apps with separate profiles, auto-fetched favicons, and desktop entries visible in COSMIC Launcher and App Library.
 - **Windows Apps, Opt-In (`cosmarchy windows install`)**: [WinBoat](https://www.winboat.app) runs Windows in a Docker container and opens its applications as ordinary desktop windows over FreeRDP. Installed only when you ask (AUR `winboat-bin` or checksum-pinned release AppImage).
@@ -55,9 +55,9 @@ Cosmarchy keeps COSMIC's defaults untouched and adds seven shortcuts on keys COS
 | <kbd>Super</kbd> + <kbd>E</kbd> | Open **COSMIC Files** (`cosmic-files`) |
 | <kbd>Super</kbd> + <kbd>D</kbd> | **Voxtype**: Toggle local AI speech-to-text dictation |
 | <kbd>Ctrl</kbd> + <kbd>Print</kbd> | Region screenshot (`grim` + `slurp`) into **Satty** annotator |
-| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd> | **Command Center** (`cosmarchy-menu` in `cosmic-term`) |
-| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>/</kbd> | **Keybindings browser** (`cosmarchy-keybindings` in `cosmic-term`) |
-| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>M</kbd> | **Local manual** (`cosmarchy-manual` in `cosmic-term`) |
+| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd> | **Cosmarchy actions** in COSMIC Launcher (`cosmic-launcher input "c "`) |
+| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>/</kbd> | **Keybindings** in COSMIC Launcher (`cosmic-launcher input "c key "`) |
+| <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>M</kbd> | **Local manual** in COSMIC Launcher (`cosmic-launcher input "c man "`) |
 
 ### Key COSMIC Defaults
 
@@ -124,19 +124,19 @@ cosmarchy tiling toggle    # flip automatic tiling on/off
 ### The Manual
 
 ```bash
-cosmarchy manual                    # interactive gum browser (Super + Alt + M)
+cosmarchy manual                    # interactive gum browser (or Super + Alt + M / `c man ` in launcher)
 cosmarchy manual 04                 # open a page by number
 cosmarchy manual tiling             # open a page by name
 cosmarchy manual --list             # list all 15 pages
 cosmarchy manual --grep whisper     # search every page
 ```
 
-Fifteen local pages covering getting started, keybindings, tiling, the menu, terminal, Neovim, web apps, dictation, screenshots, updates and migrations, snapshots, Windows apps, troubleshooting, and gaming. Works in a TTY, over SSH, and with no network.
+Fifteen local pages covering getting started, keybindings, tiling, the launcher and menu, terminal, Neovim, web apps, dictation, screenshots, updates and migrations, snapshots, Windows apps, troubleshooting, and gaming. Works in a TTY, over SSH, and with no network.
 
 ### Keybindings Browser
 
 ```bash
-cosmarchy keybindings          # interactive filter (Super + Alt + /)
+cosmarchy keybindings          # interactive filter (or Super + Alt + / / `c key ` in launcher)
 cosmarchy keybindings --list   # plain text, for piping or grepping
 cosmarchy keybindings reset    # re-deploy Cosmarchy's default COSMIC shortcuts
 ```
@@ -207,10 +207,12 @@ cosmarchy boot update      # regenerate Limine after editing /etc/kernel/cmdline
 
 The Limine menu uses a fixed COSMIC Dark palette (`/etc/cosmarchy/boot-theme.conf`) and regenerates automatically on kernel updates, snapshots, and `mkinitcpio -P`. While booted into a snapshot, pacman and `cosmarchy update` refuse transactions so the ESP never drifts from root modules.
 
-### Command Center & Screen Capture
+### Menu, Power & Screen Capture
 
 ```bash
-cosmarchy menu               # open the gum menu (Super + Alt + Space)
+cosmarchy menu               # flat gum filter over launcher/actions.tsv (TTY/SSH)
+cosmarchy power <lock|suspend|logout|reboot|poweroff>
+cosmarchy settings           # open COSMIC Settings
 cosmarchy capture annotate   # region -> Satty annotation editor (Ctrl + Print)
 cosmarchy capture region     # region -> ~/Pictures/Screenshots + clipboard
 cosmarchy capture screen     # full screen

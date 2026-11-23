@@ -1,22 +1,39 @@
-# The Command Center
+# The Launcher & Menu
 
-Press `Super + Alt + Space`, or run `cosmarchy menu` in any terminal.
+Cosmarchy integrates directly into **COSMIC Launcher** (`pop-launcher`) under
+the `c ` prefix, so actions, keybindings, and manual pages appear natively in
+the stock launcher without a separate control-center window.
 
-The command center is a fast, text-only interactive menu built with `gum` and
-launched inside `cosmic-term`. COSMIC Launcher (`Super`) handles opening
-applications; the command center covers Cosmarchy's system actions:
+## Shortcuts and prefixes
 
-    Keybindings   browse active COSMIC and Cosmarchy shortcuts
-    Manual        browse and search this local manual
-    Tiling        status, enable, disable, or toggle COSMIC auto-tiling
-    Gaming        inspect the gaming stack status
-    Web App       add, list, or remove isolated web apps
-    Capture       annotate region (Satty), region to file, or full screen
-    Snapshot      create, list, or restore Btrfs snapshots
-    System        update everything, open COSMIC Settings, or show system info
-    Power         lock, suspend, log out, reboot, or power off
+    Super + Alt + Space     COSMIC Launcher prefilled with `c ` (actions)
+    Super + Alt + /         COSMIC Launcher prefilled with `c key ` (keybindings)
+    Super + Alt + M         COSMIC Launcher prefilled with `c man ` (manual pages)
 
-Everything in the menu is also a plain CLI command:
+You can also press `Super` for COSMIC Launcher and type `c `, `c key `, or
+`c man ` directly.
+
+- **Actions (`c <query>`)** — single catalog in `launcher/actions.tsv` covering
+  tiling, screen capture, snapshots, system updates, COSMIC Settings, web apps,
+  gaming, keybindings, manual, and power:
+  - *Immediate* (`run`) actions execute and close the launcher (e.g. toggle
+    auto-tiling, screen capture, lock, suspend, COSMIC Settings).
+  - *Status* (`notify`) actions run and show their output via `notify-send`
+    (e.g. tiling status, gaming status, web app list, system info).
+  - *Interactive* (`terminal`) actions open `cosmic-term -e <cmd>` for input or
+    confirmation (e.g. create/list/restore snapshots, update everything, web app
+    add/remove, logout/reboot/power off).
+- **Keybindings (`c key <query>`)** — read-only search over active COSMIC and
+  Cosmarchy shortcuts from `cosmarchy-keybindings --list`; activating closes
+  the launcher.
+- **Manual (`c man <query>`)** — search local manual pages from
+  `cosmarchy-manual --list`; activating opens `cosmic-term -e cosmarchy-manual <page>`.
+
+## Terminal / SSH fallback (`cosmarchy menu`)
+
+In a console TTY or over SSH, `cosmarchy menu` opens a flat `gum filter` picker
+over the same `launcher/actions.tsv` catalog. Everything in the catalog is also
+a plain CLI command:
 
 ```bash
 cosmarchy menu
@@ -25,7 +42,5 @@ cosmarchy manual
 cosmarchy tiling toggle
 cosmarchy capture annotate
 cosmarchy snapshot list
+cosmarchy power reboot
 ```
-
-Because it is plain terminal UI, it works identically inside COSMIC, on a
-console TTY, and over SSH.

@@ -6,7 +6,7 @@ This guide details the procedure for testing Cosmarchy scripts, the fast unit su
 
 ## 0. Automated Install Smoke Test (CI)
 
-`.github/workflows/install-smoke-test.yml` builds the ISO, **installs from it in QEMU**, and verifies the result. It runs on pushes to `main`, on pull requests touching `iso/`, `install/`, `bin/` or `default/`, and on demand via `workflow_dispatch`.
+`.github/workflows/install-smoke-test.yml` builds the ISO, **installs from it in QEMU**, and verifies the result. It runs on pushes to `main`, on pull requests touching `iso/`, `install/`, `bin/`, `default/`, `launcher/`, or `migrations/`, and on demand via `workflow_dispatch`.
 
 The installer is driven by an answers file on a separate disk labeled `COSMARCHY`, so **the ISO under test is byte for byte the ISO that ships**. To reproduce locally:
 
@@ -28,13 +28,13 @@ Attach `answers.img` as a second drive and the installer runs without prompts. U
 
 The workflow has these layers:
 
-- **`unit` job** (`iso/tests/unit.sh`, in `archlinux:latest`): boot menu generation, fixed COSMIC Dark palette validation, COSMIC RON config deployment & `xkb_config` mapping, `deploy.sh`, installer validation and stage rules, and `shellcheck`. Run locally with:
+- **`unit` job** (`iso/tests/unit.sh`, in `archlinux:latest`): boot menu generation, fixed COSMIC Dark palette validation, COSMIC RON config deployment & `xkb_config` mapping, `pop-launcher` plugin IPC + `actions.tsv` validation + v0.1.0 migration tests, `deploy.sh`, installer validation and stage rules, `python3 -m py_compile`, and `shellcheck`. Run locally with:
   ```bash
   docker run --rm -v "$PWD:/w" -w /w archlinux:latest bash iso/tests/unit.sh --deps
   ```
 - **Encrypted variant**: the install job runs `plain` and `encrypted`. The encrypted image is verified offline (including LUKS kernel command line and greetd `[initial_session]` autologin).
-- **Offline verification** (`iso/tests/verify-install.sh`): `cosmic-greeter.service` enabled, no GDM unit, PAM keyring integration on the service named in `/etc/greetd/cosmic-greeter.toml`, all 26 COSMIC + greetd packages installed, no `gnome-shell`/`gdm`/`mutter`/`alacritty`, `kdeconnect` + ufw ports 1714-1764, every `default/cosmic/` file deployed byte-identical into `~/.config/cosmic/`, `xkb_config` matching the installer keymap, session symlinks and exec bits, no `gnomarchy` strings in `/usr/local/bin` or `$HOME`, `.git` checkout, `~/.config/cosmic-initial-setup-done`, Brave Origin, WinBoat, LazyVim, Limine + blake2b hashes + fixed palette + Snapper + snapshot 1.
-- **Session verification** (`iso/tests/verify-session.sh`, inside a real greetd autologin COSMIC session): `cosmic-comp`, `cosmic-panel`, and `cosmic-settings-daemon` running; no shortcut/system_actions RON parse errors in the journal; every Cosmarchy custom shortcut absent from COSMIC `defaults`; `autotile = true` and `autotile_behavior = PerWorkspace`; `xkb_config` layout matching the installer; `xdg-desktop-portal-cosmic` answering on the session D-Bus; timezone; snapper + `snap-pac` + Limine hashes + COSMIC Dark palette; WinBoat prerequisites; and handover to the snapshot boot.
+- **Offline verification** (`iso/tests/verify-install.sh`): `cosmic-greeter.service` enabled, no GDM unit, PAM keyring integration on the service named in `/etc/greetd/cosmic-greeter.toml`, all 26 COSMIC + greetd packages plus `pop-launcher` installed, no `gnome-shell`/`gdm`/`mutter`/`alacritty`, `kdeconnect` + ufw ports 1714-1764, every `default/cosmic/` file deployed byte-identical into `~/.config/cosmic/`, `pop-launcher` plugin symlink (`-L`), `plugin.ron`, executable `cosmarchy-launcher`, `actions.tsv`, and `cosmic-launcher input` shortcuts in `custom`, `xkb_config` matching the installer keymap, session symlinks and exec bits, no `gnomarchy` strings in `/usr/local/bin` or `$HOME`, `.git` checkout, `~/.config/cosmic-initial-setup-done`, Brave Origin, WinBoat, LazyVim, Limine + blake2b hashes + fixed palette + Snapper + snapshot 1.
+- **Session verification** (`iso/tests/verify-session.sh`, inside a real greetd autologin COSMIC session): `cosmic-comp`, `cosmic-panel`, and `cosmic-settings-daemon` running; no shortcut/system_actions RON parse errors in the journal; every Cosmarchy custom shortcut absent from COSMIC `defaults`; real `pop-launcher` discovers the Cosmarchy plugin (`{"Search":"c snap"}` returns `"Create snapshot"`); `autotile = true` and `autotile_behavior = PerWorkspace`; `xkb_config` layout matching the installer; `xdg-desktop-portal-cosmic` answering on the session D-Bus; timezone; snapper + `snap-pac` + Limine hashes + COSMIC Dark palette; WinBoat prerequisites; and handover to the snapshot boot.
 - **Third boot, from a snapshot**: boots the snapshot in a tmpfs overlay, confirms `cosmic-comp` and the snapshot notification ran, confirms `cosmarchy-boot guard` and pacman refuse transactions, runs `cosmarchy snapshot restore`, and checks `@restore-backup-*`, `@`'s parent UUID, and that overlay writes never touched the snapshot.
 
 Not covered by CI:
@@ -50,9 +50,10 @@ Cut a release only from a commit where this job is green.
 ## 1. Syntax & Static Analysis Verification
 
 ```bash
-# Verify syntax of all shell scripts
+# Verify syntax of all shell scripts and the launcher plugin
 find . -type f -name "*.sh" -exec bash -n {} +
 find bin/ -type f -exec bash -n {} +
+python3 -m py_compile launcher/cosmarchy/cosmarchy-launcher
 
 # Run the full fast unit suite + shellcheck in Arch
 docker run --rm -v "$PWD:/w" -w /w archlinux:latest bash iso/tests/unit.sh --deps
@@ -104,9 +105,9 @@ Once logged into the COSMIC desktop:
    - <kbd>Super</kbd> + <kbd>Return</kbd>: opens COSMIC Terminal (`cosmic-term`).
    - <kbd>Super</kbd> + <kbd>E</kbd>: opens COSMIC Files (`cosmic-files`).
    - <kbd>Super</kbd> + <kbd>B</kbd>: opens Brave Origin.
-   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd>: opens `cosmarchy-menu` in `cosmic-term`.
-   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>/</kbd>: opens `cosmarchy-keybindings` in `cosmic-term`.
-   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>M</kbd>: opens `cosmarchy-manual` in `cosmic-term`.
+   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd>: opens COSMIC Launcher prefilled with `c ` (Cosmarchy actions).
+   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>/</kbd>: opens COSMIC Launcher prefilled with `c key ` (keybindings).
+   - <kbd>Super</kbd> + <kbd>Alt</kbd> + <kbd>M</kbd>: opens COSMIC Launcher prefilled with `c man ` (manual pages).
    - Confirm no `shortcuts custom config error` appears in `journalctl --user -b`.
 3. **Test Screen Capture**:
    - <kbd>Print</kbd>: launches COSMIC Screenshot.

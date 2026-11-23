@@ -21,18 +21,21 @@ Two things follow from that and shape everything else:
 
 ```
 bin/                     the cosmarchy CLI; one file per subcommand
+launcher/                pop-launcher plugin & single action catalog (never under bin/)
+  actions.tsv            tab-separated action catalog shared by launcher plugin and cosmarchy-menu
+  cosmarchy/             pop-launcher plugin (plugin.ron + Python 3 stdlib cosmarchy-launcher)
 install/
   preflight/             guards, pacman setup (enables multilib)
   packaging/             package installation (official repos, Flatpak, Brave Origin)
-  config/                system and user configuration
+  config/                system and user configuration (including launcher.sh plugin symlink)
     hardware/            per-vendor profiles, sourced by all.sh
   desktop/               COSMIC RON deployment (cosmic.sh, set-keyboard-layout.sh)
                          and live-session hardware tweaks (set-hardware-session.sh)
   helpers/               presentation, logging, errors, chroot, cosmic RON helpers
   login/                 cosmic-greeter/greetd (greeter.sh), Plymouth, Limine (boot.sh)
   post-install/          cleanup, migration baseline
-  cosmarchy-base.packages   pacman list, official repos only
-migrations/              timestamped, once-per-machine repair scripts (starts empty)
+  cosmarchy-base.packages   pacman list, official repos only (includes pop-launcher)
+migrations/              timestamped, once-per-machine repair scripts
 manual/                  15 numbered pages read by `cosmarchy manual`
 iso/
   builder/build-iso.sh   archiso profile assembly
@@ -100,7 +103,14 @@ and writes `com.system76.CosmicComp/v1/xkb_config` (keeping `us` first when
 
 **Shortcut rule:** COSMIC defaults win. Every binding in `custom` uses a key
 absent from `/usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults`.
-Text tools spawn as `cosmic-term -e <cmd>`.
+`Super+Alt+Space`, `Super+Alt+/`, and `Super+Alt+M` spawn
+`cosmic-launcher input "c "`, `"c key "`, and `"c man "`, served by the
+`pop-launcher` plugin under `launcher/cosmarchy/` (symlinked into
+`~/.local/share/pop-launcher/plugins/cosmarchy` by `install/config/launcher.sh`).
+The plugin is Python 3 stdlib only, reads `launcher/actions.tsv`,
+`cosmarchy-keybindings --list`, and `cosmarchy-manual --list` (no second RON
+parser), and `cosmarchy-menu` renders a flat `gum filter` over the same
+`actions.tsv` for SSH/TTY sessions.
 
 **First login:** `cosmic-initial-setup` autostarts in the session and exits
 immediately when `~/.config/cosmic-initial-setup-done` exists. Unattended (CI)
@@ -272,7 +282,8 @@ either implement it or remove it rather than leaving it.
 
 - No custom theme engine or downloaded wallpapers: Cosmarchy uses authentic
   stock COSMIC appearance and `cosmic-wallpapers`.
-- No GNOME desktop support, dconf overrides, or GTK/GJS control center (the
-  menu, keybindings, and manual are text-only until a future libcosmic control
-  center).
+- No GNOME desktop support, dconf overrides, or windowed GTK/GJS/libcosmic
+  control center: replaced by the native `pop-launcher` plugin under
+  `launcher/cosmarchy/` (`c `, `c key `, `c man `) with flat `gum` CLI
+  fallbacks (`cosmarchy-menu`, `cosmarchy-keybindings`, `cosmarchy-manual`).
 - `grep`, `find` and `cat` are not aliased to ripgrep, fd and bat.

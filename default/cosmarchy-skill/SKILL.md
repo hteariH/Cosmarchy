@@ -68,13 +68,21 @@ Key COSMIC tiling shortcuts:
 
 ---
 
-## 3. Keyboard Shortcuts
+## 3. Launcher Plugin & Keyboard Shortcuts
 
-Inspect active shortcuts (reads COSMIC `defaults` and user `custom` RON files):
+Cosmarchy ships a `pop-launcher` plugin (`~/.local/share/pop-launcher/plugins/cosmarchy` → `~/.local/share/cosmarchy/launcher/cosmarchy`) backed by `~/.local/share/cosmarchy/launcher/actions.tsv`:
+- `Super + Alt + Space` spawns `cosmic-launcher input "c "` (Cosmarchy actions)
+- `Super + Alt + /` spawns `cosmic-launcher input "c key "` (active keybindings, read-only)
+- `Super + Alt + M` spawns `cosmic-launcher input "c man "` (local manual pages)
+
+Inspect active shortcuts or run the TTY/SSH menu fallback:
 ```bash
-cosmarchy keybindings          # interactive filter (Super + Alt + /)
+cosmarchy menu                 # flat gum filter over launcher/actions.tsv
+cosmarchy keybindings          # interactive filter
 cosmarchy keybindings --list   # plain list
 cosmarchy keybindings reset    # re-deploy Cosmarchy default custom + system_actions
+cosmarchy power <lock|suspend|logout|reboot|poweroff>
+cosmarchy settings             # open COSMIC Settings
 ```
 
 COSMIC defaults win; never override a key present in `/usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults` unless the user explicitly asks. Check `journalctl --user -b | grep -i "shortcuts custom config error"` after editing RON shortcut files.

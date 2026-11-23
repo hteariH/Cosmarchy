@@ -2,8 +2,14 @@
 
 ## Seeing what is bound
 
+Press `Super + Alt + /` (or type `c key ` in COSMIC Launcher) to search your
+active shortcuts directly inside COSMIC Launcher (read-only; activating closes
+the launcher).
+
+From any terminal, TTY, or SSH session:
+
 ```bash
-cosmarchy keybindings          # interactive filter (Super + Alt + /)
+cosmarchy keybindings          # interactive gum filter
 cosmarchy keybindings --list   # plain text, for piping or grepping
 cosmarchy keybindings reset    # restore Cosmarchy's default COSMIC shortcuts
 ```
@@ -27,9 +33,9 @@ To add or change shortcuts, open **COSMIC Settings → Input Devices → Keyboar
     Super + E                COSMIC Files (cosmic-files)
     Super + D                Voxtype AI dictation toggle
     Ctrl + Print             Region screenshot into Satty annotator
-    Super + Alt + Space      Cosmarchy Command Center (cosmarchy-menu)
-    Super + Alt + /          Cosmarchy Keybindings browser
-    Super + Alt + M          Cosmarchy Manual
+    Super + Alt + Space      Cosmarchy actions in COSMIC Launcher (`c `)
+    Super + Alt + /          Cosmarchy keybindings in COSMIC Launcher (`c key `)
+    Super + Alt + M          Cosmarchy manual in COSMIC Launcher (`c man `)
 
 `system_actions` also maps COSMIC's built-in `WebBrowser` (`Super + B`) to
 Brave Origin (with Chromium / `xdg-open` fallback) and `Terminal` (`Super + T`)

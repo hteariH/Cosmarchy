@@ -113,12 +113,12 @@
               <span class="traffic-dot dot-green"></span>
             </div>
             <div>cosmarchy help</div>
-            <div style="color:var(--accent);">Super + Alt + Space opens the gum menu in cosmic-term</div>
+            <div style="color:var(--accent);">Super + Alt + Space opens Cosmarchy in COSMIC Launcher (c )</div>
           </div>
           <div class="terminal-body"><pre>Usage: cosmarchy &lt;command&gt; [subcommand] [arguments...]
 
 Commands:
-  menu                         Open the Cosmarchy command center (Super+Alt+Space)
+  menu                         Open the Cosmarchy menu (TTY/SSH; Super+Alt+Space in COSMIC)
   tiling &lt;enable|disable|toggle|status&gt;
                                COSMIC auto-tiling, on or off
   keybindings [--list|reset]   Search the active COSMIC keybindings (Super+Alt+/)
@@ -138,7 +138,7 @@ Commands:
   migrate [--list]             Apply pending Cosmarchy migrations</pre></div>
           <div class="terminal-footnote">
             Abridged. <code>cosmarchy help</code> also lists first-run, agent, reminder,
-            capture, hook, and version.
+            capture, power, settings, hook, and version.
           </div>
         </div>
       </div>
@@ -411,15 +411,17 @@ umu-launcher · ttf-liberation</div>
           <span class="section-tag">Keyboard</span>
           <h2 class="section-title">COSMIC defaults win</h2>
           <p class="section-subtitle">
-            Cosmarchy never overrides a built-in COSMIC keybinding. <kbd>Super + Alt + /</kbd>
-            searches your live RON shortcut files, and <kbd>Super + Alt + M</kbd> opens the local manual.
+            Cosmarchy never overrides a built-in COSMIC keybinding. <kbd>Super + Alt + Space</kbd>,
+            <kbd>Super + Alt + /</kbd>, and <kbd>Super + Alt + M</kbd> open COSMIC Launcher prefilled
+            with <code>c </code>, <code>c key </code>, and <code>c man </code> via a native
+            <code>pop-launcher</code> plugin.
           </p>
         </div>
 
         <div class="shortcuts-grid">
-          <div class="shortcut-pill"><kbd>Super + Alt + Space</kbd><span class="shortcut-desc">Cosmarchy menu</span></div>
-          <div class="shortcut-pill"><kbd>Super + Alt + /</kbd><span class="shortcut-desc">Search keybindings</span></div>
-          <div class="shortcut-pill"><kbd>Super + Alt + M</kbd><span class="shortcut-desc">Local manual</span></div>
+          <div class="shortcut-pill"><kbd>Super + Alt + Space</kbd><span class="shortcut-desc">Launcher: Cosmarchy actions (<code>c </code>)</span></div>
+          <div class="shortcut-pill"><kbd>Super + Alt + /</kbd><span class="shortcut-desc">Launcher: Keybindings (<code>c key </code>)</span></div>
+          <div class="shortcut-pill"><kbd>Super + Alt + M</kbd><span class="shortcut-desc">Launcher: Local manual (<code>c man </code>)</span></div>
           <div class="shortcut-pill"><kbd>Super + Return</kbd><span class="shortcut-desc">COSMIC Terminal</span></div>
           <div class="shortcut-pill"><kbd>Super + B</kbd><span class="shortcut-desc">Brave Origin</span></div>
           <div class="shortcut-pill"><kbd>Super + E</kbd><span class="shortcut-desc">COSMIC Files</span></div>

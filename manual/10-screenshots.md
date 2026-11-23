@@ -9,7 +9,7 @@ cosmarchy capture region
 cosmarchy capture screen
 ```
 
-Also under **Capture** in the command center.
+Also available in COSMIC Launcher via `c cap` (or `cosmarchy menu` in a TTY).
 
 ## Where files go
 

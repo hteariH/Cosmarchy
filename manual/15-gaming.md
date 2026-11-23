@@ -6,7 +6,7 @@ cosmarchy gaming status    # what is present
 cosmarchy gaming proton    # manage Proton versions
 ```
 
-Also under **Gaming** in the command center.
+Also available in COSMIC Launcher via `c gam` (or `cosmarchy menu` in a TTY).
 
 ## What gets installed
 

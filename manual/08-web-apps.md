@@ -9,7 +9,7 @@ cosmarchy webapp list
 cosmarchy webapp remove "Linear"
 ```
 
-Also under **Web App** in the command center.
+Also available in COSMIC Launcher via `c web` (or `cosmarchy menu` in a TTY).
 
 ## What you get
 

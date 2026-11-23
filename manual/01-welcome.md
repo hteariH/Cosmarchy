@@ -11,9 +11,9 @@ You get stock COSMIC's Wayland polish, built-in per-workspace auto-tiling,
 native Rust applications (`cosmic-terminal`, `cosmic-files`,
 `cosmic-text-editor`, `cosmic-player`, `cosmic-store`), fractional scaling, and
 first-login configuration via `cosmic-initial-setup`. On top of that sits the
-Cosmarchy layer: bootable Btrfs rollbacks in Limine, a CLI command center, web
-apps, local AI dictation, WinBoat opt-in Windows support, gaming and laptop
-profiles, and KDE Connect.
+Cosmarchy layer: bootable Btrfs rollbacks in Limine, a COSMIC Launcher plugin
+(`c `) with CLI fallbacks, web apps, local AI dictation, WinBoat opt-in Windows
+support, gaming and laptop profiles, and KDE Connect.
 
 ## Design principles
 
