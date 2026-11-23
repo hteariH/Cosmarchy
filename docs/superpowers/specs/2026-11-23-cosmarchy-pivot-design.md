@@ -224,6 +224,36 @@ CI autologin uses greetd `[initial_session]`; the unattended installer writes
 `~/.config/cosmic-initial-setup-done`. The smoke-test workflow is updated for
 the new names, label and session. GNOME-only checks are deleted, not skipped.
 
+## Addendum — base moved to v0.0.8
+
+The design above was first drafted against v0.0.6. `main` has since gained a
+gum installer, Limine with bootable snapshots, WinBoat, GSConnect and more.
+These rules apply on top of everything above:
+
+- **Already gone upstream:** Alacritty and the retro screensaver were dropped in
+  v0.0.7. No screensaver shortcut; the shortcut table loses `Super+Alt+Escape`.
+- **Shortcut keys, corrected.** `Super+Alt+K`, `Super+Alt+Shift+K` and
+  `Super+Alt+Escape` are COSMIC defaults (`SwitchOutput(Up)`,
+  `MoveToOutput(Up)`, `Terminate`). Use `Super+Alt+slash` for keybindings and
+  `Super+Alt+M` for the manual. Text tools spawn as `cosmic-term -e <cmd>`.
+- **Limine palette.** `default/boot/lib/palette.sh` derives the boot menu
+  palette from a theme's `alacritty.toml`. With no themes, ship one fixed
+  palette matching COSMIC's default dark theme as a static file and write
+  `/etc/cosmarchy/boot-theme.conf` from it at install time. Drop the
+  theme-set → palette path; keep `iso/tests/test-palette.sh` meaningful.
+- **Keyboard layout.** The installer's chosen XKB layout/variant (written to
+  the keyboard conf by `iso/installer/lib/stages.sh`) must reach COSMIC:
+  write it to `com.system76.CosmicComp/v1/xkb_config` (check the exact RON
+  shape in `cosmic-comp` at `epoch-1.11.0`) instead of the gsettings path in
+  `install/desktop/set-keyboard-layout.sh`. Keep the `us` + latin fallback
+  logic it has.
+- **GSConnect → KDE Connect.** Replace the bundled GSConnect extension with
+  the `kdeconnect` package (extra). Keep the ufw rules for ports 1714-1764.
+- **Snapshots, WinBoat, desktop apps.** Audit them like every other command:
+  anything that touches the theme, dconf or GNOME is ported or removed.
+- **Fast tests.** `iso/tests/unit.sh` (all `test-*.sh` + shellcheck) must
+  stay green. Run it in `archlinux:latest` via Docker if available.
+
 ## Out of scope
 
 The libcosmic control center (phase 2); GNOME support of any kind; migrating
