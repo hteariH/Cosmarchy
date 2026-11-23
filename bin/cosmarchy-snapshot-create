@@ -1,15 +1,38 @@
 #!/bin/bash
 
 # Create a Btrfs Snapper snapshot
-description="$1"
+set -eEo pipefail
+
+wait_if_terminal() {
+  if [[ "${COSMARCHY_WAIT_ON_EXIT:-0}" == "1" && -t 0 && -t 1 ]]; then
+    echo
+    read -rp "Press Enter to close..." _ || true
+  fi
+}
+
+if [[ "${1:-}" == "--prompt" ]]; then
+  if [[ -t 0 ]] && command -v gum >/dev/null 2>&1; then
+    description="$(gum input --placeholder "Snapshot description (Enter for timestamp)")" || exit 0
+  else
+    description=""
+  fi
+else
+  description="${1:-}"
+fi
+
 if [[ -z "$description" ]]; then
   description="Manual snapshot $(date '+%Y-%m-%d %H:%M')"
 fi
 
 echo "Creating Snapper root snapshot: $description"
-sudo snapper -c root create -d "$description"
+if ! sudo snapper -c root create -d "$description"; then
+  wait_if_terminal
+  exit 1
+fi
 echo "Snapshot created successfully."
 
 if command -v cosmarchy-hook-run >/dev/null 2>&1; then
   cosmarchy-hook-run on-snapshot "$description" || true
 fi
+
+wait_if_terminal

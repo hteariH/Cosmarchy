@@ -1,0 +1,27 @@
+id	title	keywords	mode	command
+tiling-toggle	Toggle auto-tiling	tiling autotile window layout toggle	run	cosmarchy-tiling toggle
+capture-annotate	Annotate screenshot (Satty)	capture screenshot region satty annotate	run	cosmarchy-capture annotate
+snapshot-create	Create snapshot	snapshot snap btrfs snapper backup create	terminal	cosmarchy-snapshot-create --prompt
+system-update	Update everything	system update upgrade pacman packages migrate	terminal	cosmarchy-update
+system-settings	COSMIC Settings	system settings preferences config	run	cosmarchy-settings
+webapp-add	Add web app	webapp web app browser site create add	terminal	cosmarchy-webapp add
+keybindings	Keybindings	keybindings shortcuts hotkeys keys	terminal	cosmarchy-keybindings
+manual	Manual	manual docs documentation help guide	terminal	cosmarchy-manual
+tiling-status	Tiling status	tiling autotile window layout status state	notify	cosmarchy-tiling status
+tiling-enable	Enable auto-tiling	tiling autotile window layout enable on	run	cosmarchy-tiling enable
+tiling-disable	Disable auto-tiling	tiling autotile window layout disable off	run	cosmarchy-tiling disable
+capture-region	Capture region to file	capture screenshot region area	run	cosmarchy-capture region
+capture-screen	Capture whole screen	capture screenshot full display screen	run	cosmarchy-capture screen
+snapshot-list	List snapshots	snapshot snap btrfs snapper list	terminal	cosmarchy-snapshot-list
+snapshot-restore	Restore snapshot	snapshot snap btrfs snapper rollback restore	terminal	cosmarchy-snapshot-restore
+system-info	System info	system info version verbose diagnostics	notify	cosmarchy-version --verbose
+webapp-list	List web apps	webapp web app browser list	notify	cosmarchy-webapp list
+webapp-remove	Remove web app	webapp web app browser delete remove	terminal	cosmarchy-webapp remove
+gaming-status	Gaming status	gaming steam proton wine lutris status	notify	cosmarchy-gaming status
+gaming-install	Install gaming stack	gaming steam proton wine lutris install setup	terminal	cosmarchy-gaming install
+gaming-proton	Manage Proton versions	gaming proton steam protonup	run	cosmarchy-gaming proton
+power-lock	Lock screen	power lock screen session	run	cosmarchy-power lock
+power-suspend	Suspend	power suspend sleep	run	cosmarchy-power suspend
+power-logout	Log out	power logout log out session exit	terminal	cosmarchy-power logout
+power-reboot	Reboot	power reboot restart	terminal	cosmarchy-power reboot
+power-poweroff	Power off	power poweroff shutdown turn off	terminal	cosmarchy-power poweroff

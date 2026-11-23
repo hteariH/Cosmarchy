@@ -4,7 +4,14 @@
 # Turns websites into isolated, desktop-integrated web applications
 set -e
 
-action="$1"
+action="${1:-}"
+
+wait_if_terminal() {
+  if [[ "${COSMARCHY_WAIT_ON_EXIT:-0}" == "1" && -t 0 && -t 1 ]]; then
+    echo
+    read -rp "Press Enter to close..." _ || true
+  fi
+}
 
 usage() {
   cat <<'EOF'
@@ -34,15 +41,22 @@ sanitize_id() {
 case "$action" in
   add)
     shift
-    name="$1"
-    url="$2"
-    shift 2 || true
+    name="${1:-}"
+    url="${2:-}"
+    if [[ -n "$name" && -n "$url" ]]; then
+      shift 2
+    elif [[ -z "$name" && -t 0 ]] && command -v gum >/dev/null 2>&1; then
+      name="$(gum input --placeholder "Name (e.g. Linear)")" || exit 0
+      [[ -z "$name" ]] && exit 0
+      url="$(gum input --placeholder "https://linear.app")" || exit 0
+      [[ -z "$url" ]] && exit 0
+    fi
 
     icon_arg=""
     while [[ $# -gt 0 ]]; do
       case "$1" in
         --icon)
-          icon_arg="$2"
+          icon_arg="${2:-}"
           shift 2
           ;;
         *)
@@ -54,6 +68,7 @@ case "$action" in
     if [[ -z "$name" || -z "$url" ]]; then
       echo "Error: Name and URL are required." >&2
       usage
+      wait_if_terminal
       exit 1
     fi
 
@@ -130,6 +145,7 @@ EOF
     echo "✓ Web application '$name' created successfully!"
     echo "  Location: $desktop_file"
     echo "  URL:      $url"
+    wait_if_terminal
     ;;
 
   list)
@@ -150,9 +166,25 @@ EOF
 
   remove)
     shift
-    name="$1"
+    name="${1:-}"
+    if [[ -z "$name" && -t 0 ]] && command -v gum >/dev/null 2>&1; then
+      installed=()
+      for f in "$APPS_DIR"/cosmarchy-webapp-*.desktop; do
+        if [[ -f "$f" ]]; then
+          installed+=("$(grep "^Name=" "$f" | head -n1 | cut -d'=' -f2)")
+        fi
+      done
+      if ((${#installed[@]} > 0)); then
+        name="$(gum choose --header "Remove web app" "${installed[@]}")" || exit 0
+      else
+        echo "No Cosmarchy web apps installed."
+        wait_if_terminal
+        exit 0
+      fi
+    fi
     if [[ -z "$name" ]]; then
       echo "Error: Name is required." >&2
+      wait_if_terminal
       exit 1
     fi
     app_id="$(sanitize_id "$name")"
@@ -161,6 +193,7 @@ EOF
 
     if [[ ! -f "$desktop_file" && ! -d "$app_dir" ]]; then
       echo "Error: Web app '$name' not found." >&2
+      wait_if_terminal
       exit 1
     fi
 
@@ -176,6 +209,7 @@ EOF
     fi
 
     echo "✓ Web application '$name' removed."
+    wait_if_terminal
     ;;
 
   *)

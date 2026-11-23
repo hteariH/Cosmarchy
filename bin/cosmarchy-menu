@@ -1,141 +1,129 @@
 #!/bin/bash
 
-# Cosmarchy Command Center (Super + Alt + Space)
+# Cosmarchy Menu (SSH / TTY fallback over launcher/actions.tsv)
 #
-# COSMIC Launcher covers app launching; this covers the system-action half:
-# keybindings, manual, tiling, web apps, capture, snapshots, updates and power.
-# Text-only menu rendered with gum inside cosmic-term.
+# Inside COSMIC, Super+Alt+Space opens COSMIC Launcher prefilled with `c `.
+# This script provides the same action catalog in a terminal or over SSH as a
+# flat `gum filter` list.
 set -eEo pipefail
 
 COSMARCHY_PATH="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
-export PATH="$COSMARCHY_PATH/bin:$PATH"
+CATALOG="$COSMARCHY_PATH/launcher/actions.tsv"
+export PATH="$PATH:$COSMARCHY_PATH/bin"
 
-if ! command -v gum >/dev/null 2>&1; then
-  echo "gum is required for the Cosmarchy menu (pacman -S gum)." >&2
-  read -rp "Press Enter to close..." _
+if [[ ! -r "$CATALOG" ]]; then
+  echo "Cosmarchy action catalog not found at $CATALOG" >&2
   exit 1
 fi
 
-header() {
-  clear
-  gum style --border rounded --padding "0 2" --margin "1 0" --align center \
-    "Cosmarchy" "$(cosmarchy-version 2>/dev/null | head -n1)"
+mapfile -t ids < <(tail -n +2 "$CATALOG" | cut -f1)
+mapfile -t titles < <(tail -n +2 "$CATALOG" | cut -f2)
+mapfile -t modes < <(tail -n +2 "$CATALOG" | cut -f4)
+mapfile -t commands < <(tail -n +2 "$CATALOG" | cut -f5)
+
+if ((${#titles[@]} == 0)); then
+  echo "Cosmarchy action catalog is empty: $CATALOG" >&2
+  exit 1
+fi
+
+format_entries() {
+  local i
+  for ((i = 0; i < ${#titles[@]}; i++)); do
+    printf '%-30s  %s\n' "${titles[$i]}" "${ids[$i]%%-*}"
+  done
 }
 
-choose() {
-  gum choose --header "$1" --height 12 "${@:2}"
+if [[ "${1:-}" == "--list" || "${1:-}" == "list" || "${1:-}" == "-l" ]]; then
+  format_entries
+  exit 0
+fi
+
+if ! command -v gum >/dev/null 2>&1; then
+  echo "gum is required for the Cosmarchy menu (pacman -S gum)." >&2
+  if [[ -t 0 ]]; then
+    read -rp "Press Enter to close..." _
+  fi
+  exit 1
+fi
+
+pause_for_output() {
+  echo
+  gum input --placeholder "Press Enter to continue" >/dev/null || true
 }
 
-# --- Actions ---------------------------------------------------------------
+run_selected() {
+  local idx="$1"
+  local id="${ids[$idx]}"
+  local mode="${modes[$idx]}"
+  local command_str="${commands[$idx]}"
+  local -a cmd_parts=()
+  read -r -a cmd_parts <<<"$command_str"
 
-menu_tiling() {
-  local action
-  action="$(choose "Tiling" "Status" "Enable auto-tiling" "Disable auto-tiling" "Toggle auto-tiling" "Back")" || return 0
-  case "$action" in
-    Status) cosmarchy-tiling status; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    "Enable auto-tiling") cosmarchy-tiling enable; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    "Disable auto-tiling") cosmarchy-tiling disable; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    "Toggle auto-tiling") cosmarchy-tiling toggle; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-  esac
-}
+  if ((${#cmd_parts[@]} == 0)); then
+    echo "Empty command for action $id" >&2
+    return 1
+  fi
 
-menu_webapp() {
-  local action
-  action="$(choose "Web Apps" "Add" "List" "Remove" "Back")" || return 0
-  case "$action" in
-    Add)
-      local name url
-      name="$(gum input --placeholder "Name (e.g. Linear)")" || return 0
-      url="$(gum input --placeholder "https://linear.app")" || return 0
-      [[ -n "$name" && -n "$url" ]] && cosmarchy-webapp add "$name" "$url"
+  case "$mode" in
+    notify)
+      "${cmd_parts[@]}" || true
+      pause_for_output
       ;;
-    List) cosmarchy-webapp list; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    Remove)
-      local name
-      name="$(gum input --placeholder "Name of web app to remove")" || return 0
-      [[ -n "$name" ]] && cosmarchy-webapp remove "$name"
-      ;;
-  esac
-}
-
-menu_capture() {
-  local action
-  action="$(choose "Screen Capture" "Annotate region (Satty)" "Region to file" "Whole screen" "Back")" || return 0
-  case "$action" in
-    "Annotate region (Satty)") exec cosmarchy-capture annotate ;;
-    "Region to file") exec cosmarchy-capture region ;;
-    "Whole screen") exec cosmarchy-capture screen ;;
-  esac
-}
-
-menu_snapshot() {
-  local action
-  action="$(choose "Snapshots" "Create" "List" "Restore" "Back")" || return 0
-  case "$action" in
-    Create)
-      local desc
-      desc="$(gum input --placeholder "Snapshot description")" || return 0
-      cosmarchy-snapshot-create "${desc:-Manual snapshot}"
-      ;;
-    List) cosmarchy-snapshot-list; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    Restore) cosmarchy-snapshot-restore; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-  esac
-}
-
-menu_system() {
-  local action
-  action="$(choose "System" "Update everything" "COSMIC Settings" "System info" "Back")" || return 0
-  case "$action" in
-    "Update everything") cosmarchy-update; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    "COSMIC Settings")
-      if command -v cosmic-settings >/dev/null 2>&1; then
-        setsid cosmic-settings >/dev/null 2>&1 &
-      else
-        echo "cosmic-settings is not installed."
-        gum input --placeholder "Press Enter to continue" >/dev/null
-      fi
-      ;;
-    "System info") cosmarchy-version --verbose; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-  esac
-}
-
-menu_power() {
-  local action
-  action="$(choose "Power" "Lock" "Suspend" "Log out" "Reboot" "Power off" "Back")" || return 0
-  case "$action" in
-    Lock) exec loginctl lock-session ;;
-    Suspend) exec systemctl suspend ;;
-    "Log out")
-      if gum confirm "Log out now?"; then
-        if command -v cosmic-osd >/dev/null 2>&1; then
-          exec cosmic-osd log-out
+    run)
+      if [[ "$id" == "system-settings" ]]; then
+        if command -v cosmic-settings >/dev/null 2>&1; then
+          setsid cosmic-settings >/dev/null 2>&1 &
         else
-          exec loginctl terminate-user "$USER"
+          echo "cosmic-settings is not installed."
+          pause_for_output
+        fi
+      elif [[ "$id" == power-* ]]; then
+        exec "${cmd_parts[@]}"
+      else
+        if ! "${cmd_parts[@]}"; then
+          pause_for_output
         fi
       fi
       ;;
-    Reboot) gum confirm "Reboot now?" && exec systemctl reboot ;;
-    "Power off") gum confirm "Power off now?" && exec systemctl poweroff ;;
+    terminal)
+      "${cmd_parts[@]}" || true
+      case "$id" in
+        keybindings | manual | power-*) ;;
+        *) pause_for_output ;;
+      esac
+      ;;
+    *)
+      echo "Unknown action mode '$mode' for $id" >&2
+      pause_for_output
+      ;;
   esac
 }
 
-# --- Main loop -------------------------------------------------------------
-
 while true; do
-  header
-  choice="$(choose "What do you need?" \
-    "Keybindings" "Manual" "Tiling" "Gaming" "Web App" "Capture" "Snapshot" "System" "Power" "Exit")" || exit 0
+  clear || true
+  gum style --border rounded --padding "0 2" --margin "1 0" --align center \
+    "Cosmarchy" "$(cosmarchy-version 2>/dev/null | head -n1 || true)"
 
-  case "$choice" in
-    Keybindings) cosmarchy-keybindings ;;
-    Manual) cosmarchy-manual ;;
-    Tiling) menu_tiling ;;
-    Gaming) cosmarchy-gaming status; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    "Web App") menu_webapp ;;
-    Capture) menu_capture ;;
-    Snapshot) menu_snapshot ;;
-    System) menu_system ;;
-    Power) menu_power ;;
-    Exit | "") exit 0 ;;
-  esac
+  choice="$(format_entries | gum filter \
+    --header "Cosmarchy Actions" \
+    --placeholder "type to filter..." \
+    --height 18)" || exit 0
+  [[ -z "$choice" ]] && exit 0
+
+  matched=-1
+  for ((i = 0; i < ${#titles[@]}; i++)); do
+    line="$(printf '%-30s  %s' "${titles[$i]}" "${ids[$i]%%-*}")"
+    if [[ "$choice" == "$line" ]]; then
+      matched=$i
+      break
+    fi
+  done
+
+  if ((matched < 0)); then
+    echo "Unknown selection: $choice" >&2
+    pause_for_output
+    continue
+  fi
+
+  run_selected "$matched"
 done

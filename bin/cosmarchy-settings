@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Open COSMIC Settings
+set -eEo pipefail
+
+if command -v cosmic-settings >/dev/null 2>&1; then
+  exec cosmic-settings "$@"
+fi
+
+echo "cosmic-settings is not installed." >&2
+exit 1

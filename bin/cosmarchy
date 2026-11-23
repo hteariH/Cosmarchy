@@ -21,7 +21,7 @@ usage() {
 Usage: cosmarchy <command> [subcommand] [arguments...]
 
 Commands:
-  menu                         Open the Cosmarchy command center (Super+Alt+Space)
+  menu                         Open the Cosmarchy menu (TTY/SSH; Super+Alt+Space in COSMIC)
   first-run                    Apply session hardware setup
   tiling <enable|disable|toggle|status>
                                COSMIC auto-tiling, on or off
@@ -43,6 +43,9 @@ Commands:
   reminder <time|dur> <msg>    Schedule desktop notification reminders
   capture <annotate|region|screen>
                                Screenshot, optionally into the Satty annotator
+  power <lock|suspend|logout|reboot|poweroff>
+                               Lock, suspend, log out, reboot, or power off
+  settings                     Open COSMIC Settings
   hook <run|list>              Trigger or inspect Cosmarchy lifecycle hooks
   update                       Perform system & Cosmarchy configuration updates
   migrate [--list]             Apply pending Cosmarchy migrations
@@ -58,7 +61,8 @@ fi
 
 case "$command_group" in
   menu)
-    exec cosmarchy-menu
+    shift
+    exec cosmarchy-menu "$@"
     ;;
   first-run)
     exec cosmarchy-first-run
@@ -143,6 +147,14 @@ case "$command_group" in
   capture)
     shift
     exec cosmarchy-capture "$@"
+    ;;
+  power)
+    shift
+    exec cosmarchy-power "$@"
+    ;;
+  settings)
+    shift
+    exec cosmarchy-settings "$@"
     ;;
   hook)
     shift

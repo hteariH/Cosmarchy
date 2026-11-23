@@ -6,6 +6,14 @@
 # The current root is kept as @restore-backup-<time> until the next restore.
 set -euo pipefail
 
+wait_if_terminal() {
+  if [[ "${COSMARCHY_WAIT_ON_EXIT:-0}" == "1" && -t 0 && -t 1 ]]; then
+    echo
+    read -rp "Press Enter to close..." _ || true
+  fi
+}
+trap wait_if_terminal EXIT
+
 BOOT=/usr/local/lib/cosmarchy/boot/cosmarchy-boot
 n=""
 yes=0

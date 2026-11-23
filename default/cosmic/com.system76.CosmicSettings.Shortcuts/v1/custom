@@ -3,7 +3,7 @@
     (modifiers: [Super], key: "e", description: Some("Files")): Spawn("cosmic-files"),
     (modifiers: [Super], key: "d", description: Some("Voxtype AI Dictation")): Spawn("cosmarchy voxtype toggle"),
     (modifiers: [Ctrl], key: "Print", description: Some("Annotate Screenshot")): Spawn("cosmarchy-capture annotate"),
-    (modifiers: [Super, Alt], key: "space", description: Some("Cosmarchy Menu")): Spawn("cosmic-term -e cosmarchy-menu"),
-    (modifiers: [Super, Alt], key: "slash", description: Some("Cosmarchy Keybindings")): Spawn("cosmic-term -e cosmarchy-keybindings"),
-    (modifiers: [Super, Alt], key: "m", description: Some("Cosmarchy Manual")): Spawn("cosmic-term -e cosmarchy-manual"),
+    (modifiers: [Super, Alt], key: "space", description: Some("Cosmarchy Menu")): Spawn("cosmic-launcher input \"c \""),
+    (modifiers: [Super, Alt], key: "slash", description: Some("Cosmarchy Keybindings")): Spawn("cosmic-launcher input \"c key \""),
+    (modifiers: [Super, Alt], key: "m", description: Some("Cosmarchy Manual")): Spawn("cosmic-launcher input \"c man \""),
 }

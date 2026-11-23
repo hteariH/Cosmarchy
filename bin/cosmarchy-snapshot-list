@@ -1,4 +1,14 @@
 #!/bin/bash
 
 # List Snapper root snapshots
-sudo snapper -c root list
+set -eEo pipefail
+
+rc=0
+sudo snapper -c root list || rc=$?
+
+if [[ "${COSMARCHY_WAIT_ON_EXIT:-0}" == "1" && -t 0 && -t 1 ]]; then
+  echo
+  read -rp "Press Enter to close..." _ || true
+fi
+
+exit "$rc"

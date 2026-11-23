@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Cosmarchy power actions
+#
+#   cosmarchy power lock
+#   cosmarchy power suspend
+#   cosmarchy power logout [--yes]
+#   cosmarchy power reboot [--yes]
+#   cosmarchy power poweroff [--yes]
+set -eEo pipefail
+
+action="${1:-}"
+yes=0
+if [[ "${2:-}" == "--yes" || "${2:-}" == "-y" ]]; then
+  yes=1
+fi
+
+confirm_action() {
+  local prompt="$1"
+  ((yes)) && return 0
+  if command -v gum >/dev/null 2>&1; then
+    gum confirm "$prompt"
+  else
+    local reply
+    read -rp "$prompt [y/N] " reply
+    [[ "$reply" == "y" || "$reply" == "Y" ]]
+  fi
+}
+
+case "$action" in
+  lock)
+    exec loginctl lock-session
+    ;;
+  suspend)
+    exec systemctl suspend
+    ;;
+  logout)
+    if confirm_action "Log out now?"; then
+      if command -v cosmic-osd >/dev/null 2>&1; then
+        exec cosmic-osd log-out
+      else
+        exec loginctl terminate-user "${USER:-$(id -un)}"
+      fi
+    fi
+    ;;
+  reboot)
+    if confirm_action "Reboot now?"; then
+      exec systemctl reboot
+    fi
+    ;;
+  poweroff | shutdown)
+    if confirm_action "Power off now?"; then
+      exec systemctl poweroff
+    fi
+    ;;
+  *)
+    echo "Usage: cosmarchy power <lock|suspend|logout|reboot|poweroff> [--yes]" >&2
+    exit 1
+    ;;
+esac

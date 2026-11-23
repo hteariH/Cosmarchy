@@ -1,0 +1,13 @@
+(
+    name: "Cosmarchy",
+    description: "Syntax: c [key | man] <query> — Cosmarchy actions, keybindings and manual",
+    query: (
+        regex: "^c ",
+        help: "c ",
+        isolate: true,
+        no_sort: true,
+        priority: High,
+    ),
+    bin: (path: "cosmarchy-launcher"),
+    icon: Name("preferences-system"),
+)

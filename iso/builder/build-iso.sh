@@ -95,6 +95,7 @@ fi
 # Ensure installer script permissions inside profile
 chmod 755 "$PROFILE_DIR/airootfs/root/.automated_script.sh" 2>/dev/null || true
 chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/bin"/* 2>/dev/null || true
+chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/launcher/cosmarchy/cosmarchy-launcher" 2>/dev/null || true
 chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/install.sh" 2>/dev/null || true
 chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/iso/installer/cosmarchy-install" 2>/dev/null || true
 

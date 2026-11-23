@@ -208,6 +208,10 @@ show_status() {
 case "${1:-status}" in
   install | setup)
     do_install
+    if [[ "${COSMARCHY_WAIT_ON_EXIT:-0}" == "1" && -t 0 && -t 1 ]]; then
+      echo
+      read -rp "Press Enter to close..." _ || true
+    fi
     ;;
   status)
     show_status

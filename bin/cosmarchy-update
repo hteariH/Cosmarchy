@@ -10,6 +10,14 @@
 COSMARCHY_PATH="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
 COSMARCHY_REPO_URL="${COSMARCHY_REPO_URL:-https://github.com/hteariH/Cosmarchy.git}"
 
+wait_if_terminal() {
+  if [[ "${COSMARCHY_WAIT_ON_EXIT:-0}" == "1" && -t 0 && -t 1 ]]; then
+    echo
+    read -rp "Press Enter to close..." _ || true
+  fi
+}
+trap wait_if_terminal EXIT
+
 failures=()
 note_failure() { failures+=("$1"); }
 
