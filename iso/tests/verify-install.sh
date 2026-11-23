@@ -3,10 +3,10 @@
 # Offline verification of an installed Cosmarchy system.
 #
 # Runs on the CI host against the installed disk image, mounted read-only at
-# $ROOT. Every check here corresponds to a defect that reached a release
-# because CI only ever verified that the ISO *builds*, never that it installs.
+# $ROOT. Every check here corresponds to a defect that reached a release or a
+# contract of the COSMIC pivot.
 #
-# Usage: verify-install.sh /mnt/cosmarchy-root
+# Usage: verify-install.sh /mnt/cosmarchy
 set -uo pipefail
 
 ROOT="${1:?usage: verify-install.sh <mounted-root>}"
@@ -27,7 +27,13 @@ no() {
   fail=$((fail + 1))
 }
 
-echo "=== Offline verification of installed system ==="
+pkg_installed() {
+  local pkg="$1"
+  [[ -d "$ROOT/var/lib/pacman/local" ]] &&
+    compgen -G "$ROOT/var/lib/pacman/local/${pkg}-[0-9]*" >/dev/null
+}
+
+echo "=== Offline verification of installed Cosmarchy system ==="
 echo
 
 # The installer puts /home and /var/log on their own btrfs subvolumes. If the
@@ -47,7 +53,7 @@ if [[ ! -d "$ROOT/var/log" ]] || [[ -z "$(ls -A "$ROOT/var/log" 2>/dev/null)" ]]
   echo
 fi
 
-# --- The system booted-to state -------------------------------------------
+# --- Display manager & greeter (cosmic-greeter / greetd) -------------------
 # Note on symlinks: this image is mounted under $ROOT, so an absolute symlink
 # inside it resolves against the *host* filesystem and -e reports false even
 # when the link is perfectly correct. Test with -L and read the target instead
@@ -56,16 +62,76 @@ dm_unit="$ROOT/etc/systemd/system/display-manager.service"
 if [[ -L "$dm_unit" || -f "$dm_unit" ]]; then
   dm_target="$(readlink "$dm_unit" 2>/dev/null || cat "$dm_unit" 2>/dev/null)"
   case "$dm_target" in
-    *gdm*) ok "GDM is the enabled display manager" ;;
-    *) no "display-manager is not GDM" "resolves to ${dm_target:-unknown}" ;;
+    *cosmic-greeter*) ok "cosmic-greeter.service is the enabled display manager" ;;
+    *) no "display-manager is not cosmic-greeter" "resolves to ${dm_target:-unknown}" ;;
   esac
 else
   no "No display manager enabled" "expected /etc/systemd/system/display-manager.service"
 fi
 
-[[ -e "$ROOT/usr/bin/gnome-shell" || -L "$ROOT/usr/bin/gnome-shell" ]] &&
-  ok "gnome-shell installed" ||
-  no "gnome-shell missing"
+gdm_units="$(find "$ROOT/etc/systemd/system" -maxdepth 3 -iname '*gdm*' 2>/dev/null || true)"
+if [[ -z "$gdm_units" ]]; then
+  ok "no GDM systemd unit enabled"
+else
+  no "stray GDM systemd unit present" "$gdm_units"
+fi
+
+# Verify gnome-keyring PAM integration on the PAM service greetd actually uses.
+GREETER_CONF="$ROOT/etc/greetd/cosmic-greeter.toml"
+if [[ -f "$GREETER_CONF" ]]; then
+  pam_service="$(sed -nE 's/^[[:space:]]*service[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' "$GREETER_CONF" | head -n1)"
+  pam_service="${pam_service:-greetd}"
+  pam_file="$ROOT/etc/pam.d/$pam_service"
+  if [[ -f "$pam_file" ]] && grep -q 'pam_gnome_keyring.so' "$pam_file"; then
+    ok "keyring PAM integration present in /etc/pam.d/$pam_service"
+  else
+    no "keyring PAM line missing from /etc/pam.d/$pam_service" "expected pam_gnome_keyring.so"
+  fi
+else
+  no "greetd config missing" "expected $GREETER_CONF"
+fi
+
+# --- Packages: COSMIC installed, GNOME shell/DM/compositor absent ----------
+COSMIC_PACKAGES=(
+  greetd
+  cosmic-session cosmic-comp cosmic-greeter cosmic-settings cosmic-settings-daemon
+  cosmic-panel cosmic-launcher cosmic-app-library cosmic-applets cosmic-notifications
+  cosmic-osd cosmic-bg cosmic-idle cosmic-workspaces cosmic-randr cosmic-screenshot
+  xdg-desktop-portal-cosmic cosmic-icon-theme cosmic-wallpapers cosmic-initial-setup
+  cosmic-files cosmic-terminal cosmic-text-editor cosmic-player cosmic-store
+)
+
+missing_cosmic=()
+for pkg in "${COSMIC_PACKAGES[@]}"; do
+  pkg_installed "$pkg" || missing_cosmic+=("$pkg")
+done
+if ((${#missing_cosmic[@]} == 0)); then
+  ok "all ${#COSMIC_PACKAGES[@]} COSMIC packages are installed"
+else
+  no "${#missing_cosmic[@]} COSMIC package(s) missing" "${missing_cosmic[*]}"
+fi
+
+stray_gnome=()
+for pkg in gnome-shell gdm mutter; do
+  pkg_installed "$pkg" && stray_gnome+=("$pkg")
+done
+if ((${#stray_gnome[@]} == 0)); then
+  ok "no gnome-shell, gdm, or mutter packages installed"
+else
+  no "GNOME shell/DM/compositor packages still installed" "${stray_gnome[*]}"
+fi
+
+# --- KDE Connect & firewall rules (replaces GSConnect) ---------------------
+if pkg_installed kdeconnect; then
+  ok "kdeconnect is installed"
+else
+  no "kdeconnect is not installed"
+fi
+if grep -q '1714:1764' "$ROOT/etc/ufw/user.rules" 2>/dev/null; then
+  ok "ufw allows KDE Connect's ports 1714-1764"
+else
+  no "ufw has no rule for KDE Connect's ports 1714-1764"
+fi
 
 # --- Regression: whisper.cpp vs whisper-cpp (aborted the whole install) ----
 if [[ -e "$ROOT/usr/bin/whisper-cli" || -L "$ROOT/usr/bin/whisper-cli" ]]; then
@@ -74,10 +140,9 @@ else
   no "whisper-cli missing" "the whisper-cpp package did not install"
 fi
 
-# --- Regression: a package list nothing read --------------------------------
-# These sat in cosmarchy-other.packages, which no stage ever installed.
+# --- Desktop apps & developer tools ----------------------------------------
 for pkg in chromium obs-studio libreoffice-fresh obsidian spotify-launcher mise; do
-  if compgen -G "$ROOT/var/lib/pacman/local/$pkg-[0-9]*" >/dev/null; then
+  if pkg_installed "$pkg"; then
     ok "$pkg is installed"
   else
     no "$pkg is not installed"
@@ -91,11 +156,42 @@ else
   no "Claude Code is not installed" "expected $HOME_DIR/.local/bin/claude"
 fi
 
-# --- Regression: only the dispatcher reached the session PATH --------------
+# --- COSMIC configuration deployed byte-identical from default/cosmic/ -----
+COSMARCHY_CHECKOUT="$HOME_DIR/.local/share/cosmarchy"
+COSMIC_SRC="$COSMARCHY_CHECKOUT/default/cosmic"
+COSMIC_DEST="$HOME_DIR/.config/cosmic"
+if [[ -d "$COSMIC_SRC" ]]; then
+  cosmic_checked=0
+  cosmic_bad=()
+  while IFS= read -r src_file; do
+    [[ -n "$src_file" ]] || continue
+    rel="${src_file#"$COSMIC_SRC/"}"
+    dest_file="$COSMIC_DEST/$rel"
+    cosmic_checked=$((cosmic_checked + 1))
+    if [[ ! -f "$dest_file" ]]; then
+      cosmic_bad+=("missing:$rel")
+    elif ! cmp -s "$src_file" "$dest_file"; then
+      cosmic_bad+=("differs:$rel")
+    fi
+  done < <(find "$COSMIC_SRC" -type f | sort)
+
+  if ((cosmic_checked == 0)); then
+    no "no files found under default/cosmic/"
+  elif ((${#cosmic_bad[@]} == 0)); then
+    ok "all $cosmic_checked default/cosmic/ file(s) deployed byte-identical into ~/.config/cosmic/"
+  else
+    no "COSMIC config deployment mismatch" "${cosmic_bad[*]}"
+  fi
+else
+  no "default/cosmic/ missing in installed checkout" "expected $COSMIC_SRC"
+fi
+
+# --- Session-critical symlinks and executable bits -------------------------
 missing_links=()
-link=""
-for cmd in cosmarchy cosmarchy-first-run cosmarchy-menu cosmarchy-capture \
-  cosmarchy-theme-set cosmarchy-backgrounds cosmarchy-migrate; do
+for cmd in cosmarchy cosmarchy-first-run cosmarchy-menu cosmarchy-keybindings \
+  cosmarchy-manual cosmarchy-tiling cosmarchy-capture cosmarchy-migrate \
+  cosmarchy-windows cosmarchy-snapshot-create cosmarchy-snapshot-list \
+  cosmarchy-snapshot-restore cosmarchy-snapshot-notify; do
   link="$ROOT/usr/local/bin/$cmd"
   [[ -L "$link" || -f "$link" ]] || missing_links+=("$cmd")
 done
@@ -105,40 +201,82 @@ else
   no "commands missing from /usr/local/bin" "${missing_links[*]}"
 fi
 
+non_exec_bin=()
+for cmd in "$COSMARCHY_CHECKOUT"/bin/cosmarchy*; do
+  [[ -f "$cmd" ]] || continue
+  [[ -x "$cmd" ]] || non_exec_bin+=("$(basename "$cmd")")
+done
+if ((${#non_exec_bin[@]} == 0)); then
+  ok "all cosmarchy bin/ scripts carry the executable bit"
+else
+  no "non-executable scripts in bin/" "${non_exec_bin[*]}"
+fi
+
+# --- Rename completeness: no leftover gnomarchy names ----------------------
+stray_bin="$(find "$ROOT/usr/local/bin" -maxdepth 1 -iname '*gnomarchy*' 2>/dev/null || true)"
+if [[ -z "$stray_bin" ]]; then
+  ok "no gnomarchy symlinks in /usr/local/bin"
+else
+  no "leftover gnomarchy entries in /usr/local/bin" "$stray_bin"
+fi
+
+stray_home="$(find "$HOME_DIR/.local" "$HOME_DIR/.config" -maxdepth 3 -iname '*gnomarchy*' 2>/dev/null || true)"
+if [[ -z "$stray_home" ]]; then
+  ok "no gnomarchy paths under \$HOME"
+else
+  no "leftover gnomarchy paths under \$HOME" "$stray_home"
+fi
+
+# --- Removed packages & commands -------------------------------------------
+for pkg in alacritty qemu-desktop edk2-ovmf swtpm; do
+  if pkg_installed "$pkg"; then
+    no "$pkg is installed" "it was dropped from cosmarchy-base.packages"
+  else
+    ok "$pkg is not installed"
+  fi
+done
+
+for removed_cmd in cosmarchy-screensaver cosmarchy-theme-set cosmarchy-backgrounds cosmarchy-keymap; do
+  if [[ -e "$ROOT/usr/local/bin/$removed_cmd" || -L "$ROOT/usr/local/bin/$removed_cmd" ]]; then
+    no "$removed_cmd is still published" "this command was removed"
+  else
+    ok "no $removed_cmd command"
+  fi
+done
+
 # --- Regression: ISO deployed without .git, so updates were impossible -----
-COSMARCHY_CHECKOUT="$HOME_DIR/.local/share/cosmarchy"
 if [[ -d "$COSMARCHY_CHECKOUT/.git" ]]; then
   ok "Cosmarchy checkout has a git repository (updates possible)"
 elif [[ -d "$COSMARCHY_CHECKOUT" ]]; then
-  no "no .git in ~/.local/share/cosmarchy"     "checkout exists but is not a repository; contains: $(ls "$COSMARCHY_CHECKOUT" | tr '
-' ' ')"
+  no "no .git in ~/.local/share/cosmarchy" \
+    "checkout exists but is not a repository; contains: $(ls "$COSMARCHY_CHECKOUT" | tr '\n' ' ')"
 else
   no "no Cosmarchy checkout at all" "expected $COSMARCHY_CHECKOUT"
 fi
 
-# --- Regression: flat wallpaper layout never matched the theme engine ------
-BG="$ROOT/usr/share/backgrounds/cosmarchy"
-if [[ -d "$BG/tokyo-night" ]]; then
-  ok "wallpapers use the per-theme directory layout"
-else
-  no "no per-theme wallpaper directory" "expected $BG/tokyo-night/"
-fi
-
-if [[ -d "$BG" ]]; then
-  flat_count="$(find "$BG" -maxdepth 1 -type f | wc -l)"
-  ((flat_count == 0)) &&
-    ok "no stray wallpapers in the flat layout" ||
-    no "$flat_count wallpaper(s) still in the flat layout"
-
-  downloaded="$(find "$BG" -type f \( -name '*.webp' -o -name '*.jpg' \) | wc -l)"
-  if ((downloaded >= 80)); then
-    ok "upstream wallpapers downloaded ($downloaded files)"
+# --- Unattended initial-setup bypass marker --------------------------------
+SETUP_MARKER="$HOME_DIR/.config/cosmic-initial-setup-done"
+if [[ -f "$SETUP_MARKER" ]]; then
+  home_owner="$(stat -c '%u:%g' "$HOME_DIR")"
+  marker_owner="$(stat -c '%u:%g' "$SETUP_MARKER")"
+  if [[ "$marker_owner" == "$home_owner" ]]; then
+    ok "unattended install created ~/.config/cosmic-initial-setup-done owned by user ($marker_owner)"
   else
-    no "only $downloaded upstream wallpapers present" "expected ~92"
+    no "~/.config/cosmic-initial-setup-done has wrong owner" "expected $home_owner, got $marker_owner"
   fi
+else
+  no "missing ~/.config/cosmic-initial-setup-done" "cosmic-initial-setup will block unattended session boot"
 fi
 
-# --- Regression: two identical Brave entries in the dash -------------------
+# --- Windows apps: WinBoat, opt-in -----------------------------------------
+WINDOWS_CMD="$COSMARCHY_CHECKOUT/bin/cosmarchy-windows"
+if [[ -L "$ROOT/usr/local/bin/cosmarchy-windows" ]] && grep -q 'winboat-bin' "$WINDOWS_CMD"; then
+  ok "cosmarchy windows is the WinBoat installer"
+else
+  no "cosmarchy windows is not the WinBoat installer" "$WINDOWS_CMD"
+fi
+
+# --- Regression: two identical Brave entries in the launcher ---------------
 alias_file="$ROOT/usr/share/applications/brave-browser.desktop"
 if [[ -f "$alias_file" ]]; then
   grep -q '^NoDisplay=true' "$alias_file" &&
@@ -155,19 +293,13 @@ for f in "$ROOT/usr/share/applications"/*brave*.desktop; do
 done
 ((visible_browsers <= 1)) &&
   ok "exactly $visible_browsers visible Brave entry" ||
-  no "$visible_browsers visible Brave entries" "the dash will show duplicates"
+  no "$visible_browsers visible Brave entries" "the launcher will show duplicates"
 
-# --- Regression: the dock entry launched nothing and had a broken icon -----
-#
-# The desktop entry is only useful if its Exec target exists and its Icon
-# resolves. Both were wrong: Exec pointed at the raw browser binary rather than
-# the Origin wrapper, and a single arbitrary logo size was installed into the
-# 128x128 directory, so a 16x16 image was scaled up into a blur.
+# --- Regression: Brave desktop entry Exec and icon -------------------------
 BRAVE_DESKTOP="$ROOT/usr/share/applications/brave-origin.desktop"
 if [[ -f "$BRAVE_DESKTOP" ]]; then
   exec_target="$(awk -F= '/^Exec=/ {print $2; exit}' "$BRAVE_DESKTOP" | awk '{print $1}')"
   if [[ -n "$exec_target" ]]; then
-    # Resolve through the image, not the host.
     resolved="$ROOT${exec_target}"
     if [[ -L "$resolved" ]]; then
       link_dest="$(readlink "$resolved")"
@@ -188,98 +320,13 @@ if [[ -f "$BRAVE_DESKTOP" ]]; then
   if ((icon_sizes >= 4)); then
     ok "Brave icon installed in $icon_sizes sizes"
   elif ((icon_sizes > 0)); then
-    no "Brave icon installed in only $icon_sizes size(s)" "the shell will scale it badly"
+    no "Brave icon installed in only $icon_sizes size(s)" "the launcher will scale it badly"
   else
     no "Brave icon '$icon_name' is not installed" "the launcher shows a broken icon"
   fi
 fi
 
-# --- Regression: extensions shipped without their compiled schemas ---------
-#
-# GNOME Shell reads an extension's settings from
-# <extension>/schemas/gschemas.compiled. Compiling only the system schema
-# directory left that file missing, and every extension with settings failed
-# to load with GLib.FileError.
-uncompiled=()
-ext_checked=0
-for ext_base in "$ROOT/usr/share/gnome-shell/extensions"   "$HOME_DIR/.local/share/gnome-shell/extensions"; do
-  [[ -d "$ext_base" ]] || continue
-  for ext_dir in "$ext_base"/*/; do
-    [[ -d "$ext_dir/schemas" ]] || continue
-    compgen -G "$ext_dir/schemas/*.gschema.xml" >/dev/null 2>&1 || continue
-    ext_checked=$((ext_checked + 1))
-    [[ -f "$ext_dir/schemas/gschemas.compiled" ]] ||
-      uncompiled+=("$(basename "$ext_dir")")
-  done
-done
-
-if ((ext_checked == 0)); then
-  no "no GNOME extensions with schemas found" "extensions were not deployed"
-elif ((${#uncompiled[@]} == 0)); then
-  ok "all $ext_checked extension schemas are compiled"
-else
-  no "${#uncompiled[@]} extension(s) have uncompiled schemas" "${uncompiled[*]}"
-fi
-
-# --- Regression: extensions built for an older GNOME ----------------------
-#
-# The shell refuses to load an extension whose metadata.json does not list its
-# major version, and says nothing about it: the extension sits in
-# enabled-extensions and does nothing. The bundled zips are pinned while Arch
-# rolls, so a GNOME release that lands between two Cosmarchy releases leaves
-# them behind -- GNOME 51 did that to seven of nine. The version comes from the
-# installed package, not from a constant, so the next GNOME trips this too.
-#
-# Arch gives gnome-shell an epoch, so the database entry is gnome-shell-1:51.1-1;
-# reading the first number off it took the epoch for the version.
-shell_pkg="$(compgen -G "$ROOT/var/lib/pacman/local/gnome-shell-[0-9]*" | head -1)"
-shell_major="$(basename "${shell_pkg:-}" | sed -nE 's/^gnome-shell-([0-9]+:)?([0-9]+).*/\2/p')"
-stale=()
-meta_checked=0
-for meta in "$HOME_DIR/.local/share/gnome-shell/extensions"/*/metadata.json; do
-  [[ -f "$meta" ]] || continue
-  meta_checked=$((meta_checked + 1))
-  grep -q "\"$shell_major\"" "$meta" || stale+=("$(basename "$(dirname "$meta")")")
-done
-
-if [[ -z "$shell_major" ]]; then
-  no "cannot tell which GNOME is installed" "no gnome-shell entry in $ROOT/var/lib/pacman/local"
-elif ((meta_checked == 0)); then
-  no "no Cosmarchy extensions deployed" "expected them under ~/.local/share/gnome-shell/extensions"
-elif ((${#stale[@]} == 0)); then
-  ok "all $meta_checked deployed extensions declare GNOME $shell_major"
-else
-  no "${#stale[@]} extension(s) do not declare GNOME $shell_major" "${stale[*]} -- the shell will not load them; see default/gnome/extensions/PROVENANCE.md"
-fi
-
-# GSConnect: the extension, and the ufw rules it needs once the firewall is on.
-[[ -f "$HOME_DIR/.local/share/gnome-shell/extensions/gsconnect@andyholmes.github.io/metadata.json" ]] &&
-  ok "GSConnect is deployed" || no "GSConnect is not deployed"
-if grep -q '1714:1764' "$ROOT/etc/ufw/user.rules" 2>/dev/null; then
-  ok "ufw allows GSConnect's ports 1714-1764"
-else
-  # Unreadable or missing user.rules is the failure being reported here.
-  no "ufw has no rule for GSConnect's ports 1714-1764"
-fi
-
-# --- Regression: tiling that cannot be configured -------------------------
-#
-# Tiling Shell is Cosmarchy's tiling, configured by first-run with its
-# auto-tiling off: that drops a new window into a fixed tile of a static layout
-# and never resizes the windows already on screen. None of that configuration
-# can be written without the schema.
-TS_OVERRIDE="$ROOT/usr/share/glib-2.0/schemas/org.gnome.shell.extensions.tilingshell.gschema.xml"
-if [[ -f "$TS_OVERRIDE" ]]; then
-  ok "Tiling Shell's schema is installed system-wide"
-else
-  no "Tiling Shell's schema is missing from the system schema directory"     "tiling cannot be configured"
-fi
-
 # --- Regression: Brave binaries extracted without the executable bit -------
-#
-# zipfile.extractall() drops Unix modes, and only the main binary was chmodded,
-# so Brave aborted at startup:
-#   FATAL spawn /opt/brave-origin/chrome_crashpad_handler: Permission denied
 BRAVE_DIR="$ROOT/opt/brave-origin"
 if [[ -d "$BRAVE_DIR" ]]; then
   non_exec=()
@@ -304,103 +351,12 @@ else
   no "Brave Origin not installed" "expected $BRAVE_DIR"
 fi
 
-# --- Regression: autostart Exec depended on a PATH the session lacks -------
-AUTOSTART="$HOME_DIR/.config/autostart/cosmarchy-first-run.desktop"
-if [[ -f "$AUTOSTART" ]]; then
-  if grep -q '^Exec=/' "$AUTOSTART"; then
-    ok "first-run autostart uses an absolute Exec path"
-  else
-    no "first-run autostart Exec is not absolute" "$(grep '^Exec=' "$AUTOSTART")"
-  fi
-else
-  no "first-run autostart entry missing" "expected $AUTOSTART"
-fi
-
-# --- Removed: Alacritty and the screensaver ---------------------------------
-# GNOME Terminal is the terminal; a second one only cost a package and a theme
-# step. The themes' alacritty.toml files stay: they are the palette format.
-if compgen -G "$ROOT/var/lib/pacman/local/alacritty-[0-9]*" >/dev/null; then
-  no "alacritty is installed" "it was dropped from cosmarchy-base.packages"
-else
-  ok "alacritty is not installed"
-fi
-if [[ -e "$ROOT/usr/local/bin/cosmarchy-screensaver" || -L "$ROOT/usr/local/bin/cosmarchy-screensaver" ]]; then
-  no "cosmarchy-screensaver is still published" "the screensaver was removed"
-else
-  ok "no cosmarchy-screensaver command"
-fi
-
-# --- Windows apps: WinBoat, opt-in -----------------------------------------
-# The QEMU Windows VM is gone, and with it the packages only it used.
-for pkg in qemu-desktop edk2-ovmf swtpm; do
-  if compgen -G "$ROOT/var/lib/pacman/local/$pkg-[0-9]*" >/dev/null; then
-    no "$pkg is installed" "only the removed Windows VM used it"
-  else
-    ok "$pkg is not installed"
-  fi
-done
-WINDOWS_CMD="$HOME_DIR/.local/share/cosmarchy/bin/cosmarchy-windows"
-if [[ -L "$ROOT/usr/local/bin/cosmarchy-windows" ]] && grep -q 'winboat-bin' "$WINDOWS_CMD"; then
-  ok "cosmarchy windows is the WinBoat installer"
-else
-  no "cosmarchy windows is not the WinBoat installer" "$WINDOWS_CMD"
-fi
-
-# --- Tool configs the theme engine writes into -----------------------------
-
-if [[ -f "$HOME_DIR/.config/btop/btop.conf" ]]; then
-  grep -q 'color_theme *= *"current"' "$HOME_DIR/.config/btop/btop.conf" &&
-    ok "btop selects the Cosmarchy theme" ||
-    no "btop.conf does not select the current theme"
-else
-  no "btop.conf missing"
-fi
-
+# --- Tool configs ----------------------------------------------------------
 [[ -f "$HOME_DIR/.config/nvim/lua/config/lazy.lua" ]] &&
   ok "LazyVim bootstrap deployed" ||
-  no "LazyVim bootstrap missing" "per-theme neovim.lua files would be inert"
-
-# --- The control center ----------------------------------------------------
-for pkg in gjs gtk4 libadwaita; do
-  if [[ -d "$ROOT/var/lib/pacman/local" ]] &&
-    compgen -G "$ROOT/var/lib/pacman/local/$pkg-[0-9]*" >/dev/null; then
-    ok "$pkg is installed"
-  else
-    no "$pkg is not installed" "the control center cannot start without it"
-  fi
-done
-
-GUI_ENTRY="$HOME_DIR/.local/share/cosmarchy/gui/src/main.js"
-if [[ -f "$GUI_ENTRY" ]]; then
-  ok "control center source is present"
-else
-  no "no control center at $GUI_ENTRY"
-fi
-
-DESKTOP_ENTRY="$HOME_DIR/.local/share/applications/org.cosmarchy.ControlCenter.desktop"
-if [[ -f "$DESKTOP_ENTRY" ]]; then
-  ok "control center desktop entry is published"
-else
-  no "no desktop entry at $DESKTOP_ENTRY" "install/config/control-center.sh did not run"
-fi
-
-# A half-applied port -- GUI files present but the commands still spawning a
-# terminal -- would otherwise pass every check above.
-terminal_relics=0
-for cmd in cosmarchy-menu cosmarchy-manual cosmarchy-keybindings; do
-  script="$HOME_DIR/.local/share/cosmarchy/bin/$cmd"
-  [[ -f "$script" ]] || continue
-  if grep -q 'exec gnome-terminal\|exec alacritty' "$script"; then
-    terminal_relics=$((terminal_relics + 1))
-    no "$cmd still re-execs into a terminal"
-  fi
-done
-(( terminal_relics == 0 )) && ok "the three commands no longer spawn a terminal"
+  no "LazyVim bootstrap missing"
 
 # --- Boot: Limine, initramfs and snapshots ---------------------------------
-# README promised snapshots in the Limine menu while nothing wrote them; the
-# snapper config was never created; LUKS installs got a busybox hook in a
-# systemd initramfs; plymouth was never added. Each check below is one of those.
 BOOT_DIR="$ROOT/boot"
 LIMINE_CONF="$BOOT_DIR/limine.conf"
 CMDLINE_FILE="$ROOT/etc/kernel/cmdline"
@@ -438,7 +394,7 @@ if [[ -f "$LIMINE_CONF" ]]; then
   grep -qx 'default_entry: Cosmarchy/linux' "$LIMINE_CONF" &&
     ok "the menu defaults to Cosmarchy/linux" || no "the menu does not default to Cosmarchy/linux"
   grep -qx 'interface_branding: Cosmarchy' "$LIMINE_CONF" && grep -q '^term_palette: ' "$LIMINE_CONF" &&
-    ok "the menu carries the theme palette" || no "no theme palette in limine.conf"
+    ok "the menu carries the fixed COSMIC Dark palette" || no "no palette in limine.conf"
   [[ -n "$cmdline" ]] && grep -qxF "    kernel_cmdline: $cmdline" "$LIMINE_CONF" &&
     ok "the kernel entry boots /etc/kernel/cmdline" || no "no entry boots /etc/kernel/cmdline"
   fs_uuid="$(findmnt -no UUID --target "$ROOT")"
@@ -461,8 +417,6 @@ else
   no "limine-bios.sys missing from the ESP"
 fi
 if [[ -n "${COSMARCHY_TEST_DISK:-}" ]]; then
-  # The CI disk is a fresh qcow2, so the boot code area is zeroed (wipefs only
-  # erases signatures); only limine bios-install writes it.
   if (($(head -c 440 "$COSMARCHY_TEST_DISK" | tr -d '\0' | wc -c) > 0)); then
     ok "the MBR carries boot code (limine bios-install ran)"
   else
@@ -515,31 +469,26 @@ grep -qE '^SNAPPER_CONFIGS="(.* )?root( .*)?"$' "$ROOT/etc/conf.d/snapper" &&
   ok "snapper-cleanup.timer is enabled" || no "snapper-cleanup.timer is not enabled"
 [[ -L "$ROOT/etc/systemd/system/timers.target.wants/snapper-timeline.timer" ]] &&
   no "snapper-timeline.timer is enabled" "timeline snapshots are off by design"
-[[ -L "$ROOT/etc/systemd/system/paths.target.wants/cosmarchy-boot-theme.path" ]] &&
-  ok "the boot-theme path unit is enabled" || no "cosmarchy-boot-theme.path is not enabled"
+[[ -s "$ROOT/etc/cosmarchy/boot-theme.conf" ]] &&
+  ok "fixed Limine palette deployed to /etc/cosmarchy/boot-theme.conf" || no "no /etc/cosmarchy/boot-theme.conf"
 [[ -x "$ROOT/usr/lib/snapper/plugins/50-cosmarchy-boot" ]] &&
   ok "the snapper plugin is installed" || no "no executable snapper plugin"
 for hook in 00-cosmarchy-guard.hook 95-cosmarchy-boot.hook 95-cosmarchy-limine.hook; do
   [[ -f "$ROOT/etc/pacman.d/hooks/$hook" ]] && ok "pacman hook $hook" || no "no pacman hook $hook"
 done
-# A hand-run mkinitcpio -P left the menu naming the old image's hash.
 [[ -x "$ROOT/etc/initcpio/post/cosmarchy-boot" ]] &&
   ok "the mkinitcpio post hook is installed" || no "no executable mkinitcpio post hook"
-compgen -G "$ROOT/var/lib/pacman/local/snap-pac-[0-9]*" >/dev/null &&
+pkg_installed snap-pac &&
   ok "snap-pac is installed" || no "snap-pac is not installed"
 if grep -q '<description>Cosmarchy installed</description>' "$ROOT/.snapshots/1/info.xml" 2>/dev/null; then
   ok "snapshot 1 \"Cosmarchy installed\" exists"
 else
-  # The test reads .snapshots through the @snapshots mount; without it this
-  # file cannot exist, which the workflow guards against.
   no "no snapshot 1 \"Cosmarchy installed\""
 fi
 [[ -f "$BOOT_DIR/cosmarchy/entries/1.conf" ]] && grep -q '^///1 | ' "$LIMINE_CONF" &&
   ok "snapshot 1 is in the boot menu" || no "snapshot 1 is not in the boot menu"
 
 # --- The installer's answers ------------------------------------------------
-# In CI the answers must arrive; an unset variable would otherwise skip every
-# check below without a word (sudo -E dropped them once).
 if [[ -n "${CI:-}" && -z "${COSMARCHY_TEST_HOSTNAME:-}" ]]; then
   no "COSMARCHY_TEST_* variables did not reach the script" "CI is set but COSMARCHY_TEST_HOSTNAME is not; the environment was dropped on the way in"
 fi
@@ -561,7 +510,18 @@ if [[ -n "${COSMARCHY_TEST_KEYMAP:-}" ]]; then
     grep -qF "Option \"XkbLayout\" \"$KB_XKB_LAYOUT\"" "$ROOT/etc/X11/xorg.conf.d/00-keyboard.conf" &&
       ok "X11 layout is $KB_XKB_LAYOUT" || no "X11 layout is not $KB_XKB_LAYOUT"
     grep -qx "XKB_LAYOUT=$KB_XKB_LAYOUT" "$ROOT/etc/cosmarchy/keyboard.conf" &&
-      ok "first-run will set input source $KB_XKB_LAYOUT" || no "keyboard.conf does not name $KB_XKB_LAYOUT"
+      ok "keyboard.conf records $KB_XKB_LAYOUT" || no "keyboard.conf does not name $KB_XKB_LAYOUT"
+    XKB_FILE="$COSMIC_DEST/com.system76.CosmicComp/v1/xkb_config"
+    if [[ "$KB_LATIN" == no ]]; then
+      expected_xkb="layout: \"us,${KB_XKB_LAYOUT}\""
+    else
+      expected_xkb="layout: \"${KB_XKB_LAYOUT}\""
+    fi
+    if [[ -f "$XKB_FILE" ]] && grep -qF "$expected_xkb" "$XKB_FILE"; then
+      ok "COSMIC xkb_config sets $expected_xkb"
+    else
+      no "COSMIC xkb_config does not contain $expected_xkb" "$(cat "$XKB_FILE" 2>/dev/null || echo missing)"
+    fi
   else
     no "COSMARCHY_TEST_KEYMAP $COSMARCHY_TEST_KEYMAP is not in keymaps.tsv"
   fi
@@ -586,8 +546,14 @@ if [[ "${COSMARCHY_TEST_ENCRYPT:-n}" == y ]]; then
   else
     ok "crypttab does not compete with rd.luks.name"
   fi
-  grep -qx 'AutomaticLoginEnable=true' "$ROOT/etc/gdm/custom.conf" &&
-    ok "GDM autologin on the encrypted install" || no "GDM autologin not enabled on the encrypted install"
+  if [[ -f "$GREETER_CONF" ]] &&
+    grep -q '^\[initial_session\]' "$GREETER_CONF" &&
+    grep -q 'command = "start-cosmic"' "$GREETER_CONF" &&
+    grep -q "user = \"$USER_NAME\"" "$GREETER_CONF"; then
+    ok "greetd [initial_session] autologin configured on the encrypted install"
+  else
+    no "greetd [initial_session] autologin not configured on the encrypted install"
+  fi
 fi
 
 echo

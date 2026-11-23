@@ -89,19 +89,16 @@ jobs:
 
           NOTES="## Cosmarchy Linux ${TAG_NAME}
 
-          **Cosmarchy** is an opinionated, developer-first Arch Linux distribution: Omarchy's tooling and rolling base, with a tuned GNOME desktop instead of Hyprland.
+          **Cosmarchy** is an opinionated, developer-first Arch Linux distribution: Omarchy's tooling and rolling base, paired with the COSMIC desktop (1.11) on Wayland.
 
           ### Highlights
-          - **Command Center** (\`Super + Alt + Space\`): themes, web apps, capture, snapshots, updates and power in one menu.
-          - **Unified Theme Engine**: 22 themes (18 dark, 4 light) syncing GNOME dark/light mode, Libadwaita accent, GTK3/GTK4 colors, GNOME Terminal, Neovim (LazyVim), btop and the GDM greeter.
-          - **GNOME Terminal by default**, themed through a dedicated Cosmarchy dconf profile.
-          - **Zone tiling** with Tiling Shell: Ctrl + drag to a zone, \`Super + Shift + arrows\` to throw a window, \`Super + T\` to cycle layouts.
+          - **Stock COSMIC 1.11 + greetd**: authentic COSMIC desktop with \`cosmic-initial-setup\` on first login and native COSMIC apps (\`cosmic-terminal\`, \`cosmic-files\`, \`cosmic-text-editor\`, \`cosmic-player\`, \`cosmic-store\`).
+          - **Auto-Tiling enabled per workspace**: \`Super + Y\` toggles tiling per workspace, \`Super + G\` floats a window, or \`cosmarchy tiling <enable|disable|toggle|status>\`.
+          - **Non-conflicting shortcuts**: COSMIC defaults stay intact; Cosmarchy adds \`Super + Return\` (terminal), \`Super + E\` (files), \`Super + D\` (Voxtype dictation), \`Ctrl + Print\` (Satty screenshot annotator), \`Super + Alt + Space\` (Cosmarchy menu), \`Super + Alt + /\` (keybindings), and \`Super + Alt + M\` (manual).
           - **Bootable Btrfs snapshots**: every snapshot is in the Limine menu and can be restored with \`cosmarchy snapshot restore\`.
+          - **Desktop apps, KDE Connect, and opt-in WinBoat**: Brave Origin, Chromium, VS Code, Obsidian, LibreOffice, OBS Studio, Telegram, Discord, Spotify, KDE Connect (ports 1714-1764 allowed in ufw), and \`cosmarchy windows\` for WinBoat.
           - **Migrations**: \`cosmarchy update\` applies configuration changes to machines that are already installed.
-          - **Verified install**: every release is cut from a commit where the QEMU install smoke test is green - the ISO is installed and the resulting desktop checked, not merely built.
-
-          ### Wallpapers
-          Theme wallpapers are downloaded at install time from the upstream Omarchy repository (pinned commit, every file checksum-verified). Cosmarchy does not redistribute them; each theme ships a generated SVG as an offline fallback. See BACKGROUNDS.md.
+          - **Verified install**: every release is cut from a commit where the QEMU install smoke test is green - the ISO is installed and the resulting COSMIC session checked, not merely built.
 
           ### Verification & Flashing
           Verify your download with \`sha256sum -c SHA256SUMS\`.

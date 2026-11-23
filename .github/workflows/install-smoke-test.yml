@@ -13,7 +13,6 @@ on:
       - 'install/**'
       - 'bin/**'
       - 'default/**'
-      - 'gui/**'
       - '.github/workflows/install-smoke-test.yml'
   pull_request:
     paths:
@@ -21,7 +20,6 @@ on:
       - 'install/**'
       - 'bin/**'
       - 'default/**'
-      - 'gui/**'
       - '.github/workflows/install-smoke-test.yml'
   workflow_dispatch:
     inputs:
@@ -281,21 +279,19 @@ jobs:
           # lives there and is invisible without this.
           sudo mount /dev/nbd0p2 /mnt/cosmarchy/boot
 
-          # Autologin, so a real graphical session starts and the first-run
-          # autostart entry fires. That is the only path by which the dconf
-          # state under test ever gets written.
-          sudo mkdir -p /mnt/cosmarchy/etc/gdm
-          printf '%s\n' \
-            '[daemon]' \
-            'AutomaticLoginEnable=True' \
-            'AutomaticLogin=citest' \
-            'WaylandEnable=True' \
-            | sudo tee /mnt/cosmarchy/etc/gdm/custom.conf > /dev/null
+          # Autologin via greetd [initial_session] so a real COSMIC session
+          # starts without interactive login. The unattended installer already
+          # wrote ~/.config/cosmic-initial-setup-done.
+          GREETER_CONF=/mnt/cosmarchy/etc/greetd/cosmic-greeter.toml
+          if ! sudo grep -q '^\[initial_session\]' "$GREETER_CONF"; then
+            printf '\n[initial_session]\ncommand = "start-cosmic"\nuser = "citest"\n' \
+              | sudo tee -a "$GREETER_CONF" > /dev/null
+          fi
 
           sudo install -m 755 iso/tests/verify-session.sh \
             /mnt/cosmarchy/usr/local/bin/cosmarchy-verify-session
 
-          # Ordered last by filename so it runs after cosmarchy-first-run.
+          # Ordered last by filename so it runs once the session autostart fires.
           sudo mkdir -p /mnt/cosmarchy/home/citest/.config/autostart
           printf '%s\n' \
             '[Desktop Entry]' \
@@ -379,11 +375,11 @@ jobs:
           sudo ls -la /mnt/cosmarchy/usr/local/bin/cosmarchy-verify-session 2>&1 || echo "(not installed)"
           echo "--- first-run stamp ---"
           sudo ls -la /mnt/cosmarchy/home/citest/.local/state/cosmarchy/ 2>&1 || echo "(no state dir)"
-          echo "--- gnome-session autostart decisions ---"
+          echo "--- COSMIC session and autostart decisions ---"
           if sudo test -d /mnt/cosmarchy/var/log/journal; then
             sudo journalctl -D /mnt/cosmarchy/var/log/journal --no-pager 2>/dev/null |
-              grep -iE "zz-verify|cosmarchy-verify|first-run|autostart" | tail -20 ||
-              echo "(nothing about autostart in the journal)"
+              grep -iE "zz-verify|cosmarchy-verify|cosmic-session|cosmic-comp|cosmic-settings-daemon|autostart" | tail -25 ||
+              echo "(nothing about COSMIC/autostart in the journal)"
           fi
 
           echo "--- first-run trace ---"
@@ -650,7 +646,7 @@ jobs:
           # place that difference is visible.
           echo "=== session and shell trouble during the capture boots ==="
           sudo journalctl -D /mnt/cosmarchy/var/log/journal --no-pager -p warning 2>/dev/null |
-            grep -iE "gnome-shell|gdm|gnome-session|segfault|core-dump|oom" | tail -50 ||
+            grep -iE "cosmic-comp|cosmic-greeter|cosmic-session|cosmic-panel|segfault|core-dump|oom" | tail -50 ||
             echo "(nothing, or the journal is unreadable)"
 
           # The transcript says when each arrangement was on screen, which is

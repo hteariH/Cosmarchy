@@ -2,20 +2,8 @@
 
 """Photograph a running QEMU guest on a timer, over QMP.
 
-This exists because the guest cannot photograph itself. GNOME Shell answers
-org.gnome.Shell.Screenshot only for an allowlist of senders it ships with, so
-a script in the session gets AccessDenied no matter what it does. QEMU has no
-such opinion: screendump writes whatever the virtual display is showing.
-
-The same reasoning applies to the keyboard. GNOME 40 and later open the
-Activities overview when a session starts, and it stays open: windows launched
-from a script carry no activation token, so nothing dismisses it, and every
-frame comes back a zoomed-out overview rather than a desktop. Neither the
-shell D-Bus interface nor a wlroots input tool can help - but QEMU can inject
-the keystroke at the virtual hardware level, below anything with an opinion
-about who is allowed to. So Escape is pressed for the first stretch of the
-boot, while the session is still empty and the key can do no harm; by the time
-any window exists, the pressing has stopped.
+QEMU screendump writes whatever the virtual display is showing without needing
+interactive portal permissions inside the Wayland session.
 
 Frames land as PPM and are converted later; a frame identical to the one
 before it is dropped, because a desktop holding still for twelve seconds would
@@ -101,7 +89,7 @@ def main():
     sock_path, outdir, label = sys.argv[1], sys.argv[2], sys.argv[3]
     interval = float(sys.argv[4])
     max_seconds = float(sys.argv[5])
-    escape_seconds = float(sys.argv[6]) if len(sys.argv) == 7 else 35.0
+    escape_seconds = float(sys.argv[6]) if len(sys.argv) == 7 else 0.0
 
     os.makedirs(outdir, exist_ok=True)
     conn, stream = connect(sock_path)

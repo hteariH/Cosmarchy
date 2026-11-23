@@ -80,8 +80,8 @@ stage_configure() {
 127.0.1.1   $TARGET_HOSTNAME.localdomain $TARGET_HOSTNAME
 EOF
 
-  # Keyboard: console and initramfs (a LUKS passphrase is typed here), X11 and
-  # GDM, and the record cosmarchy-first-run turns into GNOME input sources.
+  # Keyboard: console and initramfs (a LUKS passphrase is typed here), X11,
+  # and the record install/desktop/set-keyboard-layout.sh turns into COSMIC xkb_config.
   {
     echo "KEYMAP=$KB_CONSOLE_KEYMAP"
     if [[ -n "$KB_CONSOLE_FONT" ]]; then echo "FONT=$KB_CONSOLE_FONT"; fi
@@ -138,18 +138,7 @@ stage_bootloader() {
 }
 
 stage_desktop() {
-  local repo="/mnt/home/$USERNAME/.local/share/cosmarchy" theme_dir theme_name bg cmd
-
-  # Bundled fallback wallpapers, one directory per theme:
-  # cosmarchy-theme-set resolves /usr/share/backgrounds/cosmarchy/<theme>/.
-  mkdir -p /mnt/usr/share/backgrounds/cosmarchy
-  for theme_dir in "$repo"/themes/*/; do
-    theme_name="$(basename "$theme_dir")"
-    for bg in "$theme_dir"backgrounds/*; do
-      [[ -f "$bg" ]] || continue
-      install -Dm644 "$bg" "/mnt/usr/share/backgrounds/cosmarchy/$theme_name/${bg##*/}"
-    done
-  done
+  local repo="/mnt/home/$USERNAME/.local/share/cosmarchy" cmd
 
   # Flatpaks into the target's storage. Optional apps: report and go on.
   if command -v flatpak >/dev/null; then
@@ -179,6 +168,17 @@ stage_desktop() {
     export PATH=\"/usr/local/bin:/home/$USERNAME/.local/share/cosmarchy/bin:\$PATH\"
     bash /home/$USERNAME/.local/share/cosmarchy/install.sh
   "
+
+  if ((UNATTENDED)); then
+    # cosmic-initial-setup autostarts and exits immediately when this marker
+    # exists. Unattended (CI) installs create it so the session comes straight
+    # up; interactive installs leave it absent so the user gets the wizard.
+    mkdir -p "/mnt/home/$USERNAME/.config"
+    : >"/mnt/home/$USERNAME/.config/cosmic-initial-setup-done"
+    arch-chroot /mnt chown "$USERNAME:$USERNAME" \
+      "/home/$USERNAME/.config" \
+      "/home/$USERNAME/.config/cosmic-initial-setup-done"
+  fi
 
   # install.sh may have added commands; publish them all.
   for cmd in "$repo"/bin/cosmarchy*; do

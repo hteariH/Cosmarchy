@@ -64,9 +64,9 @@ git -C "$WORK" push -q origin main
 
 git -C "$WORK" checkout -q -b feature
 echo "branch version" >"$WORK/bin/cmd"
-mkdir -p "$WORK/gui/src"
-echo "gui code" >"$WORK/gui/src/main.js"
-echo "new stage" >"$WORK/install/control-center.sh"
+mkdir -p "$WORK/default/cosmic/com.system76.CosmicComp/v1"
+echo "true" >"$WORK/default/cosmic/com.system76.CosmicComp/v1/autotile"
+echo "new stage" >"$WORK/install/cosmic.sh"
 git -C "$WORK" add -A
 git -C "$WORK" commit -qm "feature"
 git -C "$WORK" push -q origin feature
@@ -107,8 +107,8 @@ git -C "$T" rev-parse --verify -q refs/remotes/origin/main >/dev/null &&
 echo "-- image built from a branch that is on the remote (what CI does)"
 T="$(deploy feature "$BRANCH_SHA")"
 run_stage "$T"
-[[ -f "$T/gui/src/main.js" ]] && ok "files only the branch has survive" || no "branch-only files were deleted"
-[[ -f "$T/install/control-center.sh" ]] && ok "install stages only the branch has survive" || no "branch-only stage deleted"
+[[ -f "$T/default/cosmic/com.system76.CosmicComp/v1/autotile" ]] && ok "files only the branch has survive" || no "branch-only files were deleted"
+[[ -f "$T/install/cosmic.sh" ]] && ok "install stages only the branch has survive" || no "branch-only stage deleted"
 [[ "$(cat "$T/bin/cmd")" == "branch version" ]] && ok "branch edits survive" || no "branch edits reverted to main"
 git -C "$T" rev-parse --verify -q refs/remotes/origin/main >/dev/null &&
   ok "origin/main still tracked" || no "origin/main missing"
@@ -116,7 +116,7 @@ git -C "$T" rev-parse --verify -q refs/remotes/origin/main >/dev/null &&
 echo "-- build commit the remote never saw (a local build)"
 T="$(deploy feature "0000000000000000000000000000000000000000")"
 run_stage "$T"
-[[ -f "$T/gui/src/main.js" ]] && ok "tree left alone rather than emptied" || no "tree was destroyed"
+[[ -f "$T/default/cosmic/com.system76.CosmicComp/v1/autotile" ]] && ok "tree left alone rather than emptied" || no "tree was destroyed"
 [[ "$(cat "$T/bin/cmd")" == "branch version" ]] && ok "files not reverted" || no "files reverted"
 
 echo "-- no .build-commit recorded (an image from before this was added)"

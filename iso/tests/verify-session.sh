@@ -1,20 +1,22 @@
 #!/bin/bash
 
-# In-guest session verification.
+# In-guest COSMIC session verification.
 #
-# Runs inside the installed system's first graphical session, after the
-# cosmarchy-first-run autostart entry has done its work. These are the checks
-# that cannot be made offline: dconf only holds them once a session with a
-# D-Bus bus has actually applied them.
+# Runs inside the installed system's live COSMIC autologin session via XDG
+# autostart. Verifies what cannot be checked offline: COSMIC daemons running,
+# shortcut RON parsing clean in journal, no overlap with COSMIC defaults,
+# autotile and xkb_config active, xdg-desktop-portal-cosmic on D-Bus, snapper +
+# snap-pac + Limine snapshots, WinBoat prerequisites, and the third-boot
+# snapshot restore flow.
 #
 # Writes its report to ~/.local/state/cosmarchy/verify/<mode>.txt and powers
 # off, so CI reads the outcome from the disk image rather than the serial
 # console. /home is its own subvolume: the report survives a snapshot boot,
 # whose root is a tmpfs overlay that /var/tmp used to vanish with.
-# Progress also goes to the journal. A report written only to a file tells us
-# nothing when the script hangs before finishing, which is exactly what
-# happened: the run timed out with no output at all.
-trace() { logger -t cosmarchy-verify -- "$*" 2>/dev/null || true; }
+trace() {
+  # logger may not exist in minimal environments; trace is best-effort.
+  logger -t cosmarchy-verify -- "$*" 2>/dev/null || true
+}
 
 trace "verify-session started as $(whoami), session=${XDG_SESSION_TYPE:-unknown}"
 
@@ -48,9 +50,7 @@ finish() {
   echo "RESULT: $([[ $fail -eq 0 ]] && echo SUCCESS || echo FAILURE)"
   sync
   trace "verification finished ($MODE): $pass passed, $fail failed"
-  # Powering off ends the CI run. Go through sudo, which has an explicit
-  # NOPASSWD rule: a bare systemctl poweroff depends on polkit granting it, and
-  # if that is refused the script hangs and the whole job times out.
+  # Powering off ends the CI run via the explicit NOPASSWD sudoers rule.
   sudo -n systemctl poweroff 2>/dev/null ||
     systemctl poweroff 2>/dev/null ||
     sudo -n reboot 2>/dev/null ||
@@ -58,30 +58,31 @@ finish() {
   exit 0
 }
 
-# first-run is an autostart entry; give it time to finish before sampling
-# dconf, but do not wait forever - report what we see instead of hanging.
-trace "waiting for first-run to finish"
-for i in $(seq 1 24); do
-  [[ -f "$HOME/.local/state/cosmarchy/first-run.done" ]] && break
-  sleep 5
+# Give COSMIC core components time to settle after autostart fires.
+trace "waiting for COSMIC session components"
+for _ in $(seq 1 20); do
+  if pgrep -u "$(id -u)" -x cosmic-comp >/dev/null &&
+    pgrep -u "$(id -u)" -x cosmic-panel >/dev/null &&
+    pgrep -u "$(id -u)" -x cosmic-settings-daemon >/dev/null; then
+    break
+  fi
+  sleep 2
 done
-trace "first-run stamp present: $([[ -f "$HOME/.local/state/cosmarchy/first-run.done" ]] && echo yes || echo no)"
 
-echo "=== Session verification ==="
+echo "=== COSMIC session verification ==="
 echo "session type: ${XDG_SESSION_TYPE:-unknown}"
+echo "desktop:      ${XDG_CURRENT_DESKTOP:-unknown}"
 echo
-
-if [[ -f "$HOME/.local/state/cosmarchy/first-run.done" ]]; then
-  ok "cosmarchy-first-run completed"
-else
-  no "cosmarchy-first-run never completed" "autostart entry did not run"
-fi
 
 # --- Third boot: running from a snapshot ------------------------------------
 if [[ "$MODE" == snapshot ]]; then
   n="$SNAPSHOT_BOOTED"
   echo "booted from snapshot $n"
-  ok "a GNOME session came up from snapshot $n"
+  if pgrep -u "$(id -u)" -x cosmic-comp >/dev/null; then
+    ok "a COSMIC session came up from snapshot $n"
+  else
+    no "cosmic-comp is not running on snapshot $n"
+  fi
   [[ "$(findmnt -no FSTYPE /)" == overlay ]] && ok "/ is an overlay" ||
     no "/ is not an overlay" "$(findmnt -no FSTYPE,SOURCE,OPTIONS /)"
   [[ " ${cmdline_words[*]} " == *" rootflags=subvol=@snapshots/$n/snapshot "* ]] &&
@@ -102,8 +103,6 @@ if [[ "$MODE" == snapshot ]]; then
   ((notified)) && ok "the snapshot notice ran" || no "the snapshot notice never ran"
   echo "--- failed units (diagnostic only) ---"
   systemctl --failed --no-legend --no-pager
-  # A transaction here put the new kernel on the persistent ESP while its
-  # modules vanished with the overlay, so the guard hook must refuse it.
   if guard_out="$(/usr/local/lib/cosmarchy/boot/cosmarchy-boot guard 2>&1)"; then
     no "cosmarchy-boot guard lets a snapshot boot through"
   elif [[ "$guard_out" == *"running snapshot $n"* ]]; then
@@ -132,224 +131,127 @@ if [[ "$MODE" == snapshot ]]; then
   finish
 fi
 
-# --- Regression: no keyboard shortcut worked at all ------------------------
-BINDINGS="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
-custom_list="$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings 2>/dev/null)"
-if [[ "$custom_list" == *custom0* ]]; then
-  ok "custom keybinding slots registered"
-else
-  no "no custom keybinding slots" "got: $custom_list"
-fi
-
-check_binding() {
-  local slot="$1" expect_key="$2" label="$3"
-  local schema="org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$BINDINGS/$slot/"
-  local binding
-  binding="$(gsettings get "$schema" binding 2>/dev/null | tr -d "'")"
-  if [[ "$binding" == "$expect_key" ]]; then
-    ok "$label bound to $expect_key"
+# --- Core COSMIC session processes -----------------------------------------
+for proc in cosmic-comp cosmic-panel cosmic-settings-daemon; do
+  if pgrep -u "$(id -u)" -x "$proc" >/dev/null; then
+    ok "$proc is running"
   else
-    no "$label not bound" "expected $expect_key, got '${binding:-nothing}'"
+    no "$proc is not running"
   fi
-}
-
-check_binding custom0 "<Super>Return" "terminal"
-check_binding custom4 "<Super>d" "Voxtype dictation"
-check_binding custom6 "<Super><Alt>space" "command center"
-
-# Window shortcuts come from the gschema override, so they must hold too.
-close_key="$(gsettings get org.gnome.desktop.wm.keybindings close 2>/dev/null)"
-[[ "$close_key" == *"<Super>w"* ]] &&
-  ok "Super+W closes windows" ||
-  no "Super+W not bound" "got: $close_key"
-
-ws1="$(gsettings get org.gnome.desktop.wm.keybindings switch-to-workspace-1 2>/dev/null)"
-[[ "$ws1" == *"<Super>1"* ]] &&
-  ok "Super+1 switches workspace" ||
-  no "Super+1 not bound" "got: $ws1"
-
-# --- Regression: dock stayed at the default bottom position ---------------
-dock_pos="$(gsettings get org.gnome.shell.extensions.dash-to-dock dock-position 2>/dev/null | tr -d "'")"
-[[ "$dock_pos" == "LEFT" ]] &&
-  ok "dock is on the left" ||
-  no "dock is not on the left" "got '${dock_pos:-unset}'"
-
-# --- Regression: two identical Brave icons in the dash --------------------
-favs="$(gsettings get org.gnome.shell favorite-apps 2>/dev/null)"
-brave_count="$(grep -o 'brave' <<<"$favs" | wc -l)"
-((brave_count == 1)) &&
-  ok "exactly one Brave entry in the dock" ||
-  no "$brave_count Brave entries in the dock" "$favs"
-
-# --- Regression: wallpaper fell back to the bundled SVG placeholder -------
-wallpaper="$(gsettings get org.gnome.desktop.background picture-uri 2>/dev/null | tr -d "'")"
-if [[ "$wallpaper" == *.svg ]]; then
-  no "wallpaper is the bundled SVG placeholder" "$wallpaper"
-else
-  ok "wallpaper is a real image ($(basename "$wallpaper"))"
-fi
-[[ -f "${wallpaper#file://}" ]] &&
-  ok "wallpaper file exists on disk" ||
-  no "wallpaper path does not exist" "$wallpaper"
-
-# --- Terminal palette is actually applied ---------------------------------
-term_uuid="$(gsettings get org.gnome.Terminal.ProfilesList default 2>/dev/null | tr -d "'")"
-term_profile="org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$term_uuid/"
-palette="$(gsettings get "$term_profile" palette 2>/dev/null)"
-colors="$(grep -o '#' <<<"$palette" | wc -l)"
-((colors == 16)) &&
-  ok "GNOME Terminal has a full 16-colour palette" ||
-  no "terminal palette not applied" "$colors colours"
-
-# --- Regression: an icon theme installed but never applied -----------------
-# papirus-icon-theme was in the package list from the start and nothing ever
-# set it, so every install ran on Adwaita and the package was dead weight.
-icons="$(gsettings get org.gnome.desktop.interface icon-theme 2>/dev/null | tr -d "'")"
-if [[ "$icons" == Papirus* ]]; then
-  ok "icon theme is applied ($icons)"
-else
-  no "icon theme is not a Papirus variant" "got: ${icons:-unset}"
-fi
-
-# --- Regression: tiling enabled but not running ----------------------------
-#
-# Tiling Shell is the only tiling Cosmarchy ships. Enabled is not the same as
-# loaded: a build that does not declare this shell's version sits in
-# enabled-extensions and does nothing, which is what GNOME 51 did to the
-# zips that were bundled for 50. Ask the shell, not dconf.
-ts_uuid="tilingshell@ferrarodomenico.com"
-ts_state="$(gnome-extensions info "$ts_uuid" 2>/dev/null | grep -i '^ *State:' | sed 's/.*: *//')"
-if [[ "$ts_state" == "ACTIVE" ]]; then
-  ok "Tiling Shell is running"
-else
-  no "Tiling Shell is not running" "shell reports state: ${ts_state:-unknown}"
-fi
-
-gc_state="$(gnome-extensions info gsconnect@andyholmes.github.io 2>/dev/null | grep -i '^ *State:' | sed 's/.*: *//')"
-if [[ "$gc_state" == "ACTIVE" ]]; then
-  ok "GSConnect is running"
-else
-  no "GSConnect is not running" "shell reports state: ${gc_state:-unknown}"
-fi
-
-ts_auto="$(gsettings get org.gnome.shell.extensions.tilingshell enable-autotiling 2>/dev/null)"
-if [[ "$ts_auto" == "false" ]]; then
-  ok "Tiling Shell auto-placement is off"
-else
-  no "Tiling Shell auto-placement is not off" "enable-autotiling: ${ts_auto:-unset}"
-fi
-
-# --- Regression: two commands on one accelerator ---------------------------
-#
-# Cosmarchy binds Super+K to the keybindings browser and Super+Shift+K to the
-# manual, and the tiling extension Cosmarchy used to offer wanted K and Shift+K
-# for hjkl navigation. Both were set at once for a whole release: the key did
-# whichever the shell happened to register last. No Cosmarchy custom keybinding
-# may share an accelerator with Tiling Shell's.
-collect_custom_bindings() {
-  local list slot path binding
-  list="$(gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings 2>/dev/null || echo '')"
-  while read -r slot; do
-    [[ -n "$slot" ]] || continue
-    path="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$slot/"
-    binding="$(gsettings get "org.gnome.settings-daemon.plugins.media-keys.custom-keybinding:$path" binding 2>/dev/null || echo '')"
-    binding="${binding//\'/}"
-    [[ -n "$binding" && "$binding" != "@as"* ]] && echo "$binding"
-  done < <(grep -oE 'custom[0-9]+' <<<"$list" | sort -u)
-}
-
-collect_tiling_bindings() {
-  local schema="org.gnome.shell.extensions.tilingshell" key value
-  gsettings get org.gnome.shell enabled-extensions 2>/dev/null | grep -q tilingshell || return 0
-  gsettings list-schemas 2>/dev/null | grep -qx "$schema" || return 0
-
-  while read -r key; do
-    [[ -n "$key" ]] || continue
-    value="$(gsettings get "$schema" "$key" 2>/dev/null || echo '')"
-    # Only the keybinding keys are lists of accelerators.
-    [[ "$value" == "["*"<"* ]] || continue
-    tr ',' '\n' <<<"$value" | tr -d "[]' " | grep -v '^$'
-  done < <(gsettings list-keys "$schema" 2>/dev/null)
-}
-
-mapfile -t custom_keys < <(collect_custom_bindings)
-mapfile -t tiling_keys < <(collect_tiling_bindings)
-
-clashes=()
-for a in "${custom_keys[@]}"; do
-  for b in "${tiling_keys[@]}"; do
-    [[ "$a" == "$b" ]] && clashes+=("$a")
-  done
 done
 
-if ((${#tiling_keys[@]} == 0)); then
-  echo "INFO  no tiling extension bindings to compare against"
-elif ((${#clashes[@]} == 0)); then
-  ok "no Cosmarchy command shares a key with the tiling extension (${#tiling_keys[@]} checked)"
+# --- Shortcut RON parse health in the journal ------------------------------
+# cosmic-settings-daemon logs "shortcuts custom config error" or
+# "failed to read local shortcuts config 'system_actions'" if any RON file fails
+# to deserialize, or "Skipping over invalid Action"/"SystemAction" on bad entries.
+journal_dump="$(journalctl --user -b --no-pager 2>/dev/null || true)"
+sys_journal="$(journalctl -b --no-pager 2>/dev/null || true)"
+all_journal="${journal_dump}"$'\n'"${sys_journal}"
+
+shortcut_errors="$(grep -iE "shortcuts custom config error|shortcuts config 'system_actions'|Skipping over invalid Action|Skipping over invalid SystemAction" <<<"$all_journal" || true)"
+if [[ -z "$shortcut_errors" ]]; then
+  ok "no shortcut custom/system_actions config errors in journal"
 else
-  no "${#clashes[@]} accelerator(s) bound twice" "${clashes[*]}"
+  no "COSMIC shortcut RON errors logged" "$(head -n 5 <<<"$shortcut_errors")"
 fi
 
-# --- Regression: Super+N switched workspace and launched an app ------------
-#
-# GNOME ships switch-to-application-1..9 on Super+1..9 in
-# org.gnome.shell.keybindings, and Cosmarchy puts switch-to-workspace-N on the
-# same keys in org.gnome.desktop.wm.keybindings -- six of them by default, all
-# nine on the Omarchy profile. Every one of those keys had two handlers and did
-# whichever the shell registered last. Turning Dash to Dock's hot-keys off,
-# which the installer does, is a different setting and never affected this.
-#
-# These two schemas are where that class of defect lives, so compare them
-# wholesale rather than checking the digits by name.
-collect_schema_accels() {
-  local schema="$1" key value
-  gsettings list-schemas 2>/dev/null | grep -qx "$schema" || return 0
+# --- Every Cosmarchy shortcut key must be absent from COSMIC defaults ------
+DEFAULTS_RON="/usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults"
+CUSTOM_RON="${XDG_CONFIG_HOME:-$HOME/.config}/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom"
 
-  while read -r key; do
-    [[ -n "$key" ]] || continue
-    value="$(gsettings get "$schema" "$key" 2>/dev/null || echo '')"
-    # Keybinding keys are lists of accelerators; everything else is skipped.
-    [[ "$value" == "["*"<"* ]] || continue
-    while read -r accel; do
-      [[ -n "$accel" ]] && printf '%s\t%s\n' "$accel" "$key"
-    done < <(tr ',' '\n' <<<"$value" | tr -d "[]' " | grep -v '^$')
-  done < <(gsettings list-keys "$schema" 2>/dev/null)
-}
+if [[ -r "$DEFAULTS_RON" && -r "$CUSTOM_RON" ]]; then
+  collision_report="$(python3 - "$DEFAULTS_RON" "$CUSTOM_RON" <<'PY'
+import re, sys
 
-mapfile -t wm_accels < <(collect_schema_accels org.gnome.desktop.wm.keybindings)
-mapfile -t shell_accels < <(collect_schema_accels org.gnome.shell.keybindings)
+def parse(path):
+    text = open(path, encoding="utf-8").read()
+    bindings = {}
+    pat = re.compile(
+        r'\(modifiers:\s*\[([^\]]*)\](?:,\s*key:\s*"([^"]+)")?(?:,\s*keycode:\s*\d+)?(?:,\s*description:\s*Some\("[^"]*"\))?\)\s*:\s*([^,\n]+)'
+    )
+    for m in pat.finditer(text):
+        mods = tuple(sorted(x.strip() for x in m.group(1).split(",") if x.strip()))
+        key = (m.group(2) or "").lower()
+        bindings[(mods, key)] = m.group(3).strip()
+    return bindings
 
-wm_shell_clashes=()
-for wm_entry in "${wm_accels[@]}"; do
-  for shell_entry in "${shell_accels[@]}"; do
-    if [[ "${wm_entry%%$'\t'*}" == "${shell_entry%%$'\t'*}" ]]; then
-      wm_shell_clashes+=("${wm_entry%%$'\t'*} (${wm_entry#*$'\t'} / ${shell_entry#*$'\t'})")
-    fi
-  done
-done
+defaults = parse(sys.argv[1])
+custom = parse(sys.argv[2])
+if not defaults:
+    print("ERROR: parsed 0 default bindings")
+    sys.exit(2)
+if not custom:
+    print("ERROR: parsed 0 custom bindings")
+    sys.exit(2)
 
-if ((${#wm_accels[@]} == 0 || ${#shell_accels[@]} == 0)); then
-  echo "INFO  could not read one of the keybinding schemas; skipping wm/shell comparison"
-elif ((${#wm_shell_clashes[@]} == 0)); then
-  ok "no key is claimed by both the window manager and the shell (${#wm_accels[@]} vs ${#shell_accels[@]} checked)"
+clashes = []
+for k, act in custom.items():
+    if k in defaults:
+        clashes.append(f"{'+'.join(k[0])}+{k[1]} (custom={act} vs default={defaults[k]})")
+
+if clashes:
+    print("CLASH: " + "; ".join(clashes))
+    sys.exit(1)
+print(f"OK: {len(custom)} custom bindings verified free against {len(defaults)} COSMIC defaults")
+PY
+)"
+  rc=$?
+  if ((rc == 0)); then
+    ok "$collision_report"
+  else
+    no "Cosmarchy shortcut overlaps COSMIC defaults" "$collision_report"
+  fi
 else
-  no "${#wm_shell_clashes[@]} key(s) claimed by both the window manager and the shell" \
-    "${wm_shell_clashes[*]}"
+  no "shortcut RON files unreadable" "defaults=$DEFAULTS_RON custom=$CUSTOM_RON"
 fi
 
-# Not a check, a question this test is the right place to answer: which icon
-# the editor entry actually asks for, and whether anything provides it. The
-# icon looked wrong in a screenshot and the cause was guessed at rather than
-# established.
-for entry in /usr/share/applications/code-oss.desktop   /usr/share/applications/visual-studio-code.desktop   /usr/share/applications/code.desktop; do
-  [[ -f "$entry" ]] || continue
-  icon_name="$(sed -n 's/^Icon=//p' "$entry" | head -1)"
-  echo "INFO  $(basename "$entry") asks for Icon=$icon_name"
-  found="$(find /usr/share/icons /usr/share/pixmaps -name "$icon_name.*" 2>/dev/null | head -3)"
-  echo "INFO  provided by: ${found:-nothing}"
-done
+# --- Tiling & keyboard config ----------------------------------------------
+COMP_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/cosmic/com.system76.CosmicComp/v1"
+if [[ -r "$COMP_DIR/autotile" ]] && [[ "$(tr -d '[:space:]' < "$COMP_DIR/autotile")" == "true" ]]; then
+  ok "COSMIC autotile is true"
+else
+  no "COSMIC autotile is not true" "got: $(cat "$COMP_DIR/autotile" 2>/dev/null || echo missing)"
+fi
 
-# --- Boot menu: snapshots, snap-pac and the theme ---------------------------
+if [[ -r "$COMP_DIR/autotile_behavior" ]] && [[ "$(tr -d '[:space:]' < "$COMP_DIR/autotile_behavior")" == "PerWorkspace" ]]; then
+  ok "COSMIC autotile_behavior is PerWorkspace"
+else
+  no "COSMIC autotile_behavior is not PerWorkspace" "got: $(cat "$COMP_DIR/autotile_behavior" 2>/dev/null || echo missing)"
+fi
+
+if [[ -f /etc/cosmarchy/keyboard.conf ]]; then
+  kb_layout="$(sed -n 's/^XKB_LAYOUT=//p' /etc/cosmarchy/keyboard.conf)"
+  kb_latin="$(sed -n 's/^LATIN=//p' /etc/cosmarchy/keyboard.conf)"
+  expected_layout="$kb_layout"
+  [[ "$kb_latin" == no ]] && expected_layout="us,$kb_layout"
+  if [[ -r "$COMP_DIR/xkb_config" ]] && grep -qF "layout: \"$expected_layout\"" "$COMP_DIR/xkb_config"; then
+    ok "COSMIC xkb_config layout matches installer ($expected_layout)"
+  else
+    no "COSMIC xkb_config layout does not match $expected_layout" "$(cat "$COMP_DIR/xkb_config" 2>/dev/null || echo missing)"
+  fi
+fi
+
+# --- XDG Desktop Portal (COSMIC) answers on the session D-Bus --------------
+portal_ok=0
+for _ in $(seq 1 10); do
+  if busctl --user call org.freedesktop.impl.portal.desktop.cosmic \
+    /org/freedesktop/portal/desktop org.freedesktop.DBus.Peer Ping >/dev/null 2>&1; then
+    portal_ok=1
+    break
+  fi
+  sleep 1
+done
+if ((portal_ok)); then
+  ok "xdg-desktop-portal-cosmic answers on the session D-Bus"
+else
+  no "xdg-desktop-portal-cosmic did not answer on the session D-Bus"
+fi
+
+# --- Timezone --------------------------------------------------------------
+tz="$(timedatectl show -p Timezone --value)"
+[[ "$tz" == Europe/Berlin ]] && ok "the timezone is Europe/Berlin" || no "the timezone is $tz"
+
+# --- Boot menu: snapshots, snap-pac and fixed COSMIC Dark palette ----------
 BOOT_BIN=/usr/local/lib/cosmarchy/boot/cosmarchy-boot
 LIMINE=/boot/limine.conf
 
@@ -385,46 +287,11 @@ else
   no "could not reinstall the file package from the cache" "${pkg:-no package found}"
 fi
 
-# shellcheck source=../../default/boot/lib/palette.sh
-source "$HOME/.local/share/cosmarchy/default/boot/lib/palette.sh"
-want="$(boot_palette_from_alacritty "$HOME/.local/share/cosmarchy/themes/gruvbox/alacritty.toml" |
-  sed -n 's/^BACKGROUND=//p')"
-cosmarchy-theme-set gruvbox >/dev/null
-recoloured=0
-for _ in $(seq 1 20); do
-  grep -qx "term_background: 00$want" "$LIMINE" && { recoloured=1; break; }
-  sleep 1
-done
-((recoloured)) && ok "a theme change recolours the Limine menu" ||
-  no "the Limine menu kept its colours after a theme change" "$(grep '^term_background' "$LIMINE")"
-cosmarchy-theme-set tokyo-night >/dev/null
-# The theme change queues a menu regeneration (a path unit) that renders the
-# default entry. Wait for it to land and finish, or it can run after the
-# hand-over below and reset the third boot's default.
-want_back="$(boot_palette_from_alacritty "$HOME/.local/share/cosmarchy/themes/tokyo-night/alacritty.toml" |
-  sed -n 's/^BACKGROUND=//p')"
-settled=0
-for _ in $(seq 1 30); do
-  if grep -qx "term_background: 00$want_back" "$LIMINE" &&
-    ! systemctl is-active --quiet cosmarchy-boot-theme.service; then
-    settled=1
-    break
-  fi
-  sleep 1
-done
-((settled)) || no "the menu did not return to tokyo-night" "$(grep '^term_background' "$LIMINE")"
-
-sources="$(gsettings get org.gnome.desktop.input-sources sources)"
-[[ "$sources" == "[('xkb', 'de')]" ]] && ok "GNOME input sources are the installer's layout" ||
-  no "GNOME input sources are not [('xkb', 'de')]" "$sources"
-tz="$(timedatectl show -p Timezone --value)"
-[[ "$tz" == Europe/Berlin ]] && ok "the timezone is Europe/Berlin" || no "the timezone is $tz"
+grep -qx "term_background: 001b1b1b" "$LIMINE" &&
+  ok "limine.conf carries the fixed COSMIC Dark palette" ||
+  no "limine.conf does not carry the COSMIC Dark palette" "$(grep '^term_background' "$LIMINE")"
 
 # --- Windows apps: WinBoat is opt-in, its prerequisites are not -------------
-# WinBoat itself is not installed here (AUR, and a Windows download), but
-# what it needs from the base install is: Docker running, the user in its
-# group from the first login on, FreeRDP. KVM is not checked: this session
-# runs in a VM without nested virtualization.
 if windows_status="$(cosmarchy windows status 2>&1)"; then
   ok "cosmarchy windows status runs"
 else
@@ -437,39 +304,8 @@ fi
 [[ "$windows_status" == *"is in the docker group"* ]] &&
   ok "the user is in the docker group in the session" || no "the session lacks the docker group" "$windows_status"
 
-# --- The control center ----------------------------------------------------
-# GJS has no compile step, so a syntax error or a bad import is invisible until
-# something runs the app. An application that owns its D-Bus name has parsed
-# every module and built its window, which makes this the compiler this stack
-# does not otherwise have.
-trace "launching the control center"
-setsid cosmarchy-menu >/var/tmp/cosmarchy-gui.log 2>&1 &
-gui_pid=$!
-
-owned=0
-for _ in $(seq 1 20); do
-  if busctl --user list --no-legend --no-pager | grep -q org.cosmarchy.ControlCenter; then
-    owned=1
-    break
-  fi
-  sleep 1
-done
-
-if (( owned )); then
-  ok "control center owns org.cosmarchy.ControlCenter"
-else
-  no "control center never appeared on the session bus" "$(tail -n 5 /var/tmp/cosmarchy-gui.log)"
-fi
-
-kill "$gui_pid" 2>/dev/null || true  # already gone if it crashed; not a failure
-
 # Hand over to the third boot: the snapshot made above, which, unlike
-# snapshot 1, includes CI's autologin and this script. No queued regeneration
-# may follow --default, so let the theme service go idle first.
-for _ in $(seq 1 30); do
-  systemctl is-active --quiet cosmarchy-boot-theme.service || break
-  sleep 1
-done
+# snapshot 1, includes CI's autologin and this script.
 if [[ "$snap" =~ ^[0-9]+$ ]] && sudo -n "$BOOT_BIN" update --default "snapshot:$snap" &&
   grep -q "^default_entry: Cosmarchy/Snapshots/$snap | " "$LIMINE"; then
   ok "the next boot defaults to snapshot $snap"

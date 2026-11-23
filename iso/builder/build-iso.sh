@@ -96,17 +96,7 @@ fi
 chmod 755 "$PROFILE_DIR/airootfs/root/.automated_script.sh" 2>/dev/null || true
 chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/bin"/* 2>/dev/null || true
 chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/install.sh" 2>/dev/null || true
-
-# Pre-populate bundled wallpapers into ISO live filesystem
-echo "Installing bundled wallpapers to ISO rootfs..."
-mkdir -p "$PROFILE_DIR/airootfs/usr/share/backgrounds/cosmarchy"
-for bg in "$REPO_ROOT"/themes/*/backgrounds/*; do
-  if [ -f "$bg" ]; then
-    cp -f "$bg" "$PROFILE_DIR/airootfs/usr/share/backgrounds/cosmarchy/" 2>/dev/null || true
-  fi
-done
-chmod 755 "$PROFILE_DIR/airootfs/usr/share/backgrounds/cosmarchy" 2>/dev/null || true
-chmod 644 "$PROFILE_DIR/airootfs/usr/share/backgrounds/cosmarchy"/* 2>/dev/null || true
+chmod +x "$PROFILE_DIR/airootfs/root/cosmarchy/iso/installer/cosmarchy-install" 2>/dev/null || true
 
 # 5. Run mkarchiso
 echo -e "\n\033[1;36m==> Running mkarchiso to build Cosmarchy ISO...\033[0m"

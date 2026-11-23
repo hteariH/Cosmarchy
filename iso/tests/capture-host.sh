@@ -3,12 +3,9 @@
 # Host side of the screenshot capture: boot the installed image and photograph
 # its video output while the in-guest script composes the desktop.
 #
-# The guest can neither photograph nor type into itself - GNOME Shell refuses
-# its screenshot interface to any sender outside the allowlist it ships with,
-# and the overview it opens at login has nothing to dismiss it. Both jobs are
-# therefore done from here, through the QEMU monitor, which sits below anything
-# with an opinion about who is allowed to. See iso/tests/capture-screenshots.sh
-# for the guest half and the full reasoning.
+# Pictures are captured from outside through the QEMU monitor, which dumps the
+# real Wayland framebuffer without requiring portal permission prompts. See
+# iso/tests/capture-screenshots.sh for the guest half.
 #
 # One invocation is one boot. The guest powers itself off when its phase is
 # done, so this returns when the picture taking is over rather than on a timer;
@@ -22,9 +19,7 @@
 #   MEM             guest memory in MB (default: 4096)
 #   INTERVAL        seconds between frames (default: 5)
 #   BOOT_TIMEOUT    hard limit on the boot, in seconds (default: 1500)
-#   ESCAPE_SECONDS  how long to keep pressing Escape to dismiss the startup
-#                   overview, in seconds (default: 35). It must end before
-#                   the guest opens its first window.
+#   ESCAPE_SECONDS  optional seconds to press Escape at startup (default: 0)
 
 set -eEo pipefail
 
@@ -43,7 +38,7 @@ ACCEL="${ACCEL:--accel tcg}"
 MEM="${MEM:-4096}"
 INTERVAL="${INTERVAL:-5}"
 BOOT_TIMEOUT="${BOOT_TIMEOUT:-1500}"
-ESCAPE_SECONDS="${ESCAPE_SECONDS:-35}"
+ESCAPE_SECONDS="${ESCAPE_SECONDS:-0}"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOCK="$PWD/qmp-$LABEL.sock"
