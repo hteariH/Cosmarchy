@@ -2,9 +2,9 @@
 
 # Cosmarchy Command Center (Super + Alt + Space)
 #
-# The GNOME Overview covers app launching; this covers the system-action half:
-# themes, webapps, capture, snapshots, updates and power. Without a display
-# or gjs it falls back to a gum menu in the terminal it was started from.
+# COSMIC Launcher covers app launching; this covers the system-action half:
+# keybindings, manual, tiling, web apps, capture, snapshots, updates and power.
+# Text-only menu rendered with gum inside cosmic-term.
 set -eEo pipefail
 
 COSMARCHY_PATH="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
@@ -28,19 +28,15 @@ choose() {
 
 # --- Actions ---------------------------------------------------------------
 
-menu_theme() {
-  local themes selected
-  # Enumerate the theme directories directly: cosmarchy-theme-list is coloured
-  # for humans and is not safe to parse.
-  mapfile -t themes < <(
-    for dir in "$COSMARCHY_PATH/themes"/*/ "$HOME/.config/cosmarchy/themes"/*/; do
-      [[ -d "$dir" ]] && basename "$dir"
-    done | sort -u
-  )
-  [[ ${#themes[@]} -eq 0 ]] && { gum style --foreground 1 "No themes found."; sleep 2; return; }
-  selected="$(printf '%s\n' "${themes[@]}" | gum filter --header "Select a theme" --height 14)" || return 0
-  [[ -n "$selected" ]] && cosmarchy-theme-set "$selected"
-  sleep 1
+menu_tiling() {
+  local action
+  action="$(choose "Tiling" "Status" "Enable auto-tiling" "Disable auto-tiling" "Toggle auto-tiling" "Back")" || return 0
+  case "$action" in
+    Status) cosmarchy-tiling status; gum input --placeholder "Press Enter to continue" >/dev/null ;;
+    "Enable auto-tiling") cosmarchy-tiling enable; gum input --placeholder "Press Enter to continue" >/dev/null ;;
+    "Disable auto-tiling") cosmarchy-tiling disable; gum input --placeholder "Press Enter to continue" >/dev/null ;;
+    "Toggle auto-tiling") cosmarchy-tiling toggle; gum input --placeholder "Press Enter to continue" >/dev/null ;;
+  esac
 }
 
 menu_webapp() {
@@ -74,7 +70,7 @@ menu_capture() {
 
 menu_snapshot() {
   local action
-  action="$(choose "Snapshots" "Create" "List" "Back")" || return 0
+  action="$(choose "Snapshots" "Create" "List" "Restore" "Back")" || return 0
   case "$action" in
     Create)
       local desc
@@ -82,17 +78,24 @@ menu_snapshot() {
       cosmarchy-snapshot-create "${desc:-Manual snapshot}"
       ;;
     List) cosmarchy-snapshot-list; gum input --placeholder "Press Enter to continue" >/dev/null ;;
+    Restore) cosmarchy-snapshot-restore; gum input --placeholder "Press Enter to continue" >/dev/null ;;
   esac
 }
 
 menu_system() {
   local action
-  action="$(choose "System" "Update everything" "GNOME shortcuts" "Restart GNOME Shell" "Extensions" "Back")" || return 0
+  action="$(choose "System" "Update everything" "COSMIC Settings" "System info" "Back")" || return 0
   case "$action" in
     "Update everything") cosmarchy-update; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    "GNOME shortcuts") cosmarchy-gnome-hotkeys; gum input --placeholder "Press Enter to continue" >/dev/null ;;
-    "Restart GNOME Shell") cosmarchy-gnome-restart ;;
-    Extensions) cosmarchy-gnome-extensions list; gum input --placeholder "Press Enter to continue" >/dev/null ;;
+    "COSMIC Settings")
+      if command -v cosmic-settings >/dev/null 2>&1; then
+        setsid cosmic-settings >/dev/null 2>&1 &
+      else
+        echo "cosmic-settings is not installed."
+        gum input --placeholder "Press Enter to continue" >/dev/null
+      fi
+      ;;
+    "System info") cosmarchy-version --verbose; gum input --placeholder "Press Enter to continue" >/dev/null ;;
   esac
 }
 
@@ -102,7 +105,15 @@ menu_power() {
   case "$action" in
     Lock) exec loginctl lock-session ;;
     Suspend) exec systemctl suspend ;;
-    "Log out") gum confirm "Log out now?" && exec gnome-session-quit --logout --no-prompt ;;
+    "Log out")
+      if gum confirm "Log out now?"; then
+        if command -v cosmic-osd >/dev/null 2>&1; then
+          exec cosmic-osd log-out
+        else
+          exec loginctl terminate-user "$USER"
+        fi
+      fi
+      ;;
     Reboot) gum confirm "Reboot now?" && exec systemctl reboot ;;
     "Power off") gum confirm "Power off now?" && exec systemctl poweroff ;;
   esac
@@ -113,12 +124,12 @@ menu_power() {
 while true; do
   header
   choice="$(choose "What do you need?" \
-    "Theme" "Keybindings" "Manual" "Gaming" "Web App" "Capture" "Snapshot" "System" "Power" "Exit")" || exit 0
+    "Keybindings" "Manual" "Tiling" "Gaming" "Web App" "Capture" "Snapshot" "System" "Power" "Exit")" || exit 0
 
   case "$choice" in
-    Theme) menu_theme ;;
     Keybindings) cosmarchy-keybindings ;;
     Manual) cosmarchy-manual ;;
+    Tiling) menu_tiling ;;
     Gaming) cosmarchy-gaming status; gum input --placeholder "Press Enter to continue" >/dev/null ;;
     "Web App") menu_webapp ;;
     Capture) menu_capture ;;

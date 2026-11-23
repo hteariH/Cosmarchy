@@ -1,8 +1,0 @@
-[Unit]
-Description=Watch the Cosmarchy boot menu theme
-
-[Path]
-PathChanged=/etc/cosmarchy/boot-theme.conf
-
-[Install]
-WantedBy=paths.target

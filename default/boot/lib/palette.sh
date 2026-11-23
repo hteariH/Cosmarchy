@@ -1,17 +1,15 @@
 #!/bin/bash
-# Theme palette for the Limine menu.
+# Static COSMIC Dark palette validation for the Limine boot menu.
 #
-# A theme's alacritty.toml is the canonical palette (CLAUDE.md, The theme
-# engine). This turns it into the KEY=rrggbb lines of
-# /etc/cosmarchy/boot-theme.conf, which cosmarchy-boot reads. Sourced by
-# cosmarchy-theme-set as the user, so it depends on nothing else here.
+# Cosmarchy ships one fixed palette at default/boot/boot-theme.conf, deployed
+# to /etc/cosmarchy/boot-theme.conf by default/boot/deploy.sh and read by
+# cosmarchy-boot.
 
-# boot_palette_from_alacritty FILE — prints BACKGROUND, FOREGROUND, ACCENT,
-# NORMAL_0..7 and BRIGHT_0..7, or fails naming the first missing colour.
-boot_palette_from_alacritty() {
-  local file="$1" section="" line key i
-  local re_colour='^[[:space:]]*([a-z]+)[[:space:]]*=[[:space:]]*"#?([0-9a-fA-F]{6})"'
-  local names=(black red green yellow blue magenta cyan white)
+# boot_palette_validate FILE — verifies FILE defines BACKGROUND, FOREGROUND,
+# ACCENT, NORMAL_0..7 and BRIGHT_0..7 as 6-digit hex (rrggbb), printing the
+# normalized lowercase KEY=rrggbb lines, or fails naming the first bad key.
+boot_palette_validate() {
+  local file="$1" line key val i
   local -A colour=()
 
   if [[ ! -f "$file" ]]; then
@@ -21,37 +19,31 @@ boot_palette_from_alacritty() {
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     line="${line%$'\r'}"
-    if [[ "$line" =~ ^\[colors\.(primary|normal|bright)\] ]]; then
-      section="${BASH_REMATCH[1]}"
-    elif [[ "$line" =~ ^\[ ]]; then
-      section=""
-    elif [[ -n "$section" && "$line" =~ $re_colour ]]; then
-      colour["$section.${BASH_REMATCH[1]}"]="${BASH_REMATCH[2],,}"
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    if [[ "$line" =~ ^([A-Z0-9_]+)=(.*)$ ]]; then
+      colour["${BASH_REMATCH[1]}"]="${BASH_REMATCH[2]}"
     fi
   done <"$file"
 
-  for key in primary.background primary.foreground; do
-    if [[ -z "${colour[$key]:-}" ]]; then
+  for key in BACKGROUND FOREGROUND ACCENT NORMAL_{0..7} BRIGHT_{0..7}; do
+    val="${colour[$key]:-}"
+    if [[ -z "$val" ]]; then
       printf 'palette: %s has no %s\n' "$file" "$key" >&2
       return 1
     fi
-  done
-  for i in "${!names[@]}"; do
-    for key in "normal.${names[i]}" "bright.${names[i]}"; do
-      if [[ -z "${colour[$key]:-}" ]]; then
-        printf 'palette: %s has no %s\n' "$file" "$key" >&2
-        return 1
-      fi
-    done
+    if [[ ! "$val" =~ ^[0-9a-fA-F]{6}$ ]]; then
+      printf 'palette: %s has invalid %s (%s)\n' "$file" "$key" "$val" >&2
+      return 1
+    fi
   done
 
-  printf 'BACKGROUND=%s\n' "${colour[primary.background]}"
-  printf 'FOREGROUND=%s\n' "${colour[primary.foreground]}"
-  printf 'ACCENT=%s\n' "${colour[normal.blue]}"
-  for i in "${!names[@]}"; do
-    printf 'NORMAL_%d=%s\n' "$i" "${colour[normal.${names[i]}]}"
+  for key in BACKGROUND FOREGROUND ACCENT; do
+    printf '%s=%s\n' "$key" "${colour[$key],,}"
   done
-  for i in "${!names[@]}"; do
-    printf 'BRIGHT_%d=%s\n' "$i" "${colour[bright.${names[i]}]}"
+  for i in {0..7}; do
+    printf 'NORMAL_%d=%s\n' "$i" "${colour[NORMAL_$i],,}"
+  done
+  for i in {0..7}; do
+    printf 'BRIGHT_%d=%s\n' "$i" "${colour[BRIGHT_$i],,}"
   done
 }

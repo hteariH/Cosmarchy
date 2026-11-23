@@ -24,8 +24,9 @@ grab_region() {
     geometry="$(slurp -d 2>/dev/null)" || return 1
     [[ -z "$geometry" ]] && return 1
     grim -g "$geometry" "$target"
-  elif command -v gnome-screenshot >/dev/null 2>&1; then
-    gnome-screenshot -a -f "$target" || return 1
+  elif command -v cosmic-screenshot >/dev/null 2>&1; then
+    cosmic-screenshot --save-dir "$SHOT_DIR"
+    return 1
   else
     notify "No screenshot backend found (install grim + slurp)." dialog-error
     return 1
@@ -37,8 +38,9 @@ grab_full() {
   local target="$1"
   if command -v grim >/dev/null 2>&1; then
     grim "$target"
-  elif command -v gnome-screenshot >/dev/null 2>&1; then
-    gnome-screenshot -f "$target" || return 1
+  elif command -v cosmic-screenshot >/dev/null 2>&1; then
+    cosmic-screenshot --interactive=false --save-dir "$SHOT_DIR"
+    return 1
   else
     notify "No screenshot backend found (install grim)." dialog-error
     return 1

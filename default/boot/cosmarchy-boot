@@ -3,9 +3,9 @@
 #
 # Runs as root from /usr/local/lib/cosmarchy/boot (root never executes scripts
 # from a user's home). Called by the installer, the pacman hooks, the snapper
-# plugin, the mkinitcpio post hook, the theme path unit, `cosmarchy boot
-# update` and `cosmarchy snapshot restore`; `guard` by pacman and `cosmarchy
-# update` before every transaction.
+# plugin, the mkinitcpio post hook, `cosmarchy boot update` and
+# `cosmarchy snapshot restore`; `guard` by pacman and `cosmarchy update`
+# before every transaction.
 # Design: docs/superpowers/specs/2026-10-28-installer-limine-design.md
 # shellcheck source-path=SCRIPTDIR
 set -Eeuo pipefail
@@ -45,8 +45,8 @@ if [[ $EUID -ne 0 && -z "$BOOT_ROOT" && "${1:-}" != guard ]]; then
   boot_die "must run as root"
 fi
 
-# One writer at a time: a pacman hook, the snapper plugin and a theme change
-# can all fire at once.
+# One writer at a time: a pacman hook and the snapper plugin can both fire
+# during a package transaction.
 boot_lock() {
   mkdir -p "$BOOT_STATE"
   exec 9>"$BOOT_STATE/lock"

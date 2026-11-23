@@ -3,8 +3,7 @@
 cosmarchy_header "Applying Session Hardware Fixes"
 
 # Hardware tweaks that need a running user session rather than a chroot:
-# anything talking to PipeWire, dconf or the seat. Run from
-# cosmarchy-first-run, which has all three.
+# anything talking to PipeWire or the seat. Run from cosmarchy-first-run.
 
 # --- Framework 13 AMD: silent internal microphones -------------------------
 #

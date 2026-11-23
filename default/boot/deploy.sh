@@ -31,9 +31,14 @@ install -Dm644 "$SRC/00-cosmarchy-guard.hook" "$DEST/etc/pacman.d/hooks/00-cosma
 install -Dm644 "$SRC/95-cosmarchy-boot.hook" "$DEST/etc/pacman.d/hooks/95-cosmarchy-boot.hook"
 install -Dm644 "$SRC/95-cosmarchy-limine.hook" "$DEST/etc/pacman.d/hooks/95-cosmarchy-limine.hook"
 install -Dm644 "$SRC/cosmarchy-overlay" "$DEST/etc/initcpio/install/cosmarchy-overlay"
-install -Dm644 "$SRC/cosmarchy-boot-theme.path" "$DEST/etc/systemd/system/cosmarchy-boot-theme.path"
-install -Dm644 "$SRC/cosmarchy-boot-theme.service" "$DEST/etc/systemd/system/cosmarchy-boot-theme.service"
 install -Dm644 "$SRC/snapshot-notify.desktop" "$DEST/etc/xdg/autostart/cosmarchy-snapshot-notify.desktop"
+
+# Fixed COSMIC Dark Limine palette, deployed once at install time and left
+# intact if edited afterwards.
+BOOT_THEME="$DEST/etc/cosmarchy/boot-theme.conf"
+if [[ ! -s "$BOOT_THEME" ]]; then
+  install -Dm644 "$SRC/boot-theme.conf" "$BOOT_THEME"
+fi
 
 # The initramfs. sd-encrypt only where there is something to open; plymouth
 # after systemd and before the crypt hook, so the passphrase prompt is drawn.
@@ -56,18 +61,4 @@ if [[ -z "$DEST" && -n "$previous" && "$previous" != "$(<"$DROPIN")" ]]; then
   mkinitcpio -P
 fi
 
-# The one file a user writes: cosmarchy-theme-set, as a member of wheel. It is
-# parsed as data and never executed.
-if [[ ! -f "$DEST/etc/cosmarchy/boot-theme.conf" ]]; then
-  install -m664 -o root -g wheel /dev/null "$DEST/etc/cosmarchy/boot-theme.conf"
-fi
-chown root:wheel "$DEST/etc/cosmarchy/boot-theme.conf"
-chmod 664 "$DEST/etc/cosmarchy/boot-theme.conf"
-
-systemctl --root="${DEST:-/}" enable cosmarchy-boot-theme.path
-# On a running system (cosmarchy update) systemd must reread the units just
-# replaced. A chroot and a test tree have no systemd running to tell.
-if [[ -z "$DEST" && -d /run/systemd/system ]]; then
-  systemctl daemon-reload
-fi
 echo "Boot tooling deployed."

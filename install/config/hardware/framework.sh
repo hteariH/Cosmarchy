@@ -51,5 +51,21 @@ if [[ "$MODEL" == *"Laptop 16"* ]]; then
   fi
 fi
 
-# The Framework 13 microphone fix needs a running PipeWire, so it is applied
-# from the session rather than here. See install/desktop/set-hardware-session.sh
+# The Framework 13 microphone fix needs a running PipeWire, so schedule
+# cosmarchy-first-run once on first graphical login. Note: never declare
+# X-GNOME-Autostart-Phase (systemd-xdg-autostart-generator skips phased units).
+if [[ "$MODEL" == *"Laptop 13"* ]]; then
+  mkdir -p "$HOME/.config/autostart"
+  cat > "$HOME/.config/autostart/cosmarchy-first-run.desktop" <<'AUTOSTART'
+[Desktop Entry]
+Type=Application
+Name=Cosmarchy Session Hardware Setup
+Comment=Applies live-session PipeWire hardware fixes on first login
+Exec=/usr/local/bin/cosmarchy first-run
+Icon=preferences-desktop
+Terminal=false
+X-GNOME-Autostart-enabled=true
+NoDisplay=true
+AUTOSTART
+  echo "  Framework 13 microphone fix scheduled for first login"
+fi

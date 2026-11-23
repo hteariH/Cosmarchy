@@ -1,6 +1,0 @@
-[Unit]
-Description=Recolour the Limine menu from the Cosmarchy theme
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/lib/cosmarchy/boot/cosmarchy-boot update

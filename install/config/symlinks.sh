@@ -2,7 +2,7 @@
 
 cosmarchy_header "Publishing Cosmarchy Commands System-Wide"
 
-# Every cosmarchy-* helper must resolve from the GNOME session, not just from
+# Every cosmarchy-* helper must resolve from the COSMIC session, not just from
 # a login shell.
 #
 # ~/.local/share/cosmarchy/bin reaches PATH only via /etc/profile.d and

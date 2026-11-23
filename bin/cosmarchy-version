@@ -14,15 +14,25 @@ if [[ -d "$COSMARCHY_PATH/.git" ]] && command -v git >/dev/null 2>&1; then
   ref="$(git -C "$COSMARCHY_PATH" describe --tags --always --dirty 2>/dev/null || true)"
 fi
 
-echo "Cosmarchy Linux v${version}${ref:+ (${ref})}"
-echo "Arch Linux Rolling + GNOME $(gnome-shell --version 2>/dev/null | grep -oE '[0-9]+' | head -n1 || echo '50')"
+cosmic_ver=""
+if command -v pacman >/dev/null 2>&1; then
+  cosmic_ver="$(pacman -Q cosmic-comp 2>/dev/null | awk '{print $2}' | sed -E 's/^[0-9]+://; s/-.*//' || true)"
+fi
+if [[ -z "$cosmic_ver" ]] && command -v cosmic-comp >/dev/null 2>&1; then
+  cosmic_ver="$(cosmic-comp --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -n1 || true)"
+fi
 
-if [[ "$1" == "--verbose" || "$1" == "-v" ]]; then
-  theme_file="$HOME/.config/cosmarchy/current/theme.name"
-  [[ -f "$theme_file" ]] && echo "Active theme: $(<"$theme_file")"
+echo "Cosmarchy Linux v${version}${ref:+ (${ref})}"
+echo "Arch Linux Rolling + COSMIC ${cosmic_ver:-1.11}"
+
+if [[ "${1:-}" == "--verbose" || "${1:-}" == "-v" ]]; then
+  autotile_file="${XDG_CONFIG_HOME:-$HOME/.config}/cosmic/com.system76.CosmicComp/v1/autotile"
+  if [[ -r "$autotile_file" ]]; then
+    echo "Auto-tiling: $(tr -d '[:space:]' < "$autotile_file")"
+  fi
   echo "Install path: $COSMARCHY_PATH"
   applied="${XDG_STATE_HOME:-$HOME/.local/state}/cosmarchy/migrations.log"
   if [[ -f "$applied" ]]; then
-    echo "Migrations applied: $(wc -l < "$applied")"
+    echo "Migrations applied: $(awk 'NF{c++} END{print c+0}' "$applied")"
   fi
 fi

@@ -8,7 +8,7 @@
 #
 # asusctl is in the extra repository, so no AUR build is needed. It declares no
 # conflict with power-profiles-daemon and the two coexist: PPD drives the
-# profile switcher GNOME shows, asusd handles the hardware GNOME cannot reach.
+# profile switcher COSMIC shows, asusd handles the hardware COSMIC cannot reach.
 
 is_asus_laptop() {
   local vendor=""

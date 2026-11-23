@@ -31,7 +31,7 @@ done
 
 case "${1:-run}" in
   --list | list)
-    echo "Applied migrations: $(wc -l < "$LEDGER")"
+    echo "Applied migrations: $(awk 'NF{c++} END{print c+0}' "$LEDGER")"
     if [[ ${#pending[@]} -eq 0 ]]; then
       echo "No pending migrations."
     else
@@ -43,7 +43,11 @@ case "${1:-run}" in
   --baseline | baseline)
     # Mark every existing migration as applied without running it. Used right
     # after a fresh install, where the installer already produced the end state.
-    printf '%s\n' "${all_migrations[@]}" > "$LEDGER"
+    if [[ ${#all_migrations[@]} -eq 0 ]]; then
+      : > "$LEDGER"
+    else
+      printf '%s\n' "${all_migrations[@]}" > "$LEDGER"
+    fi
     echo "Baselined ${#all_migrations[@]} migrations (marked applied, not run)."
     exit 0
     ;;

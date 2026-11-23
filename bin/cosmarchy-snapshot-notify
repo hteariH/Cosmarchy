@@ -23,5 +23,5 @@ action="$(notify-send --app-name=Cosmarchy --icon=document-revert --urgency=crit
 
 if [[ "$action" == restore ]]; then
   trace "restore requested for snapshot $n"
-  exec gnome-terminal -- cosmarchy snapshot restore "$n"
+  exec cosmic-term -e cosmarchy snapshot restore "$n"
 fi

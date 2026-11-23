@@ -23,12 +23,10 @@ Usage: cosmarchy <command> [subcommand] [arguments...]
 Commands:
   menu                         Open the Cosmarchy command center (Super+Alt+Space)
   first-run                    Apply session hardware setup
-  tiling <enable|disable|status>
-                               Auto-tiling, on or off
-  keymap <omarchy|gnome|status>
-                               Switch between Omarchy and Cosmarchy key layouts
-  keybindings [--list]         Search the keybindings that are actually active
-  manual [page|--grep <text>]  Read the Cosmarchy manual
+  tiling <enable|disable|toggle|status>
+                               COSMIC auto-tiling, on or off
+  keybindings [--list|reset]   Search the active COSMIC keybindings (Super+Alt+/)
+  manual [page|--grep <text>]  Read the Cosmarchy manual (Super+Alt+M)
   gaming <install|status|proton>
                                Steam, Proton-GE, Wine and launchers in one go
   asus <status|charge|profile|keyboard|graphics>
@@ -48,7 +46,7 @@ Commands:
   hook <run|list>              Trigger or inspect Cosmarchy lifecycle hooks
   update                       Perform system & Cosmarchy configuration updates
   migrate [--list]             Apply pending Cosmarchy migrations
-  version                      Display Cosmarchy version
+  version [--verbose]          Display Cosmarchy version
   help                         Show this help message
 EOF
 }
@@ -68,10 +66,6 @@ case "$command_group" in
   tiling)
     shift
     exec cosmarchy-tiling "$@"
-    ;;
-  keymap)
-    shift
-    exec cosmarchy-keymap "$@"
     ;;
   keybindings | keys)
     shift
@@ -162,10 +156,11 @@ case "$command_group" in
     exec cosmarchy-migrate "$@"
     ;;
   version)
-    exec cosmarchy-version
+    shift
+    exec cosmarchy-version "$@"
     ;;
   *)
-    # Check if direct binary exists (e.g. cosmarchy-theme-set)
+    # Check if direct binary exists (e.g. cosmarchy-tiling)
     if command -v "cosmarchy-$command_group" >/dev/null 2>&1; then
       shift
       exec "cosmarchy-$command_group" "$@"

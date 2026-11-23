@@ -39,7 +39,7 @@ new_tree() {
   mkdir -p "$T/boot" "$T/etc/kernel" "$T/etc/cosmarchy" "$T/.snapshots"
   set_esp_kernel "${KVERS[0]}"
   echo 'root=UUID=1111-2222 rw rootflags=subvol=@ quiet splash' >"$T/etc/kernel/cmdline"
-  boot_palette_from_alacritty "$REPO/themes/tokyo-night/alacritty.toml" >"$T/etc/cosmarchy/boot-theme.conf"
+  boot_palette_validate "$REPO/default/boot/boot-theme.conf" >"$T/etc/cosmarchy/boot-theme.conf"
   # A large ESP size keeps the budget out of every case that is not about it;
   # otherwise usage would come from the host's df.
   export COSMARCHY_BOOT_ESP_SIZE_KB=10000000

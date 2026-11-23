@@ -2,154 +2,119 @@
 
 # Cosmarchy keybindings browser
 #
-# Reads the bindings that are actually in effect out of dconf, rather than
-# printing a hand-maintained list. A static list drifts the moment anything
-# changes -- the previous one still advertised Alacritty, Super+B and six
-# workspaces -- and could never reflect `cosmarchy keymap omarchy` at all.
+# Reads the active COSMIC shortcut RON files rather than printing a static list:
+#   /usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1/defaults
+#   ~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/custom
+#   ~/.config/cosmic/com.system76.CosmicSettings.Shortcuts/v1/system_actions
 #
-#   cosmarchy keybindings          searchable list (Super+K)
+#   cosmarchy keybindings          searchable list (Super+Alt+/)
 #   cosmarchy keybindings --list   plain list, for piping or grepping
+#   cosmarchy keybindings reset    re-deploy Cosmarchy's default COSMIC shortcuts
 set -eEo pipefail
 
-MK="org.gnome.settings-daemon.plugins.media-keys"
-BINDINGS="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
-TS="org.gnome.shell.extensions.tilingshell"
+COSMARCHY_PATH="${COSMARCHY_PATH:-$HOME/.local/share/cosmarchy}"
+SYS_DIR="/usr/share/cosmic/com.system76.CosmicSettings.Shortcuts/v1"
+USER_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/cosmic/com.system76.CosmicSettings.Shortcuts/v1"
+SHIPPED_DIR="$COSMARCHY_PATH/default/cosmic/com.system76.CosmicSettings.Shortcuts/v1"
 
-command -v gsettings >/dev/null 2>&1 || {
-  echo "gsettings is unavailable." >&2
-  exit 1
-}
-
-# "['<Super><Shift>h']" -> "Super + Shift + H"
-prettify_key() {
-  local raw="$1"
-
-  # Reject the empty forms first: "@as []" survives bracket-stripping as
-  # "@as [" and would otherwise be printed as though it were a key.
-  [[ -z "$raw" || "$raw" == "@as"* || "$raw" == "[]" ]] && return 1
-
-  raw="${raw#[}"
-  raw="${raw%]}"
-  raw="${raw//\'/}"
-  raw="${raw%%,*}"                 # first binding only; alternates are noise
-  raw="${raw## }"
-  raw="${raw%% }"
-  [[ -z "$raw" ]] && return 1
-
-  raw="${raw//<Super>/Super + }"
-  raw="${raw//<Shift>/Shift + }"
-  raw="${raw//<Control>/Ctrl + }"
-  raw="${raw//<Primary>/Ctrl + }"
-  raw="${raw//<Alt>/Alt + }"
-  raw="${raw//</}"; raw="${raw//>/ + }"
-
-  # The trailing key name reads better capitalised: "Super + h" -> "Super + H",
-  # "Super + Alt + space" -> "Super + Alt + Space".
-  if [[ "$raw" =~ ^(.*[+][ ])([a-z][a-zA-Z0-9_]*)$ ]]; then
-    local head="${BASH_REMATCH[1]}" tail="${BASH_REMATCH[2]}"
-    raw="${head}$(tr '[:lower:]' '[:upper:]' <<<"${tail:0:1}")${tail:1}"
-  fi
-  printf '%s' "$raw"
-}
+DEFAULTS_FILE="$SYS_DIR/defaults"
+CUSTOM_FILE="$USER_DIR/custom"
+[[ -f "$CUSTOM_FILE" ]] || CUSTOM_FILE="$SHIPPED_DIR/custom"
 
 emit() { printf '%-28s  %s\n' "$1" "$2"; }
 
-# Descriptions come from each schema's own summary, so they stay correct
-# without being duplicated here.
-describe_key() {
-  local schema="$1" key="$2" text
-  text="$(gsettings describe "$schema" "$key" 2>/dev/null || true)"
-  [[ -z "$text" ]] && text="$key"
-  printf '%s' "$text"
-}
-
-dump_schema() {
-  local schema="$1" section="$2" key value pretty
-  gsettings list-schemas 2>/dev/null | grep -qx "$schema" || return 0
-
-  local rows=""
-  while read -r key; do
-    [[ -z "$key" ]] && continue
-    value="$(gsettings get "$schema" "$key" 2>/dev/null || true)"
-    [[ "$value" == "@as []" || "$value" == "[]" || -z "$value" ]] && continue
-    pretty="$(prettify_key "$value")" || continue
-    [[ -z "$pretty" ]] && continue
-    rows+="$(emit "$pretty" "$(describe_key "$schema" "$key")")"$'\n'
-  done < <(gsettings list-keys "$schema" 2>/dev/null | sort)
-
-  if [[ -n "$rows" ]]; then
-    printf '\n%s\n' "$section"
-    printf '%s' "$rows"
-  fi
-}
-
-dump_custom() {
-  local list slot path name command binding pretty rows=""
-  list="$(gsettings get "$MK" custom-keybindings 2>/dev/null || echo '')"
-  [[ "$list" == *custom* ]] || return 0
-
-  while read -r slot; do
-    [[ -z "$slot" ]] && continue
-    path="$MK.custom-keybinding:$BINDINGS/$slot/"
-    binding="$(gsettings get "$path" binding 2>/dev/null || true)"
-    name="$(gsettings get "$path" name 2>/dev/null | tr -d "'" || true)"
-    command="$(gsettings get "$path" command 2>/dev/null | tr -d "'" || true)"
-    pretty="$(prettify_key "$binding")" || continue
-    [[ -z "$pretty" ]] && continue
-    rows+="$(emit "$pretty" "${name:-$command}")"$'\n'
-  done < <(grep -o 'custom[0-9]\+' <<<"$list" | sort -u)
-
-  if [[ -n "$rows" ]]; then
-    printf '\nCosmarchy Commands\n'
-    printf '%s' "$rows"
-  fi
-}
-
-# Tiling Shell's bindings only apply while it is enabled.
-dump_manual_tiling() {
-  gsettings list-schemas 2>/dev/null | grep -qx "$TS" || return 0
-
-  local enabled
-  enabled="$(gsettings get org.gnome.shell enabled-extensions 2>/dev/null || echo '')"
-  [[ "$enabled" == *tilingshell* ]] || return 0
-
-  local rows="" key label value pretty
-  for key in move-window-left move-window-down move-window-up move-window-right \
-    untile-window cycle-layouts; do
-    value="$(gsettings get "$TS" "$key" 2>/dev/null || true)"
-    pretty="$(prettify_key "$value")" || continue
-    [[ -z "$pretty" ]] && continue
-    case "$key" in
-      move-window-*) label="Throw the window into the tile ${key##*-}" ;;
-      untile-window) label="Untile, back to the original size" ;;
-      cycle-layouts) label="Cycle the zone layout" ;;
-    esac
-    rows+="$(emit "$pretty" "$label")"$'\n'
+# Format a RON binding "(modifiers: [Super, Alt], key: "slash")" -> "Super + Alt + /"
+format_combo() {
+  local mods_raw="$1" key="$2"
+  local parts=() mod
+  local old_ifs="$IFS"
+  IFS=','
+  for mod in $mods_raw; do
+    mod="${mod// /}"
+    [[ -n "$mod" ]] && parts+=("$mod")
   done
+  IFS="$old_ifs"
 
-  if [[ -n "$rows" ]]; then
-    printf '\nTiling (Tiling Shell)\n'
-    printf '%s' "$rows"
-    emit "Ctrl + drag" "Pick a zone for the window being dragged"
-    emit "drag to top" "Snap assist"
+  if [[ -n "$key" ]]; then
+    case "$key" in
+      space) key="Space" ;;
+      slash) key="/" ;;
+      equal) key="=" ;;
+      minus) key="-" ;;
+      period) key="." ;;
+      comma) key="," ;;
+      [a-z]) key="${key^}" ;;
+    esac
+    parts+=("$key")
   fi
+
+  local out="" p
+  for p in "${parts[@]}"; do
+    [[ -n "$out" ]] && out+=" + "
+    out+="$p"
+  done
+  printf '%s' "$out"
+}
+
+format_action() {
+  local action="$1" desc="$2"
+  if [[ -n "$desc" ]]; then
+    printf '%s' "$desc"
+    return
+  fi
+  if [[ "$action" =~ ^Spawn\(\"(.*)\"\)$ ]]; then
+    printf 'Run: %s' "${BASH_REMATCH[1]}"
+  elif [[ "$action" =~ ^System\((.*)\)$ ]]; then
+    printf '%s' "${BASH_REMATCH[1]}"
+  else
+    printf '%s' "$action"
+  fi
+}
+
+parse_ron_file() {
+  local file="$1"
+  [[ -r "$file" ]] || return 0
+  local line mods key desc action combo label
+  while IFS= read -r line; do
+    [[ "$line" == *"modifiers:"* ]] || continue
+    mods=""
+    key=""
+    desc=""
+    action=""
+    if [[ "$line" =~ modifiers:[[:space:]]*\[([^\]]*)\] ]]; then
+      mods="${BASH_REMATCH[1]}"
+    fi
+    if [[ "$line" =~ key:[[:space:]]*\"([^\"]+)\" ]]; then
+      key="${BASH_REMATCH[1]}"
+    fi
+    if [[ "$line" =~ description:[[:space:]]*Some\(\"([^\"]*)\"\) ]]; then
+      desc="${BASH_REMATCH[1]}"
+    fi
+    if [[ "$line" =~ \):[[:space:]]*([^,]+),?[[:space:]]*$ ]]; then
+      action="${BASH_REMATCH[1]}"
+      action="${action%"${action##*[![:space:]]}"}"
+    fi
+    [[ -n "$action" && "$action" != "Disable" ]] || continue
+    combo="$(format_combo "$mods" "$key")"
+    label="$(format_action "$action" "$desc")"
+    emit "$combo" "$label"
+  done < "$file"
 }
 
 collect() {
-  local keymap="gnome"
-  [[ -f "$HOME/.config/cosmarchy/current/keymap" ]] &&
-    keymap="$(<"$HOME/.config/cosmarchy/current/keymap")"
+  printf 'Cosmarchy Keybindings (COSMIC)\n'
 
-  printf 'Cosmarchy Keybindings  (layout: %s)\n' "$keymap"
+  if [[ -r "$CUSTOM_FILE" ]]; then
+    printf '\nCosmarchy & Custom Shortcuts\n'
+    parse_ron_file "$CUSTOM_FILE"
+  fi
 
-  dump_custom
-  dump_schema org.gnome.desktop.wm.keybindings "Windows & Workspaces"
-  dump_schema org.gnome.shell.keybindings "Shell"
-  dump_schema org.gnome.mutter.keybindings "Mutter"
+  if [[ -r "$DEFAULTS_FILE" ]]; then
+    printf '\nCOSMIC Defaults\n'
+    parse_ron_file "$DEFAULTS_FILE"
+  fi
 
-  dump_manual_tiling
-
-  printf '\nSwitch layouts with: cosmarchy keymap <omarchy|gnome>\n'
+  printf '\nConfigure shortcuts in COSMIC Settings -> Input Devices -> Keyboard -> Shortcuts.\n'
 }
 
 case "${1:-search}" in
@@ -158,13 +123,25 @@ case "${1:-search}" in
     ;;
 
   search | "")
-    output="$(collect)"
-    echo "$output"
+    if [[ -t 0 && -t 1 ]]; then
+      if command -v gum >/dev/null 2>&1; then
+        collect | gum filter --header "Cosmarchy Keybindings" --placeholder "type to filter..." --height 24 >/dev/null || true
+      elif command -v less >/dev/null 2>&1; then
+        collect | less -R
+      else
+        collect
+      fi
+    else
+      collect
+    fi
     ;;
 
   reset)
-    echo "Re-applying the current Cosmarchy keyboard layout..."
-    exec cosmarchy-keymap "$(cat "$HOME/.config/cosmarchy/current/keymap" 2>/dev/null || echo gnome)"
+    source "$COSMARCHY_PATH/install/helpers/cosmic.sh"
+    echo "Re-deploying Cosmarchy's default COSMIC shortcuts..."
+    cosmarchy_cosmic_deploy "$COSMARCHY_PATH/default/cosmic/com.system76.CosmicSettings.Shortcuts" \
+      "${XDG_CONFIG_HOME:-$HOME/.config}/cosmic/com.system76.CosmicSettings.Shortcuts"
+    echo "COSMIC shortcuts restored."
     ;;
 
   *)
